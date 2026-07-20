@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Task, TaskStatus } from "@/types/task";
-import { Header } from "@/components/layout/header";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, GripVertical } from "lucide-react";
 import { format } from "date-fns";
@@ -67,20 +66,23 @@ export default function BoardPage() {
   };
 
   return (
-    <div>
-      <Header title="Доска" description="Перетаскивайте задачи между колонками" />
+    <div className="space-y-4">
+      <div className="mobile-page-header">
+        <h1 className="text-2xl font-bold tracking-tight">Доска</h1>
+        <p className="text-sm text-[var(--secondary)]">Перетаскивайте задачи</p>
+      </div>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {columns.map((col) => {
           const columnTasks = tasks.filter((t) => t.status === col.status);
           return (
             <div
               key={col.status}
-              className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3"
+              className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3"
               onDrop={(e) => handleDrop(e, col.status)}
               onDragOver={handleDragOver}
             >
               <div className="mb-3 flex items-center gap-2 px-1">
-                <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: col.color }} />
+                <div className="h-3 w-3 rounded-full" style={{ backgroundColor: col.color }} />
                 <h3 className="text-sm font-semibold">{col.title}</h3>
                 <span className="ml-auto rounded-full bg-[var(--card)] px-2 py-0.5 text-xs text-[var(--secondary)]">
                   {columnTasks.length}
@@ -92,7 +94,7 @@ export default function BoardPage() {
                     key={task.id}
                     draggable
                     onDragStart={(e) => handleDragStart(e, task.id)}
-                    className="cursor-grab active:cursor-grabbing hover:border-[var(--accent)]/30"
+                    className="mobile-task-card cursor-grab active:cursor-grabbing"
                   >
                     <CardContent className="p-3">
                       <div className="flex items-start gap-2">
@@ -121,8 +123,8 @@ export default function BoardPage() {
                   </Card>
                 ))}
                 {columnTasks.length === 0 && (
-                  <div className="rounded-lg border border-dashed border-[var(--border)] p-6 text-center text-xs text-[var(--muted)]">
-                    Перетащите задачу сюда
+                  <div className="rounded-2xl border border-dashed border-[var(--border)] p-6 text-center text-xs text-[var(--muted)]">
+                    Перетащите задачу
                   </div>
                 )}
               </div>

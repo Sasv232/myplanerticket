@@ -23,13 +23,6 @@ export function Sidebar() {
 
   return (
     <>
-      <button
-        onClick={() => setMobileOpen(!mobileOpen)}
-        className="fixed top-4 left-4 z-50 flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--card)] border border-[var(--border)] lg:hidden"
-      >
-        {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-      </button>
-
       {mobileOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/50 lg:hidden"
@@ -40,7 +33,7 @@ export function Sidebar() {
       <aside
         className={cn(
           "fixed left-0 top-0 z-40 h-full w-60 border-r border-[var(--border)] bg-[var(--sidebar)] flex flex-col transition-transform duration-300",
-          "lg:translate-x-0",
+          "lg:translate-x-0 hidden lg:flex",
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >

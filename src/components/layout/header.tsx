@@ -10,7 +10,7 @@ interface HeaderProps {
 
 export function Header({ title, description, actions }: HeaderProps) {
   return (
-    <div className="flex items-start justify-between pb-6">
+    <div className="hidden lg:flex items-start justify-between pb-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
         {description && (

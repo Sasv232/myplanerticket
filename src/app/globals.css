@@ -94,3 +94,235 @@ body {
 .animate-slide-down {
   animation: slideDown 0.2s ease-out;
 }
+
+/* ===== MOBILE NAV ===== */
+.mobile-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.mobile-nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  height: 64px;
+  padding: 0 8px;
+}
+
+.mobile-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  color: var(--secondary);
+  transition: all 0.2s ease;
+  text-decoration: none;
+  min-width: 60px;
+}
+
+.mobile-nav-item:active {
+  transform: scale(0.92);
+}
+
+.mobile-nav-item-active {
+  color: var(--accent);
+  background: var(--accent) / 0.08;
+}
+
+/* ===== FAB ===== */
+.mobile-fab {
+  display: none;
+  position: fixed;
+  bottom: 84px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 20px var(--accent) / 0.4;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.mobile-fab:active {
+  transform: translateX(-50%) scale(0.92);
+}
+
+.mobile-fab:hover {
+  background: var(--accent-hover);
+}
+
+/* ===== MOBILE HEADER ===== */
+.mobile-header {
+  display: none;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: var(--background);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 16px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mobile-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mobile-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ===== MOBILE CONTENT ===== */
+.mobile-main {
+  padding-bottom: 80px;
+}
+
+.mobile-content {
+  padding: 16px;
+  padding-bottom: 24px;
+}
+
+/* ===== MOBILE CARD STYLES ===== */
+.mobile-card {
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  padding: 16px;
+  transition: all 0.2s ease;
+}
+
+.mobile-card:active {
+  transform: scale(0.98);
+}
+
+/* ===== SHOW MOBILE ELEMENTS ===== */
+@media (max-width: 1023px) {
+  .mobile-nav {
+    display: block;
+  }
+
+  .mobile-fab {
+    display: flex;
+  }
+
+  .mobile-header {
+    display: flex;
+  }
+
+  .mobile-main {
+    padding-bottom: 80px;
+  }
+
+  .mobile-content {
+    padding: 16px;
+    padding-bottom: 24px;
+  }
+
+  /* Hide sidebar on mobile */
+  aside {
+    display: none !important;
+  }
+
+  main {
+    margin-left: 0 !important;
+  }
+}
+
+/* ===== DESKTOP OVERRIDES ===== */
+@media (min-width: 1024px) {
+  .mobile-nav,
+  .mobile-fab,
+  .mobile-header {
+    display: none !important;
+  }
+
+  .mobile-main {
+    padding-bottom: 0;
+  }
+}
+
+/* ===== MOBILE PAGE HEADER ===== */
+.mobile-page-header {
+  margin-bottom: 8px;
+}
+
+/* ===== MOBILE STAT CARDS ===== */
+.mobile-stat-card {
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  transition: all 0.2s ease;
+}
+
+.mobile-stat-card:active {
+  transform: scale(0.98);
+}
+
+/* ===== MOBILE WIDGET CARDS ===== */
+.mobile-widget-card {
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+
+/* ===== MOBILE TASK CARDS ===== */
+.mobile-task-card {
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  transition: all 0.2s ease;
+}
+
+.mobile-task-card:active {
+  transform: scale(0.98);
+}
+
+/* ===== MOBILE QUICK ACCESS CARDS ===== */
+.mobile-quick-card {
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  transition: all 0.2s ease;
+}
+
+.mobile-quick-card:active {
+  transform: scale(0.98);
+}
+
+/* ===== GLOBAL MOBILE IMPROVEMENTS ===== */
+@media (max-width: 1023px) {
+  /* Bigger, more rounded cards */
+  .rounded-xl {
+    border-radius: 16px;
+  }
+
+  /* More spacious grid gaps */
+  .gap-3 {
+    gap: 12px;
+  }
+
+  .gap-4 {
+    gap: 16px;
+  }
+}

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Header } from "@/components/layout/header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Play, Pause, RotateCcw, Coffee, Brain } from "lucide-react";
@@ -91,8 +90,12 @@ export default function PomodoroPage() {
   const dashoffset = circumference - (progress / 100) * circumference;
 
   return (
-    <div>
-      <Header title="Таймер" description="Pomodoro — сосредоточься на задаче" />
+    <div className="space-y-6">
+      <div className="mobile-page-header">
+        <h1 className="text-2xl font-bold tracking-tight">Таймер</h1>
+        <p className="text-sm text-[var(--secondary)]">Pomodoro — сосредоточься</p>
+      </div>
+
       <div className="flex flex-col items-center gap-6">
         <div className="flex gap-2">
           <Button
@@ -100,18 +103,18 @@ export default function PomodoroPage() {
             size="sm"
             onClick={() => { setMode("work"); setTimeLeft(PRESETS.work); setIsRunning(false); }}
           >
-            <Brain className="h-4 w-4" /> Работа (25м)
+            <Brain className="h-4 w-4" /> Работа
           </Button>
           <Button
             variant={mode === "break" ? "default" : "outline"}
             size="sm"
             onClick={() => { setMode("break"); setTimeLeft(PRESETS.break); setIsRunning(false); }}
           >
-            <Coffee className="h-4 w-4" /> Перерыв (5м)
+            <Coffee className="h-4 w-4" /> Перерыв
           </Button>
         </div>
 
-        <Card className="w-64 h-64 flex items-center justify-center relative">
+        <Card className="w-56 h-56 sm:w-64 sm:h-64 flex items-center justify-center relative mobile-widget-card">
           <svg className="absolute inset-0 h-full w-full -rotate-90" viewBox="0 0 200 200">
             <circle cx="100" cy="100" r="90" fill="none" stroke="var(--border)" strokeWidth="6" />
             <circle
@@ -125,7 +128,7 @@ export default function PomodoroPage() {
             />
           </svg>
           <div className="text-center z-10">
-            <p className="text-5xl font-bold font-mono tabular-nums">
+            <p className="text-4xl sm:text-5xl font-bold font-mono tabular-nums">
               {String(mins).padStart(2, "0")}:{String(secs).padStart(2, "0")}
             </p>
             <p className="mt-2 text-sm text-[var(--secondary)]">
@@ -135,18 +138,19 @@ export default function PomodoroPage() {
         </Card>
 
         <div className="flex gap-3">
-          <Button size="lg" onClick={toggle}>
+          <Button size="lg" onClick={toggle} className="min-w-[120px]">
             {isRunning ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
             {isRunning ? "Пауза" : "Старт"}
           </Button>
           <Button variant="outline" size="lg" onClick={reset}>
             <RotateCcw className="h-5 w-5" />
-            Сброс
           </Button>
         </div>
 
-        <div className="flex items-center gap-2 text-sm text-[var(--secondary)]">
-          <span>Сессий завершено: <strong className="text-[var(--foreground)]">{sessions}</strong></span>
+        <div className="mobile-widget-card px-4 py-3">
+          <span className="text-sm text-[var(--secondary)]">
+            Сессий завершено: <strong className="text-[var(--foreground)]">{sessions}</strong>
+          </span>
         </div>
       </div>
     </div>

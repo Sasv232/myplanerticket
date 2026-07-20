@@ -2,6 +2,8 @@
 
 import { usePathname } from "next/navigation";
 import { Sidebar } from "./sidebar";
+import { MobileNav } from "./mobile-nav";
+import { MobileHeader } from "./mobile-header";
 
 const PUBLIC_PATHS = ["/login", "/register"];
 
@@ -16,9 +18,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen">
       <Sidebar />
-      <main className="flex-1 lg:ml-60">
-        <div className="mx-auto max-w-5xl px-6 py-8">{children}</div>
+      <main className="flex-1 lg:ml-60 mobile-main">
+        <MobileHeader />
+        <div className="mobile-content">{children}</div>
       </main>
+      <MobileNav />
     </div>
   );
 }
