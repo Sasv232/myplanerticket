@@ -1,0 +1,69 @@
+const postgres = require('postgres');
+
+const sql = postgres(process.env.DATABASE_URL || 'postgresql://postgres.uqzqgrbkgbwnhapsciwb:sasvqwert4671@aws-0-eu-west-1.pooler.supabase.com:6543/postgres?pgbouncer=true', {
+  max: 1,
+  connect_timeout: 10,
+});
+
+const statements = [
+  `CREATE TABLE IF NOT EXISTS tasks (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    description TEXT,
+    status TEXT NOT NULL DEFAULT 'todo',
+    priority TEXT NOT NULL DEFAULT 'medium',
+    due_date TEXT,
+    tags TEXT DEFAULT '[]',
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  )`,
+  `CREATE TABLE IF NOT EXISTS trackers (
+    id TEXT PRIMARY KEY,
+    type TEXT NOT NULL,
+    name TEXT NOT NULL,
+    config TEXT NOT NULL DEFAULT '{}',
+    is_active BOOLEAN NOT NULL DEFAULT true,
+    check_interval INTEGER NOT NULL DEFAULT 3600,
+    last_checked TEXT,
+    created_at TEXT NOT NULL
+  )`,
+  `CREATE TABLE IF NOT EXISTS scrape_results (
+    id TEXT PRIMARY KEY,
+    tracker_id TEXT NOT NULL REFERENCES trackers(id) ON DELETE CASCADE,
+    data TEXT NOT NULL,
+    scraped_at TEXT NOT NULL
+  )`,
+  `CREATE TABLE IF NOT EXISTS price_history (
+    id TEXT PRIMARY KEY,
+    tracker_id TEXT NOT NULL REFERENCES trackers(id) ON DELETE CASCADE,
+    price INTEGER NOT NULL,
+    currency TEXT NOT NULL DEFAULT 'RUB',
+    route_info TEXT DEFAULT '{}',
+    recorded_at TEXT NOT NULL
+  )`,
+  `CREATE TABLE IF NOT EXISTS notifications (
+    id TEXT PRIMARY KEY,
+    tracker_id TEXT REFERENCES trackers(id) ON DELETE SET NULL,
+    type TEXT NOT NULL,
+    title TEXT NOT NULL,
+    message TEXT NOT NULL,
+    sent BOOLEAN NOT NULL DEFAULT false,
+    created_at TEXT NOT NULL
+  )`,
+];
+
+async function main() {
+  for (const stmt of statements) {
+    try {
+      await sql.unsafe(stmt);
+      console.log('OK:', stmt.substring(0, 40) + '...');
+    } catch (e) {
+      console.error('ERR:', e.message);
+    }
+  }
+  const r = await sql.unsafe('SELECT count(*) FROM tasks');
+  console.log('Tasks count:', r);
+  await sql.end();
+}
+
+main();
