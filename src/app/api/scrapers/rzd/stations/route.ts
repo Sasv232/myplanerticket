@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { findStations } from "@/lib/scrapers/rzd/api";
+import { getScraper } from "@/lib/scrapers/registry";
+import "@/lib/scrapers/init";
 
 export async function GET(request: NextRequest) {
   try {
@@ -8,7 +9,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json([]);
     }
 
-    const stations = await findStations(query);
+    const scraper = getScraper("rzd");
+    if (!scraper || !("findStationsCompat" in scraper)) {
+      return NextResponse.json([]);
+    }
+
+    const stations = await (scraper as any).findStationsCompat(query);
     return NextResponse.json(stations);
   } catch (error) {
     return NextResponse.json({ error: String(error) }, { status: 500 });

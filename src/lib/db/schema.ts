@@ -1,7 +1,25 @@
-import { pgTable, text, integer, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, integer, boolean, timestamp } from "drizzle-orm/pg-core";
+
+export const users = pgTable("users", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  email: text("email"),
+  passwordHash: text("password_hash").notNull(),
+  createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
+});
+
+export const sessions = pgTable("sessions", {
+  token: text("token").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  expiresAt: text("expires_at").notNull(),
+  createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
+});
 
 export const tasks = pgTable("tasks", {
   id: text("id").primaryKey(),
+  userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
   title: text("title").notNull(),
   description: text("description"),
   status: text("status", { enum: ["todo", "in_progress", "done"] })

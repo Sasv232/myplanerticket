@@ -1,17 +1,25 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { navigation } from "@/config/navigation";
 import { useState } from "react";
-import { Menu, X, Train, Sun, Moon } from "lucide-react";
+import { Menu, X, Train, Sun, Moon, LogOut } from "lucide-react";
 import { useTheme } from "./theme-provider";
+import { useAuth } from "@/lib/auth-context";
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { theme, toggle } = useTheme();
+  const { user, logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+    router.push("/login");
+  };
 
   return (
     <>
@@ -93,7 +101,22 @@ export function Sidebar() {
           ))}
         </nav>
 
-        <div className="border-t border-[var(--border)] p-4">
+        <div className="border-t border-[var(--border)] p-4 space-y-2">
+          {user && (
+            <div className="flex items-center gap-2 px-2">
+              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--accent)]/20 text-xs font-bold text-[var(--accent)]">
+                {user.name[0].toUpperCase()}
+              </div>
+              <span className="text-sm font-medium truncate">{user.name}</span>
+              <button
+                onClick={handleLogout}
+                className="ml-auto flex h-7 w-7 items-center justify-center rounded-lg hover:bg-[var(--surface)] transition-colors"
+                title="Выйти"
+              >
+                <LogOut className="h-3.5 w-3.5 text-[var(--secondary)]" />
+              </button>
+            </div>
+          )}
           <p className="text-xs text-[var(--secondary)] text-center">
             v0.1.0 — Personal
           </p>

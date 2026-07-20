@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Sidebar } from "@/components/layout/sidebar";
 import { ThemeProvider } from "@/components/layout/theme-provider";
+import { AuthProvider } from "@/lib/auth-context";
+import { AuthGuard } from "@/components/auth-guard";
+import { AppShell } from "@/components/layout/app-shell";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -52,12 +54,11 @@ export default function RootLayout({
       </head>
       <body className="min-h-full">
         <ThemeProvider>
-          <div className="flex min-h-screen">
-            <Sidebar />
-            <main className="flex-1 lg:ml-60">
-              <div className="mx-auto max-w-5xl px-6 py-8">{children}</div>
-            </main>
-          </div>
+          <AuthProvider>
+            <AuthGuard>
+              <AppShell>{children}</AppShell>
+            </AuthGuard>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

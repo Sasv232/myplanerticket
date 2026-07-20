@@ -1,71 +1,49 @@
-const { neon } = require('@neondatabase/serverless');
+const { Pool } = require("pg");
 
 const url = process.env.DATABASE_URL;
 if (!url) {
-  console.error('Set DATABASE_URL env var');
+  console.error("Set DATABASE_URL env var");
   process.exit(1);
 }
 
-const sql = neon(url);
+const pool = new Pool({
+  connectionString: url,
+  ssl: { rejectUnauthorized: false },
+});
 
 const migrations = [
-  `CREATE TABLE IF NOT EXISTS tasks (
+  `CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
-    title TEXT NOT NULL,
-    description TEXT,
-    status TEXT NOT NULL DEFAULT 'todo',
-    priority TEXT NOT NULL DEFAULT 'medium',
-    due_date TEXT,
-    tags TEXT DEFAULT '[]',
-    created_at TEXT NOT NULL,
-    updated_at TEXT NOT NULL
-  )`,
-  `CREATE TABLE IF NOT EXISTS trackers (
-    id TEXT PRIMARY KEY,
-    type TEXT NOT NULL,
-    name TEXT NOT NULL,
-    config TEXT NOT NULL DEFAULT '{}',
-    is_active BOOLEAN NOT NULL DEFAULT true,
-    check_interval INTEGER NOT NULL DEFAULT 3600,
-    last_checked TEXT,
+    name TEXT NOT NULL UNIQUE,
+    email TEXT,
+    password_hash TEXT NOT NULL,
     created_at TEXT NOT NULL
   )`,
-  `CREATE TABLE IF NOT EXISTS scrape_results (
-    id TEXT PRIMARY KEY,
-    tracker_id TEXT NOT NULL REFERENCES trackers(id) ON DELETE CASCADE,
-    data TEXT NOT NULL,
-    scraped_at TEXT NOT NULL
-  )`,
-  `CREATE TABLE IF NOT EXISTS price_history (
-    id TEXT PRIMARY KEY,
-    tracker_id TEXT NOT NULL REFERENCES trackers(id) ON DELETE CASCADE,
-    price INTEGER NOT NULL,
-    currency TEXT NOT NULL DEFAULT 'RUB',
-    route_info TEXT DEFAULT '{}',
-    recorded_at TEXT NOT NULL
-  )`,
-  `CREATE TABLE IF NOT EXISTS notifications (
-    id TEXT PRIMARY KEY,
-    tracker_id TEXT REFERENCES trackers(id) ON DELETE SET NULL,
-    type TEXT NOT NULL,
-    title TEXT NOT NULL,
-    message TEXT NOT NULL,
-    sent BOOLEAN NOT NULL DEFAULT false,
+  `CREATE TABLE IF NOT EXISTS sessions (
+    token TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    expires_at TEXT NOT NULL,
     created_at TEXT NOT NULL
   )`,
+  `ALTER TABLE tasks ADD COLUMN IF NOT EXISTS user_id TEXT REFERENCES users(id) ON DELETE CASCADE`,
+  `ALTER TABLE trackers ADD COLUMN IF NOT EXISTS user_id TEXT REFERENCES users(id) ON DELETE CASCADE`,
+  `ALTER TABLE notifications ADD COLUMN IF NOT EXISTS user_id TEXT REFERENCES users(id) ON DELETE CASCADE`,
 ];
 
 async function migrate() {
   for (const stmt of migrations) {
     try {
-      await sql(stmt);
-      const table = stmt.match(/CREATE TABLE IF NOT EXISTS (\w+)/)?.[1];
+      await pool.query(stmt);
+      const match = stmt.match(/CREATE TABLE IF NOT EXISTS (\w+)/);
+      const alterMatch = stmt.match(/ALTER TABLE (\w+)/);
+      const table = match?.[1] || alterMatch?.[1] || "unknown";
       console.log(`OK: ${table}`);
     } catch (e) {
-      console.error('ERR:', e.message);
+      console.error("ERR:", e.message);
     }
   }
-  console.log('Done');
+  await pool.end();
+  console.log("Done");
 }
 
 migrate();
