@@ -5,18 +5,14 @@ export async function GET(request: NextRequest) {
     const lat = request.nextUrl.searchParams.get("lat");
     const lon = request.nextUrl.searchParams.get("lon");
 
-    let url: URL;
+    let wttrUrl: string;
     if (lat && lon) {
-      url = new URL("https://wttr.in/");
-      url.searchParams.set("format", "%t|%C|%l");
-      url.searchParams.set("lat", lat);
-      url.searchParams.set("lon", lon);
+      wttrUrl = `https://wttr.in/${lat},${lon}?format=%t|%C|%l`;
     } else {
-      url = new URL("https://wttr.in/");
-      url.searchParams.set("format", "%t|%C|%l");
+      wttrUrl = `https://wttr.in/?format=%t|%C|%l`;
     }
 
-    const res = await fetch(url.toString(), {
+    const res = await fetch(wttrUrl, {
       headers: { "User-Agent": "curl/7.64.1" },
     });
     const text = await res.text();
