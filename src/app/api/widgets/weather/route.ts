@@ -7,9 +7,9 @@ export async function GET(request: NextRequest) {
 
     let wttrUrl: string;
     if (lat && lon) {
-      wttrUrl = `https://wttr.in/${lat},${lon}?format=%t|%C|%l`;
+      wttrUrl = `https://wttr.in/${lat},${lon}?format=%t|%C|%l&m`;
     } else {
-      wttrUrl = `https://wttr.in/?format=%t|%C|%l`;
+      wttrUrl = `https://wttr.in/?format=%t|%C|%l&m`;
     }
 
     const res = await fetch(wttrUrl, {
