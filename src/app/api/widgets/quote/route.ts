@@ -1,17 +1,26 @@
 import { NextResponse } from "next/server";
 
+const QUOTES = [
+  { text: "Единственный способ делать великую работу — любить то, что делаешь.", author: "Стив Джобс" },
+  { text: "Простота — это высшая степень утончённости.", author: "Леонардо да Винчи" },
+  { text: "Жизнь — это то, что с тобой происходит, пока ты строишь другие планы.", author: "Джон Леннон" },
+  { text: "Будь собой, все остальные роли уже заняты.", author: "Оскар Уайльд" },
+  { text: "Неважно, как медленно ты идёшь, пока ты не останавливаешься.", author: "Конфуций" },
+  { text: "Проблема — это возможность в рабочей одежде.", author: "Генри Дж. Кайзер" },
+  { text: "Успех — это способность двигаться от одной неудачи к другой без энтузиазма.", author: "Уинстон Черчилль" },
+  { text: "Лучший способ предсказать будущее — создать его.", author: "Питер Друкер" },
+  { text: "Делай то, что можешь, с тем, что имеешь, там, где ты есть.", author: "Теодор Рузвельт" },
+  { text: "Не откладывай на завтра то, что можешь сделать послезавтра.", author: "Марк Твен" },
+  { text: "Каждый эксперт когда-то был новичком.", author: "Хелен Хейс" },
+  { text: "Вeducated — это не тот, кто много знает, а кто знает, где искать.", author: "Автор неизвестен" },
+];
+
 export async function GET() {
   try {
-    const res = await fetch("https://zenquotes.io/api/today");
-    const data = await res.json();
-    if (data[0]) {
-      return NextResponse.json({
-        text: data[0].q,
-        author: data[0].a,
-      });
-    }
-    return NextResponse.json({ text: "", author: "" });
+    const today = new Date().toISOString().slice(0, 10);
+    const index = today.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0) % QUOTES.length;
+    return NextResponse.json(QUOTES[index]);
   } catch {
-    return NextResponse.json({ text: "", author: "" });
+    return NextResponse.json(QUOTES[0]);
   }
 }
