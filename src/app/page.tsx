@@ -11,30 +11,73 @@ import {
   Clock,
   ListTodo,
   AlertTriangle,
-  Train,
   ArrowRight,
+  Cloud,
+  DollarSign,
+  Quote,
+  Timer,
 } from "lucide-react";
+
+interface Weather {
+  temp: string;
+  desc: string;
+  city: string;
+}
+
+interface Currency {
+  usd: number;
+  eur: number;
+}
+
+interface QuoteData {
+  text: string;
+  author: string;
+}
 
 export default function DashboardPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [weather, setWeather] = useState<Weather | null>(null);
+  const [currency, setCurrency] = useState<Currency | null>(null);
+  const [quote, setQuote] = useState<QuoteData | null>(null);
 
   const fetchTasks = useCallback(async () => {
     try {
       const res = await fetch("/api/tasks");
       const data = await res.json();
       setTasks(
-        data.map((t: Task & { tags: string }) => ({
+        data.map((t: Task & { tags: string; repeat_rule: string | null }) => ({
           ...t,
           tags: typeof t.tags === "string" ? JSON.parse(t.tags) : t.tags,
+          repeatRule: t.repeat_rule || t.repeatRule || null,
         }))
       );
-    } catch {
-      // silent
-    }
+    } catch {}
   }, []);
 
   useEffect(() => {
     fetchTasks();
+
+    fetch("https://wttr.in/?format=%t|%C|%l&lang=ru")
+      .then((r) => r.text())
+      .then((t) => {
+        const [temp, desc, city] = t.split("|");
+        if (temp) setWeather({ temp: temp.trim(), desc: desc?.trim() || "", city: city?.trim() || "" });
+      })
+      .catch(() => {});
+
+    fetch("https://open.er-api.com/v6/latest/USD")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.rates) setCurrency({ usd: d.rates.RUB, eur: d.rates.RUB / d.rates.EUR });
+      })
+      .catch(() => {});
+
+    fetch("https://zenquotes.io/api/today")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d[0]) setQuote({ text: d[0].q, author: d[0].a });
+      })
+      .catch(() => {});
   }, [fetchTasks]);
 
   const stats = {
@@ -49,9 +92,15 @@ export default function DashboardPage() {
     .sort((a, b) => new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime())
     .slice(0, 5);
 
+  const totalTimeTracked = tasks.reduce((acc, t) => {
+    const match = (t.description || "").match(/(\d+)h\s*(\d+)m/);
+    if (match) return acc + parseInt(match[1]) * 60 + parseInt(match[2]);
+    return acc;
+  }, 0);
+
   return (
     <div>
-      <Header title="Дашборд" description="Обзор ваших задач и трекеров" />
+      <Header title="Дашборд" description="Обзор ваших задач" />
 
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Card className="hover:border-[var(--accent)]/30 transition-colors">
@@ -97,6 +146,54 @@ export default function DashboardPage() {
               </div>
             </CardContent>
           </Link>
+        </Card>
+      </div>
+
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <Card>
+          <CardContent className="flex items-center gap-3 p-4">
+            <Cloud className="h-8 w-8 text-[var(--accent)]" />
+            <div>
+              {weather ? (
+                <>
+                  <p className="text-lg font-bold">{weather.temp}</p>
+                  <p className="text-xs text-[var(--secondary)]">{weather.desc}</p>
+                </>
+              ) : (
+                <p className="text-sm text-[var(--secondary)]">Загрузка...</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex items-center gap-3 p-4">
+            <DollarSign className="h-8 w-8 text-[var(--success)]" />
+            <div>
+              {currency ? (
+                <>
+                  <p className="text-sm font-bold">USD {currency.usd.toFixed(1)} ₽</p>
+                  <p className="text-sm font-bold">EUR {currency.eur.toFixed(1)} ₽</p>
+                </>
+              ) : (
+                <p className="text-sm text-[var(--secondary)]">Загрузка...</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex items-center gap-3 p-4">
+            <Quote className="h-8 w-8 text-[var(--warning)]" />
+            <div className="min-w-0">
+              {quote ? (
+                <>
+                  <p className="text-xs italic line-clamp-2">"{quote.text}"</p>
+                  <p className="mt-1 text-[10px] text-[var(--secondary)]">— {quote.author}</p>
+                </>
+              ) : (
+                <p className="text-sm text-[var(--secondary)]">Загрузка...</p>
+              )}
+            </div>
+          </CardContent>
         </Card>
       </div>
 
@@ -153,14 +250,14 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="space-y-2">
             <Link
-              href="/trackers/rzd"
+              href="/pomodoro"
               className="flex items-center justify-between rounded-lg border border-[var(--border)] p-3 hover:border-[var(--accent)]/30 transition-colors"
             >
               <div className="flex items-center gap-3">
-                <Train className="h-5 w-5 text-[var(--accent)]" />
+                <Timer className="h-5 w-5 text-[var(--accent)]" />
                 <div>
-                  <p className="text-sm font-medium">Найти билеты</p>
-                  <p className="text-xs text-[var(--secondary)]">РЖД поиск</p>
+                  <p className="text-sm font-medium">Таймер Pomodoro</p>
+                  <p className="text-xs text-[var(--secondary)]">Фокусировка на задаче</p>
                 </div>
               </div>
               <ArrowRight className="h-4 w-4 text-[var(--secondary)]" />
@@ -174,6 +271,19 @@ export default function DashboardPage() {
                 <div>
                   <p className="text-sm font-medium">Доска задач</p>
                   <p className="text-xs text-[var(--secondary)]">Kanban вид</p>
+                </div>
+              </div>
+              <ArrowRight className="h-4 w-4 text-[var(--secondary)]" />
+            </Link>
+            <Link
+              href="/calendar"
+              className="flex items-center justify-between rounded-lg border border-[var(--border)] p-3 hover:border-[var(--accent)]/30 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <Clock className="h-5 w-5 text-[var(--accent)]" />
+                <div>
+                  <p className="text-sm font-medium">Календарь</p>
+                  <p className="text-xs text-[var(--secondary)]">Задачи по датам</p>
                 </div>
               </div>
               <ArrowRight className="h-4 w-4 text-[var(--secondary)]" />

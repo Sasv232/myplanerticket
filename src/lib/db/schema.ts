@@ -57,6 +57,17 @@ export const attachments = pgTable("attachments", {
   createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
 });
 
+export const timeEntries = pgTable("time_entries", {
+  id: text("id").primaryKey(),
+  taskId: text("task_id")
+    .notNull()
+    .references(() => tasks.id, { onDelete: "cascade" }),
+  duration: integer("duration").notNull(),
+  note: text("note"),
+  startedAt: text("started_at").notNull(),
+  createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
+});
+
 export const notifications = pgTable("notifications", {
   id: text("id").primaryKey(),
   trackerId: text("tracker_id"),

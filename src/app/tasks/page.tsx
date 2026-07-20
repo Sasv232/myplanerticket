@@ -5,6 +5,7 @@ import { Task, CreateTaskInput, TaskStatus, TaskPriority } from "@/types/task";
 import { Header } from "@/components/layout/header";
 import { TaskCard } from "@/components/tasks/task-card";
 import { TaskForm } from "@/components/tasks/task-form";
+import { TaskDetail } from "@/components/tasks/task-detail";
 import { TaskFilters } from "@/components/tasks/task-filters";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +16,7 @@ export default function TasksPage() {
   const [loading, setLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | undefined>();
+  const [detailTask, setDetailTask] = useState<Task | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<TaskStatus | "all">("all");
   const [priorityFilter, setPriorityFilter] = useState<TaskPriority | "all">("all");
@@ -184,6 +186,7 @@ export default function TasksPage() {
               onEdit={(t) => { setEditingTask(t); setFormOpen(true); }}
               onDelete={handleDelete}
               onStatusChange={handleStatusChange}
+              onClick={(t) => setDetailTask(t)}
             />
           ))
         )}
@@ -194,6 +197,12 @@ export default function TasksPage() {
         onClose={() => { setFormOpen(false); setEditingTask(undefined); }}
         onSubmit={editingTask ? handleUpdate : handleCreate}
         initialData={editingTask}
+      />
+
+      <TaskDetail
+        task={detailTask}
+        open={!!detailTask}
+        onClose={() => setDetailTask(null)}
       />
     </div>
   );
