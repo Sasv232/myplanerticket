@@ -57,26 +57,19 @@ export default function DashboardPage() {
   useEffect(() => {
     fetchTasks();
 
-    fetch("https://wttr.in/?format=%t|%C|%l&lang=ru")
-      .then((r) => r.text())
-      .then((t) => {
-        const [temp, desc, city] = t.split("|");
-        if (temp) setWeather({ temp: temp.trim(), desc: desc?.trim() || "", city: city?.trim() || "" });
-      })
+    fetch("/api/widgets/weather")
+      .then((r) => r.json())
+      .then((d) => { if (d.temp) setWeather(d); })
       .catch(() => {});
 
-    fetch("https://open.er-api.com/v6/latest/USD")
+    fetch("/api/widgets/currency")
       .then((r) => r.json())
-      .then((d) => {
-        if (d.rates) setCurrency({ usd: d.rates.RUB, eur: d.rates.RUB / d.rates.EUR });
-      })
+      .then((d) => { if (d.usd) setCurrency(d); })
       .catch(() => {});
 
-    fetch("https://zenquotes.io/api/today")
+    fetch("/api/widgets/quote")
       .then((r) => r.json())
-      .then((d) => {
-        if (d[0]) setQuote({ text: d[0].q, author: d[0].a });
-      })
+      .then((d) => { if (d.text) setQuote(d); })
       .catch(() => {});
   }, [fetchTasks]);
 
