@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db, ensureDb } from "@/lib/db";
+import { db } from "@/lib/db";
 import { trackers } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { v4 as uuid } from "uuid";
 
 export async function GET() {
   try {
-    await ensureDb();
     const allTrackers = await db.select().from(trackers);
     return NextResponse.json(
       allTrackers.map((t) => ({
@@ -21,7 +20,6 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    await ensureDb();
     const body = await request.json();
     const id = uuid();
 

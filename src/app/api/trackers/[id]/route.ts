@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db, ensureDb } from "@/lib/db";
+import { db } from "@/lib/db";
 import { trackers } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 
@@ -8,7 +8,6 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await ensureDb();
     const { id } = await params;
     await db.delete(trackers).where(eq(trackers.id, id));
     return NextResponse.json({ ok: true });
@@ -22,7 +21,6 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await ensureDb();
     const { id } = await params;
     const body = await request.json();
 

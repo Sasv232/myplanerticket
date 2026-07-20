@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db, ensureDb } from "@/lib/db";
+import { db } from "@/lib/db";
 import { trackers, scrapeResults, priceHistory, notifications } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { v4 as uuid } from "uuid";
@@ -9,7 +9,6 @@ import { sendEmail, priceAlertEmail } from "@/lib/notifications/email";
 
 export async function POST(request: NextRequest) {
   try {
-    await ensureDb();
     const authHeader = request.headers.get("authorization");
     if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db, ensureDb } from "@/lib/db";
+import { db } from "@/lib/db";
 import { tasks } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { v4 as uuid } from "uuid";
 
 export async function GET() {
   try {
-    await ensureDb();
     const allTasks = await db.select().from(tasks);
     return NextResponse.json(allTasks);
   } catch (error) {
@@ -16,7 +15,6 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    await ensureDb();
     const body = await request.json();
     const id = uuid();
     const now = new Date().toISOString();
