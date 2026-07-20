@@ -24,9 +24,10 @@ export default function TasksPage() {
       const res = await fetch("/api/tasks");
       const data = await res.json();
       setTasks(
-        data.map((t: Task & { tags: string }) => ({
+        data.map((t: Task & { tags: string; repeat_rule: string | null }) => ({
           ...t,
           tags: typeof t.tags === "string" ? JSON.parse(t.tags) : t.tags,
+          repeatRule: t.repeat_rule || t.repeatRule || null,
         }))
       );
     } catch (e) {

@@ -36,6 +36,7 @@ export async function PUT(
     if (body.priority !== undefined) updates.priority = body.priority;
     if (body.dueDate !== undefined) updates.dueDate = body.dueDate;
     if (body.tags !== undefined) updates.tags = JSON.stringify(body.tags);
+    if (body.repeatRule !== undefined) updates.repeatRule = body.repeatRule || null;
 
     await db.update(tasks).set(updates).where(eq(tasks.id, id));
 

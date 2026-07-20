@@ -12,6 +12,7 @@ import {
   ModalDescription,
   ModalFooter,
 } from "@/components/ui/modal";
+import { Repeat } from "lucide-react";
 
 interface TaskFormProps {
   open: boolean;
@@ -20,12 +21,24 @@ interface TaskFormProps {
   initialData?: Task;
 }
 
+const REPEAT_OPTIONS = [
+  { value: "", label: "Не повторять" },
+  { value: "daily", label: "Каждый день" },
+  { value: "weekly", label: "Каждую неделю" },
+  { value: "biweekly", label: "Каждые 2 недели" },
+  { value: "monthly", label: "Каждый месяц" },
+  { value: "yearly", label: "Каждый год" },
+  { value: "weekdays", label: "По будням" },
+  { value: "weekends", label: "По выходным" },
+];
+
 export function TaskForm({ open, onClose, onSubmit, initialData }: TaskFormProps) {
   const [title, setTitle] = useState(initialData?.title || "");
   const [description, setDescription] = useState(initialData?.description || "");
   const [priority, setPriority] = useState<TaskPriority>(initialData?.priority || "medium");
   const [dueDate, setDueDate] = useState(initialData?.dueDate?.split("T")[0] || "");
   const [tagsInput, setTagsInput] = useState(initialData?.tags.join(", ") || "");
+  const [repeatRule, setRepeatRule] = useState(initialData?.repeatRule || "");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,6 +53,7 @@ export function TaskForm({ open, onClose, onSubmit, initialData }: TaskFormProps
         .split(",")
         .map((t) => t.trim())
         .filter(Boolean),
+      repeatRule: repeatRule || undefined,
     });
 
     setTitle("");
@@ -47,6 +61,7 @@ export function TaskForm({ open, onClose, onSubmit, initialData }: TaskFormProps
     setPriority("medium");
     setDueDate("");
     setTagsInput("");
+    setRepeatRule("");
     onClose();
   };
 
@@ -95,6 +110,21 @@ export function TaskForm({ open, onClose, onSubmit, initialData }: TaskFormProps
                   onChange={(e) => setDueDate(e.target.value)}
                 />
               </div>
+            </div>
+            <div>
+              <label className="mb-1.5 flex items-center gap-1.5 text-sm font-medium">
+                <Repeat className="h-3.5 w-3.5" />
+                Повторение
+              </label>
+              <select
+                value={repeatRule}
+                onChange={(e) => setRepeatRule(e.target.value)}
+                className="flex h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+              >
+                {REPEAT_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
             </div>
             <Input
               placeholder="Теги через запятую"

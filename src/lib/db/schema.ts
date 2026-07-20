@@ -1,4 +1,4 @@
-import { pgTable, text, integer, boolean, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, integer, boolean } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
   id: text("id").primaryKey(),
@@ -30,46 +30,36 @@ export const tasks = pgTable("tasks", {
     .default("medium"),
   dueDate: text("due_date"),
   tags: text("tags").default("[]"),
+  repeatRule: text("repeat_rule"),
   createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
   updatedAt: text("updated_at").notNull().$defaultFn(() => new Date().toISOString()),
 });
 
-export const trackers = pgTable("trackers", {
+export const comments = pgTable("comments", {
   id: text("id").primaryKey(),
-  type: text("type").notNull(),
-  name: text("name").notNull(),
-  config: text("config").notNull().default("{}"),
-  isActive: boolean("is_active").notNull().default(true),
-  checkInterval: integer("check_interval").notNull().default(3600),
-  lastChecked: text("last_checked"),
+  taskId: text("task_id")
+    .notNull()
+    .references(() => tasks.id, { onDelete: "cascade" }),
+  userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
+  content: text("content").notNull(),
   createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
 });
 
-export const scrapeResults = pgTable("scrape_results", {
+export const attachments = pgTable("attachments", {
   id: text("id").primaryKey(),
-  trackerId: text("tracker_id")
+  taskId: text("task_id")
     .notNull()
-    .references(() => trackers.id, { onDelete: "cascade" }),
-  data: text("data").notNull(),
-  scrapedAt: text("scraped_at").notNull().$defaultFn(() => new Date().toISOString()),
-});
-
-export const priceHistory = pgTable("price_history", {
-  id: text("id").primaryKey(),
-  trackerId: text("tracker_id")
-    .notNull()
-    .references(() => trackers.id, { onDelete: "cascade" }),
-  price: integer("price").notNull(),
-  currency: text("currency").notNull().default("RUB"),
-  routeInfo: text("route_info").default("{}"),
-  recordedAt: text("recorded_at").notNull().$defaultFn(() => new Date().toISOString()),
+    .references(() => tasks.id, { onDelete: "cascade" }),
+  fileName: text("file_name").notNull(),
+  fileSize: integer("file_size").notNull(),
+  fileType: text("file_type").notNull(),
+  fileData: text("file_data").notNull(),
+  createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
 });
 
 export const notifications = pgTable("notifications", {
   id: text("id").primaryKey(),
-  trackerId: text("tracker_id").references(() => trackers.id, {
-    onDelete: "set null",
-  }),
+  trackerId: text("tracker_id"),
   type: text("type", {
     enum: ["price_drop", "ticket_available", "reminder", "task_due"],
   }).notNull(),

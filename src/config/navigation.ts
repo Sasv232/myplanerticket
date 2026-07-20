@@ -3,9 +3,9 @@ import {
   CheckSquare,
   Kanban,
   Calendar,
-  Train,
   Settings,
   Bell,
+  Timer,
 } from "lucide-react";
 
 export interface NavItem {
@@ -28,12 +28,7 @@ export const navigation: NavGroup[] = [
       { label: "Задачи", href: "/tasks", icon: CheckSquare },
       { label: "Доска", href: "/board", icon: Kanban },
       { label: "Календарь", href: "/calendar", icon: Calendar },
-    ],
-  },
-  {
-    title: "Трекеры",
-    items: [
-      { label: "РЖД", href: "/trackers/rzd", icon: Train },
+      { label: "Таймер", href: "/pomodoro", icon: Timer },
     ],
   },
   {

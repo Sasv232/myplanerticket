@@ -12,22 +12,23 @@ const pool = new Pool({
 });
 
 const migrations = [
-  `CREATE TABLE IF NOT EXISTS users (
+  `CREATE TABLE IF NOT EXISTS comments (
     id TEXT PRIMARY KEY,
-    name TEXT NOT NULL UNIQUE,
-    email TEXT,
-    password_hash TEXT NOT NULL,
+    task_id TEXT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+    user_id TEXT REFERENCES users(id) ON DELETE SET NULL,
+    content TEXT NOT NULL,
     created_at TEXT NOT NULL
   )`,
-  `CREATE TABLE IF NOT EXISTS sessions (
-    token TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    expires_at TEXT NOT NULL,
+  `CREATE TABLE IF NOT EXISTS attachments (
+    id TEXT PRIMARY KEY,
+    task_id TEXT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+    file_name TEXT NOT NULL,
+    file_size INTEGER NOT NULL,
+    file_type TEXT NOT NULL,
+    file_data TEXT NOT NULL,
     created_at TEXT NOT NULL
   )`,
-  `ALTER TABLE tasks ADD COLUMN IF NOT EXISTS user_id TEXT REFERENCES users(id) ON DELETE CASCADE`,
-  `ALTER TABLE trackers ADD COLUMN IF NOT EXISTS user_id TEXT REFERENCES users(id) ON DELETE CASCADE`,
-  `ALTER TABLE notifications ADD COLUMN IF NOT EXISTS user_id TEXT REFERENCES users(id) ON DELETE CASCADE`,
+  `ALTER TABLE tasks ADD COLUMN IF NOT EXISTS repeat_rule TEXT`,
 ];
 
 async function migrate() {

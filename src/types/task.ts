@@ -9,6 +9,7 @@ export interface Task {
   priority: TaskPriority;
   dueDate: string | null;
   tags: string[];
+  repeatRule: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -20,6 +21,7 @@ export interface CreateTaskInput {
   priority?: TaskPriority;
   dueDate?: string;
   tags?: string[];
+  repeatRule?: string;
 }
 
 export interface UpdateTaskInput extends Partial<CreateTaskInput> {}
