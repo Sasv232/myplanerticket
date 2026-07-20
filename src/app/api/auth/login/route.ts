@@ -15,7 +15,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: result.error }, { status: 401 });
     }
 
-    return NextResponse.json(result);
+    const response = NextResponse.json(result);
+    if (result.token) {
+      response.cookies.set("session_token", result.token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 30 * 24 * 60 * 60,
+    });
+    }
+    return response;
   } catch (error) {
     return NextResponse.json({ error: String(error) }, { status: 500 });
   }
