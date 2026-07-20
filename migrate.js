@@ -1,4 +1,4 @@
-const postgres = require('postgres');
+const { neon } = require('@neondatabase/serverless');
 
 const url = process.env.DATABASE_URL;
 if (!url) {
@@ -6,7 +6,7 @@ if (!url) {
   process.exit(1);
 }
 
-const sql = postgres(url, { max: 1, connect_timeout: 15 });
+const sql = neon(url);
 
 const migrations = [
   `CREATE TABLE IF NOT EXISTS tasks (
@@ -58,14 +58,13 @@ const migrations = [
 async function migrate() {
   for (const stmt of migrations) {
     try {
-      await sql.unsafe(stmt);
+      await sql(stmt);
       const table = stmt.match(/CREATE TABLE IF NOT EXISTS (\w+)/)?.[1];
       console.log(`OK: ${table}`);
     } catch (e) {
       console.error('ERR:', e.message);
     }
   }
-  await sql.end();
   console.log('Done');
 }
 
