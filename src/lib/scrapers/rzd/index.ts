@@ -1,10 +1,11 @@
 import { BaseScraper, SearchParams, SearchResult, PriceAlert } from "../base";
 import { registerScraper } from "../registry";
+import { findStations, searchTrains, parseTrains } from "./api";
 
 class RzdScraper extends BaseScraper {
   readonly slug = "rzd";
   readonly name = "РЖД";
-  readonly description = "Парсинг билетов поездов РЖД";
+  readonly description = "Парсинг билетов поездов РЖД (ticket.rzd.ru)";
 
   async search(params: SearchParams): Promise<SearchResult[]> {
     const from = params.from as string;
@@ -12,14 +13,27 @@ class RzdScraper extends BaseScraper {
     const date = params.date as string;
 
     try {
-      const url = `https://www.rzd.ru/timetable/public/ru?layer_id=5582&dir=0&tfl=3&checkSeats=1&code0=${from}&code1=${to}&dt0=${date}&md=01`;
+      const fromStations = await findStations(from);
+      const toStations = await findStations(to);
 
-      const html = await this.fetchUrl(url);
+      if (fromStations.length === 0 || toStations.length === 0) {
+        console.warn(`Station not found: from="${from}" (${fromStations.length}), to="${to}" (${toStations.length})`);
+        return this.getMockData(from, to, date);
+      }
 
-      const trains = this.parseTrainsFromHtml(html);
-      return trains;
+      const fromCode = fromStations[0].code;
+      const toCode = toStations[0].code;
+
+      const rawTrains = await searchTrains(fromCode, toCode, date);
+
+      if (!rawTrains || rawTrains.length === 0) {
+        console.warn("No trains found, using mock data");
+        return this.getMockData(from, to, date);
+      }
+
+      return parseTrains(rawTrains, fromCode, toCode) as unknown as SearchResult[];
     } catch (error) {
-      console.error("RZD search error:", error);
+      console.error("RZD search error, falling back to mock:", error);
       return this.getMockData(from, to, date);
     }
   }
@@ -37,9 +51,9 @@ class RzdScraper extends BaseScraper {
     const results = await this.search({ from, to, date });
 
     for (const train of results) {
-      const cars = train.cars as Array<{ price: number; type: string }>;
+      const cars = (train.cars || []) as Array<{ price: number; type: string }>;
       for (const car of cars) {
-        if (maxPrice && car.price <= maxPrice) {
+        if (maxPrice && car.price > 0 && car.price <= maxPrice) {
           alerts.push({
             trackerId,
             message: `Билет на поезд ${train.trainNumber} (${car.type}) за ${car.price}₽`,
@@ -51,31 +65,6 @@ class RzdScraper extends BaseScraper {
     }
 
     return alerts;
-  }
-
-  private parseTrainsFromHtml(html: string): SearchResult[] {
-    const trains: SearchResult[] = [];
-
-    try {
-      const jsonMatch = html.match(/var\s+TRAINS\s*=\s*(\[[\s\S]*?\]);/);
-      if (jsonMatch) {
-        const data = JSON.parse(jsonMatch[1]);
-        return data.map((t: Record<string, unknown>) => ({
-          trainNumber: t.number || t.trainNumber,
-          trainName: t.trainName || "",
-          from: t.from || "",
-          to: t.to || "",
-          departureTime: t.departureTime || t.departure,
-          arrivalTime: t.arrivalTime || t.arrival,
-          duration: t.duration || "",
-          cars: t.cars || t.carTypes || [],
-        }));
-      }
-    } catch {
-      // Fall through to mock data
-    }
-
-    return trains;
   }
 
   private getMockData(from: string, to: string, date: string): SearchResult[] {

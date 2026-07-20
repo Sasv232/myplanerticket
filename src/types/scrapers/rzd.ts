@@ -5,14 +5,23 @@ export interface RzdSearchParams {
   passengers?: number;
 }
 
+export interface RzdStation {
+  name: string;
+  code: string;
+  stationType?: string;
+}
+
 export interface RzdTrain {
   trainNumber: string;
   trainName: string;
   from: string;
   to: string;
+  fromCode: string;
+  toCode: string;
   departureTime: string;
   arrivalTime: string;
   duration: string;
+  trainCategory?: string;
   cars: RzdCar[];
 }
 
@@ -22,9 +31,6 @@ export interface RzdCar {
   available: number;
   price: number;
   currency: string;
-  upper: number;
-  lower: number;
-  side: number;
 }
 
 export interface RzdSearchResult {

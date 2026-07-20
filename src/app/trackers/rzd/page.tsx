@@ -1,12 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { Header } from "@/components/layout/header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Train, Search, Clock, DollarSign, ArrowRight, Loader2, AlertCircle } from "lucide-react";
+import { Train, Search, Clock, ArrowRight, Loader2, AlertCircle, MapPin } from "lucide-react";
+
+interface Station {
+  name: string;
+  code: string;
+}
 
 interface RzdTrain {
   trainNumber: string;
@@ -25,6 +30,13 @@ interface RzdTrain {
   }>;
 }
 
+const carTypeLabel: Record<string, string> = {
+  seat: "Сидячий",
+  platskart: "Плацкарт",
+  compartment: "Купе",
+  sv: "СВ",
+};
+
 export default function RzdTrackerPage() {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
@@ -33,6 +45,53 @@ export default function RzdTrackerPage() {
   const [results, setResults] = useState<RzdTrain[]>([]);
   const [error, setError] = useState("");
   const [searched, setSearched] = useState(false);
+
+  const [fromSuggestions, setFromSuggestions] = useState<Station[]>([]);
+  const [toSuggestions, setToSuggestions] = useState<Station[]>([]);
+  const [showFromSuggestions, setShowFromSuggestions] = useState(false);
+  const [showToSuggestions, setShowToSuggestions] = useState(false);
+
+  const fromRef = useRef<HTMLDivElement>(null);
+  const toRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (fromRef.current && !fromRef.current.contains(e.target as Node)) {
+        setShowFromSuggestions(false);
+      }
+      if (toRef.current && !toRef.current.contains(e.target as Node)) {
+        setShowToSuggestions(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const searchStations = useCallback(async (query: string, setSuggestions: (s: Station[]) => void) => {
+    if (query.length < 2) {
+      setSuggestions([]);
+      return;
+    }
+    try {
+      const res = await fetch(`/api/scrapers/rzd/stations?q=${encodeURIComponent(query)}`);
+      const data = await res.json();
+      setSuggestions(Array.isArray(data) ? data : []);
+    } catch {
+      setSuggestions([]);
+    }
+  }, []);
+
+  const handleFromChange = (value: string) => {
+    setFrom(value);
+    searchStations(value, setFromSuggestions);
+    setShowFromSuggestions(true);
+  };
+
+  const handleToChange = (value: string) => {
+    setTo(value);
+    searchStations(value, setToSuggestions);
+    setShowToSuggestions(true);
+  };
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,7 +136,7 @@ export default function RzdTrackerPage() {
             to,
             date,
             trainNumber: train.trainNumber,
-            maxPrice: Math.min(...train.cars.map((c) => c.price)),
+            maxPrice: Math.min(...train.cars.filter((c) => c.price > 0).map((c) => c.price)),
           },
         }),
       });
@@ -87,56 +146,75 @@ export default function RzdTrackerPage() {
     }
   };
 
-  const carTypeLabel: Record<string, string> = {
-    seat: "Сидячий",
-    platskart: "Плацкарт",
-    compartment: "Купе",
-    sv: "СВ",
-  };
-
   return (
     <div>
-      <Header
-        title="РЖД — Билеты"
-        description="Поиск и отслеживание билетов на поезда"
-      />
+      <Header title="РЖД — Билеты" description="Поиск и отслеживание билетов на поезда" />
 
       <Card className="mb-6">
         <CardContent className="p-6">
           <form onSubmit={handleSearch} className="flex flex-wrap items-end gap-3">
-            <div className="flex-1 min-w-[150px]">
+            <div className="flex-1 min-w-[150px] relative" ref={fromRef}>
               <label className="mb-1.5 block text-sm font-medium">Откуда</label>
-              <Input
-                placeholder="Москва"
-                value={from}
-                onChange={(e) => setFrom(e.target.value)}
-                required
-              />
+              <div className="relative">
+                <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--secondary)]" />
+                <Input
+                  placeholder="Москва"
+                  value={from}
+                  onChange={(e) => handleFromChange(e.target.value)}
+                  onFocus={() => fromSuggestions.length > 0 && setShowFromSuggestions(true)}
+                  className="pl-10"
+                  required
+                />
+              </div>
+              {showFromSuggestions && fromSuggestions.length > 0 && (
+                <div className="absolute z-10 mt-1 w-full rounded-lg border border-[var(--border)] bg-[var(--card)] shadow-lg">
+                  {fromSuggestions.slice(0, 5).map((s) => (
+                    <button
+                      key={s.code}
+                      type="button"
+                      className="block w-full px-3 py-2 text-left text-sm hover:bg-[var(--surface)]"
+                      onClick={() => { setFrom(s.name); setShowFromSuggestions(false); }}
+                    >
+                      {s.name} <span className="text-[var(--secondary)]">({s.code})</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
-            <div className="flex-1 min-w-[150px]">
+            <div className="flex-1 min-w-[150px] relative" ref={toRef}>
               <label className="mb-1.5 block text-sm font-medium">Куда</label>
-              <Input
-                placeholder="Санкт-Петербург"
-                value={to}
-                onChange={(e) => setTo(e.target.value)}
-                required
-              />
+              <div className="relative">
+                <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--secondary)]" />
+                <Input
+                  placeholder="Санкт-Петербург"
+                  value={to}
+                  onChange={(e) => handleToChange(e.target.value)}
+                  onFocus={() => toSuggestions.length > 0 && setShowToSuggestions(true)}
+                  className="pl-10"
+                  required
+                />
+              </div>
+              {showToSuggestions && toSuggestions.length > 0 && (
+                <div className="absolute z-10 mt-1 w-full rounded-lg border border-[var(--border)] bg-[var(--card)] shadow-lg">
+                  {toSuggestions.slice(0, 5).map((s) => (
+                    <button
+                      key={s.code}
+                      type="button"
+                      className="block w-full px-3 py-2 text-left text-sm hover:bg-[var(--surface)]"
+                      onClick={() => { setTo(s.name); setShowToSuggestions(false); }}
+                    >
+                      {s.name} <span className="text-[var(--secondary)]">({s.code})</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             <div className="min-w-[160px]">
               <label className="mb-1.5 block text-sm font-medium">Дата</label>
-              <Input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                required
-              />
+              <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
             </div>
             <Button type="submit" disabled={loading}>
-              {loading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Search className="h-4 w-4" />
-              )}
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
               Найти
             </Button>
           </form>
@@ -146,17 +224,15 @@ export default function RzdTrackerPage() {
       {error && (
         <Card className="mb-6 border-[var(--error)]/30">
           <CardContent className="flex items-center gap-3 p-4 text-[var(--error)]">
-            <AlertCircle className="h-5 w-5" />
-            {error}
+            <AlertCircle className="h-5 w-5 shrink-0" />
+            <span>{error}</span>
           </CardContent>
         </Card>
       )}
 
       {results.length > 0 && (
         <div className="space-y-3">
-          <h2 className="text-lg font-semibold">
-            Найдено поездов: {results.length}
-          </h2>
+          <h2 className="text-lg font-semibold">Найдено поездов: {results.length}</h2>
           {results.map((train) => (
             <Card key={train.trainNumber} className="hover:border-[var(--accent)]/30">
               <CardContent className="p-5">
@@ -180,20 +256,26 @@ export default function RzdTrackerPage() {
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {train.cars.map((car) => (
+                    {train.cars.map((car, i) => (
                       <div
-                        key={car.type}
+                        key={`${car.type}-${i}`}
                         className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-center"
                       >
                         <p className="text-xs text-[var(--secondary)]">
                           {carTypeLabel[car.type] || car.className}
                         </p>
-                        <p className="text-sm font-bold text-[var(--accent)]">
-                          {car.price.toLocaleString("ru-RU")} ₽
-                        </p>
-                        <p className="text-[10px] text-[var(--secondary)]">
-                          {car.available} мест
-                        </p>
+                        {car.price > 0 ? (
+                          <p className="text-sm font-bold text-[var(--accent)]">
+                            {car.price.toLocaleString("ru-RU")} ₽
+                          </p>
+                        ) : (
+                          <p className="text-sm text-[var(--secondary)]">—</p>
+                        )}
+                        {car.available > 0 && (
+                          <p className="text-[10px] text-[var(--secondary)]">
+                            {car.available} мест
+                          </p>
+                        )}
                       </div>
                     ))}
                   </div>
