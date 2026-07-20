@@ -13,6 +13,32 @@ const PRESETS = {
   break: 5 * 60,
 };
 
+function playBeep() {
+  try {
+    const ctx = new AudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.value = 800;
+    osc.type = "sine";
+    gain.gain.value = 0.3;
+    osc.start();
+    osc.stop(ctx.currentTime + 0.3);
+    setTimeout(() => {
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+      osc2.frequency.value = 1000;
+      osc2.type = "sine";
+      gain2.gain.value = 0.3;
+      osc2.start();
+      osc2.stop(ctx.currentTime + 0.3);
+    }, 350);
+  } catch {}
+}
+
 export default function PomodoroPage() {
   const [mode, setMode] = useState<TimerMode>("work");
   const [timeLeft, setTimeLeft] = useState(PRESETS.work);
@@ -27,6 +53,7 @@ export default function PomodoroPage() {
     setTimeLeft((prev) => {
       if (prev <= 1) {
         setIsRunning(false);
+        playBeep();
         if (mode === "work") {
           setSessions((s) => s + 1);
           setMode("break");

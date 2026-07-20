@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/modal";
 import { TimeTracker } from "./time-tracker";
 import { MessageSquare, Paperclip, Send, Trash2, Download, Clock } from "lucide-react";
+import Markdown from "react-markdown";
 
 interface Comment {
   id: string;
@@ -112,7 +113,11 @@ export function TaskDetail({ task, open, onClose }: TaskDetailProps) {
         <ModalHeader>
           <ModalTitle>{task.title}</ModalTitle>
           <ModalDescription>
-            {task.description || "Без описания"}
+            {task.description ? (
+              <div className="mt-2 prose prose-xs dark:prose-invert max-w-none">
+                <Markdown>{task.description}</Markdown>
+              </div>
+            ) : "Без описания"}
             <div className="mt-2 flex gap-2">
               <Badge variant={task.priority === "urgent" ? "destructive" : task.priority === "high" ? "warning" : "default"}>
                 {task.priority}

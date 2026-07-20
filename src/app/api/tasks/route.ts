@@ -28,6 +28,7 @@ export async function POST(request: NextRequest) {
       dueDate: body.dueDate || null,
       tags: JSON.stringify(body.tags || []),
       repeatRule: body.repeatRule || null,
+      label: body.label || null,
       createdAt: now,
       updatedAt: now,
     };

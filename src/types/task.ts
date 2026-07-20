@@ -10,6 +10,7 @@ export interface Task {
   dueDate: string | null;
   tags: string[];
   repeatRule: string | null;
+  label: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -22,6 +23,7 @@ export interface CreateTaskInput {
   dueDate?: string;
   tags?: string[];
   repeatRule?: string;
+  label?: string;
 }
 
 export interface UpdateTaskInput extends Partial<CreateTaskInput> {}

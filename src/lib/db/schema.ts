@@ -31,6 +31,7 @@ export const tasks = pgTable("tasks", {
   dueDate: text("due_date"),
   tags: text("tags").default("[]"),
   repeatRule: text("repeat_rule"),
+  label: text("label"),
   createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
   updatedAt: text("updated_at").notNull().$defaultFn(() => new Date().toISOString()),
 });
@@ -77,5 +78,13 @@ export const notifications = pgTable("notifications", {
   title: text("title").notNull(),
   message: text("message").notNull(),
   sent: boolean("sent").notNull().default(false),
+  createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
+});
+
+export const templates = pgTable("templates", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  tasks: text("tasks").notNull().default("[]"),
   createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
 });

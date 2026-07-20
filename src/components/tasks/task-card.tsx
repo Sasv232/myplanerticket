@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import { Task, TaskStatus, TaskPriority } from "@/types/task";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, Calendar, GripVertical, Repeat, MessageSquare, Paperclip } from "lucide-react";
+import { Pencil, Trash2, Calendar, GripVertical, Repeat } from "lucide-react";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
+import Markdown from "react-markdown";
 
 interface TaskCardProps {
   task: Task;
@@ -15,6 +15,9 @@ interface TaskCardProps {
   onDelete: (id: string) => void;
   onStatusChange: (id: string, status: TaskStatus) => void;
   onClick?: (task: Task) => void;
+  selected?: boolean;
+  onSelect?: (id: string) => void;
+  showCheckbox?: boolean;
 }
 
 const priorityConfig: Record<TaskPriority, { label: string; variant: "destructive" | "warning" | "default" | "secondary" }> = {
@@ -40,20 +43,50 @@ const repeatLabels: Record<string, string> = {
   weekends: "По выходным",
 };
 
-export function TaskCard({ task, onEdit, onDelete, onStatusChange, onClick }: TaskCardProps) {
+const LABEL_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
+  work: { label: "Работа", color: "#3b82f6", bg: "#3b82f620" },
+  personal: { label: "Личное", color: "#22c55e", bg: "#22c55e20" },
+  urgent: { label: "Срочно", color: "#ef4444", bg: "#ef444420" },
+  study: { label: "Учёба", color: "#8b5cf6", bg: "#8b5cf620" },
+  health: { label: "Здоровье", color: "#f97316", bg: "#f9731620" },
+  finance: { label: "Финансы", color: "#06b6d4", bg: "#06b6d420" },
+  home: { label: "Дом", color: "#ec4899", bg: "#ec489920" },
+};
+
+export function TaskCard({ task, onEdit, onDelete, onStatusChange, onClick, selected, onSelect, showCheckbox }: TaskCardProps) {
   const priority = priorityConfig[task.priority];
+  const labelCfg = task.label ? LABEL_CONFIG[task.label] : null;
 
   return (
     <Card
-      className="group p-4 hover:border-[var(--accent)]/30"
+      className={`group p-4 hover:border-[var(--accent)]/30 ${labelCfg ? `border-l-4` : ""}`}
+      style={labelCfg ? { borderLeftColor: labelCfg.color } : undefined}
       onClick={() => onClick?.(task)}
     >
       <div className="flex items-start gap-3">
-        <GripVertical className="mt-1 h-4 w-4 text-[var(--muted)] opacity-0 group-hover:opacity-100 transition-opacity cursor-grab" />
+        {showCheckbox && (
+          <input
+            type="checkbox"
+            checked={selected}
+            onChange={(e) => { e.stopPropagation(); onSelect?.(task.id); }}
+            className="mt-1 h-4 w-4 rounded border-[var(--border)] accent-[var(--accent)]"
+          />
+        )}
+        {!showCheckbox && (
+          <GripVertical className="mt-1 h-4 w-4 text-[var(--muted)] opacity-0 group-hover:opacity-100 transition-opacity cursor-grab" />
+        )}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
             <h3 className="font-medium truncate">{task.title}</h3>
             <Badge variant={priority.variant}>{priority.label}</Badge>
+            {labelCfg && (
+              <span
+                className="rounded-full px-2 py-0.5 text-[10px] font-medium"
+                style={{ color: labelCfg.color, backgroundColor: labelCfg.bg }}
+              >
+                {labelCfg.label}
+              </span>
+            )}
             {task.repeatRule && (
               <Badge variant="secondary" className="gap-1">
                 <Repeat className="h-3 w-3" />
@@ -62,9 +95,9 @@ export function TaskCard({ task, onEdit, onDelete, onStatusChange, onClick }: Ta
             )}
           </div>
           {task.description && (
-            <p className="text-sm text-[var(--secondary)] line-clamp-2 mb-2">
-              {task.description}
-            </p>
+            <div className="prose prose-xs dark:prose-invert max-w-none text-sm text-[var(--secondary)] line-clamp-3 mb-2">
+              <Markdown>{task.description}</Markdown>
+            </div>
           )}
           <div className="flex items-center gap-3 text-xs text-[var(--secondary)]">
             {task.dueDate && (
@@ -76,12 +109,7 @@ export function TaskCard({ task, onEdit, onDelete, onStatusChange, onClick }: Ta
             {task.tags.length > 0 && (
               <div className="flex gap-1">
                 {task.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="rounded-md bg-[var(--surface)] px-1.5 py-0.5"
-                  >
-                    {tag}
-                  </span>
+                  <span key={tag} className="rounded-md bg-[var(--surface)] px-1.5 py-0.5">{tag}</span>
                 ))}
               </div>
             )}
