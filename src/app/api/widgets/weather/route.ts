@@ -1,9 +1,20 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const url = new URL("https://wttr.in/");
-    url.searchParams.set("format", "%t|%C|%l");
+    const lat = request.nextUrl.searchParams.get("lat");
+    const lon = request.nextUrl.searchParams.get("lon");
+
+    let url: URL;
+    if (lat && lon) {
+      url = new URL("https://wttr.in/");
+      url.searchParams.set("format", "%t|%C|%l");
+      url.searchParams.set("lat", lat);
+      url.searchParams.set("lon", lon);
+    } else {
+      url = new URL("https://wttr.in/");
+      url.searchParams.set("format", "%t|%C|%l");
+    }
 
     const res = await fetch(url.toString(), {
       headers: { "User-Agent": "curl/7.64.1" },

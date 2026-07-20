@@ -57,10 +57,29 @@ export default function DashboardPage() {
   useEffect(() => {
     fetchTasks();
 
-    fetch("/api/widgets/weather")
-      .then((r) => r.json())
-      .then((d) => { if (d.temp) setWeather(d); })
-      .catch(() => {});
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const { latitude, longitude } = pos.coords;
+          fetch(`/api/widgets/weather?lat=${latitude}&lon=${longitude}`)
+            .then((r) => r.json())
+            .then((d) => { if (d.temp) setWeather(d); })
+            .catch(() => {});
+        },
+        () => {
+          fetch("/api/widgets/weather")
+            .then((r) => r.json())
+            .then((d) => { if (d.temp) setWeather(d); })
+            .catch(() => {});
+        },
+        { timeout: 5000 }
+      );
+    } else {
+      fetch("/api/widgets/weather")
+        .then((r) => r.json())
+        .then((d) => { if (d.temp) setWeather(d); })
+        .catch(() => {});
+    }
 
     fetch("/api/widgets/currency")
       .then((r) => r.json())
