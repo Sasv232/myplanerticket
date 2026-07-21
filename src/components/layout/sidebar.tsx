@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { navigation } from "@/config/navigation";
 import { useState } from "react";
-import { Menu, X, Train, Sun, Moon, LogOut } from "lucide-react";
+import { Menu, X, Train, Sun, Moon, LogOut, Shield } from "lucide-react";
 import { useTheme } from "./theme-provider";
 import { useAuth } from "@/lib/auth-context";
 
@@ -91,6 +91,30 @@ export function Sidebar() {
               </ul>
             </div>
           ))}
+          {user?.role === "admin" && (
+            <div className="mb-6">
+              <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-[var(--secondary)]">
+                Управление
+              </p>
+              <ul className="space-y-0.5">
+                <li>
+                  <Link
+                    href="/admin"
+                    onClick={() => setMobileOpen(false)}
+                    className={cn(
+                      "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150",
+                      pathname === "/admin"
+                        ? "bg-[var(--accent)]/10 text-[var(--accent)]"
+                        : "text-[var(--secondary)] hover:bg-[var(--surface)] hover:text-[var(--foreground)]"
+                    )}
+                  >
+                    <Shield className="h-4 w-4 shrink-0" />
+                    Админ-панель
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          )}
         </nav>
 
         <div className="border-t border-[var(--border)] p-4 space-y-2">

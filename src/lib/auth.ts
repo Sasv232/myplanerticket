@@ -64,7 +64,7 @@ export async function register(name: string, password: string, email?: string) {
 
   return {
     token,
-    user: { id, name, email: email || null },
+    user: { id, name, email: email || null, role: "user" },
   };
 }
 
@@ -92,7 +92,7 @@ export async function login(name: string, password: string) {
 
   return {
     token,
-    user: { id: user.id, name: user.name, email: user.email },
+    user: { id: user.id, name: user.name, email: user.email, role: user.role },
   };
 }
 
@@ -108,7 +108,7 @@ export async function getUserFromToken(token: string) {
   if (sessionRows.length === 0) return null;
 
   const userRows = await db
-    .select({ id: users.id, name: users.name, email: users.email })
+    .select({ id: users.id, name: users.name, email: users.email, role: users.role })
     .from(users)
     .where(eq(users.id, sessionRows[0].userId))
     .limit(1);
