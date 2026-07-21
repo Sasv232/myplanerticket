@@ -11,10 +11,17 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const user = await getUserFromToken(token);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const [member] = await db.select().from(projectMembers)
-    .where(and(eq(projectMembers.projectId, id), eq(projectMembers.userId, user.id)));
-  if (!member || member.role === "member") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const [project] = await db.select().from(projects).where(eq(projects.id, id));
+  if (!project) return NextResponse.json({ error: "Проект не найден" }, { status: 404 });
+
+  const isOwner = project.userId === user.id;
+
+  if (!isOwner) {
+    const [member] = await db.select().from(projectMembers)
+      .where(and(eq(projectMembers.projectId, id), eq(projectMembers.userId, user.id)));
+    if (!member || member.role === "member") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
   }
 
   const body = await request.json();
@@ -32,7 +39,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   await db.insert(projectActivity).values({
     id: crypto.randomUUID(), projectId: id, userId: user.id,
-    action: "invite_created", details: `Invite code: ${code}`,
+    action: "invite_created", details: `Приглашение создано: ${code}`,
     createdAt: now,
   });
 
@@ -46,9 +53,14 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const user = await getUserFromToken(token);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const [member] = await db.select().from(projectMembers)
-    .where(and(eq(projectMembers.projectId, id), eq(projectMembers.userId, user.id)));
-  if (!member) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const [project] = await db.select().from(projects).where(eq(projects.id, id));
+  const isOwner = project?.userId === user.id;
+
+  if (!isOwner) {
+    const [member] = await db.select().from(projectMembers)
+      .where(and(eq(projectMembers.projectId, id), eq(projectMembers.userId, user.id)));
+    if (!member) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   const invites = await db.select().from(projectInvites)
     .where(eq(projectInvites.projectId, id));

@@ -1,8 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUserFromToken } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { projectMembers, users, projects, projectActivity } from "@/lib/db/schema";
+import { projectMembers, users, projects } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
+
+async function isProjectMember(projectId: string, userId: string) {
+  const [project] = await db.select().from(projects).where(eq(projects.id, projectId));
+  if (project?.userId === userId) return true;
+  const [member] = await db.select().from(projectMembers)
+    .where(and(eq(projectMembers.projectId, projectId), eq(projectMembers.userId, userId)));
+  return !!member;
+}
+
+async function isProjectAdmin(projectId: string, userId: string) {
+  const [project] = await db.select().from(projects).where(eq(projects.id, projectId));
+  if (project?.userId === userId) return true;
+  const [member] = await db.select().from(projectMembers)
+    .where(and(eq(projectMembers.projectId, projectId), eq(projectMembers.userId, userId)));
+  return !!member && member.role !== "member";
+}
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -11,9 +27,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const user = await getUserFromToken(token);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const [member] = await db.select().from(projectMembers)
-    .where(and(eq(projectMembers.projectId, id), eq(projectMembers.userId, user.id)));
-  if (!member) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!(await isProjectMember(id, user.id))) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   const members = await db.select({
     id: projectMembers.id,
@@ -35,9 +51,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
   const user = await getUserFromToken(token);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const [requester] = await db.select().from(projectMembers)
-    .where(and(eq(projectMembers.projectId, id), eq(projectMembers.userId, user.id)));
-  if (!requester || requester.role === "member") {
+  if (!(await isProjectAdmin(id, user.id))) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

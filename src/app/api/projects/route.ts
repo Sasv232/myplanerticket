@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { projects } from "@/lib/db/schema";
+import { projects, projectMembers } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { v4 as uuid } from "uuid";
 import { getUserFromToken } from "@/lib/auth";
@@ -46,6 +46,15 @@ export async function POST(request: NextRequest) {
     };
 
     await db.insert(projects).values(newProject);
+
+    await db.insert(projectMembers).values({
+      id: crypto.randomUUID(),
+      projectId: id,
+      userId: user.id,
+      role: "owner",
+      createdAt: now,
+    });
+
     return NextResponse.json(newProject, { status: 201 });
   } catch (error) {
     return NextResponse.json({ error: String(error) }, { status: 500 });
