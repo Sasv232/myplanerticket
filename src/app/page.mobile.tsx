@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Task } from "@/types/task";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import {
@@ -10,85 +9,44 @@ import {
   Clock,
   ListTodo,
   AlertTriangle,
-  ArrowRight,
   Cloud,
   DollarSign,
   Quote,
   Timer,
+  Sun,
+  Moon,
 } from "lucide-react";
+import { useTheme } from "@/components/layout/theme-provider";
+import { useAuth } from "@/lib/auth-context";
 
-interface Weather {
-  temp: string;
-  desc: string;
-  city: string;
-}
-
-interface Currency {
-  usd: number;
-  eur: number;
-}
-
-interface QuoteData {
-  text: string;
-  author: string;
-}
+interface Weather { temp: string; desc: string; city: string; }
+interface Currency { usd: number; eur: number; }
+interface QuoteData { text: string; author: string; }
 
 export function DashboardPageMobile() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [weather, setWeather] = useState<Weather | null>(null);
   const [currency, setCurrency] = useState<Currency | null>(null);
   const [quote, setQuote] = useState<QuoteData | null>(null);
+  const { theme, toggle } = useTheme();
+  const { user } = useAuth();
 
   const fetchTasks = useCallback(async () => {
     try {
       const res = await fetch("/api/tasks");
       const data = await res.json();
-      setTasks(
-        data.map((t: Task & { tags: string; repeat_rule: string | null }) => ({
-          ...t,
-          tags: typeof t.tags === "string" ? JSON.parse(t.tags) : t.tags,
-          repeatRule: t.repeat_rule || t.repeatRule || null,
-        }))
-      );
+      setTasks(data.map((t: Task & { tags: string }) => ({
+        ...t,
+        tags: typeof t.tags === "string" ? JSON.parse(t.tags) : t.tags,
+      })));
     } catch {}
   }, []);
 
   useEffect(() => {
     fetchTasks();
-
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const { latitude, longitude } = pos.coords;
-          fetch(`/api/widgets/weather?lat=${latitude}&lon=${longitude}`)
-            .then((r) => r.json())
-            .then((d) => { if (d.temp) setWeather(d); })
-            .catch(() => {});
-        },
-        () => {
-          fetch("/api/widgets/weather")
-            .then((r) => r.json())
-            .then((d) => { if (d.temp) setWeather(d); })
-            .catch(() => {});
-        },
-        { timeout: 5000 }
-      );
-    } else {
-      fetch("/api/widgets/weather")
-        .then((r) => r.json())
-        .then((d) => { if (d.temp) setWeather(d); })
-        .catch(() => {});
-    }
-
-    fetch("/api/widgets/currency")
-      .then((r) => r.json())
-      .then((d) => { if (d.usd) setCurrency(d); })
-      .catch(() => {});
-
-    fetch("/api/widgets/quote")
-      .then((r) => r.json())
-      .then((d) => { if (d.text) setQuote(d); })
-      .catch(() => {});
+    fetch("/api/widgets/weather").then((r) => r.json()).then((d) => { if (d.temp) setWeather(d); }).catch(() => {});
+    fetch("/api/widgets/currency").then((r) => r.json()).then((d) => { if (d.usd) setCurrency(d); }).catch(() => {});
+    fetch("/api/widgets/quote").then((r) => r.json()).then((d) => { if (d.text) setQuote(d); }).catch(() => {});
   }, [fetchTasks]);
 
   const stats = {
@@ -98,237 +56,130 @@ export function DashboardPageMobile() {
     urgent: tasks.filter((t) => t.priority === "urgent" && t.status !== "done").length,
   };
 
-  const upcomingTasks = tasks
+  const upcoming = tasks
     .filter((t) => t.dueDate && t.status !== "done")
     .sort((a, b) => new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime())
     .slice(0, 5);
 
+  const now = new Date();
+  const hour = now.getHours();
+  const greeting = hour < 12 ? "Доброе утро" : hour < 18 ? "Добрый день" : "Добрый вечер";
+  const dateStr = now.toLocaleDateString("ru-RU", { day: "numeric", month: "long", weekday: "long" });
+
   return (
-    <div className="space-y-5">
-      <div className="mobile-page-header">
-        <h1 className="text-2xl font-bold tracking-tight">Дашборд</h1>
-        <p className="text-sm text-[var(--secondary)]">Обзор задач</p>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
-        <Link href="/tasks">
-          <Card className="mobile-stat-card">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/10">
-                  <ListTodo className="h-5 w-5 text-[var(--accent)]" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{stats.todo}</p>
-                  <p className="text-xs text-[var(--secondary)]">К выполнению</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
-        <Link href="/tasks">
-          <Card className="mobile-stat-card">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--warning)]/10">
-                  <Clock className="h-5 w-5 text-[var(--warning)]" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{stats.inProgress}</p>
-                  <p className="text-xs text-[var(--secondary)]">В работе</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
-        <Link href="/tasks">
-          <Card className="mobile-stat-card">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--success)]/10">
-                  <CheckCircle className="h-5 w-5 text-[var(--success)]" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{stats.done}</p>
-                  <p className="text-xs text-[var(--secondary)]">Выполнено</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
-        <Link href="/tasks">
-          <Card className="mobile-stat-card">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--error)]/10">
-                  <AlertTriangle className="h-5 w-5 text-[var(--error)]" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{stats.urgent}</p>
-                  <p className="text-xs text-[var(--secondary)]">Срочных</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
-        <Card className="mobile-widget-card">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/10">
-                <Cloud className="h-5 w-5 text-[var(--accent)]" />
-              </div>
-              <div>
-                {weather ? (
-                  <>
-                    <p className="text-lg font-bold">{weather.temp}</p>
-                    <p className="text-xs text-[var(--secondary)]">{weather.desc}</p>
-                  </>
-                ) : (
-                  <p className="text-sm text-[var(--secondary)]">Загрузка...</p>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="mobile-widget-card">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--success)]/10">
-                <DollarSign className="h-5 w-5 text-[var(--success)]" />
-              </div>
-              <div>
-                {currency ? (
-                  <>
-                    <p className="text-sm font-bold">USD {currency.usd.toFixed(1)} ₽</p>
-                    <p className="text-sm font-bold">EUR {currency.eur.toFixed(1)} ₽</p>
-                  </>
-                ) : (
-                  <p className="text-sm text-[var(--secondary)]">Загрузка...</p>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {quote && (
-        <Card className="mobile-widget-card">
-          <CardContent className="p-4">
-            <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--warning)]/10 shrink-0">
-                <Quote className="h-5 w-5 text-[var(--warning)]" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm italic line-clamp-2">"{quote.text}"</p>
-                <p className="mt-1 text-xs text-[var(--secondary)]">— {quote.author}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {upcomingTasks.length > 0 && (
+    <div className="mobile-main">
+      {/* Header */}
+      <div className="sticky top-0 z-30 bg-[var(--background)] border-b border-[var(--border)] px-4 py-3 flex items-center justify-between">
         <div>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-base font-semibold">Ближайшие дедлайны</h2>
-            <Link href="/tasks" className="text-xs text-[var(--accent)]">
-              Все →
-            </Link>
-          </div>
-          <div className="space-y-2">
-            {upcomingTasks.map((task) => (
-              <Card key={task.id} className="mobile-task-card">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium truncate">{task.title}</p>
-                      <p className="text-xs text-[var(--secondary)]">
-                        {new Date(task.dueDate!).toLocaleDateString("ru-RU", {
-                          day: "numeric",
-                          month: "short",
-                        })}
-                      </p>
-                    </div>
-                    <Badge
-                      variant={
-                        task.priority === "urgent"
-                          ? "destructive"
-                          : task.priority === "high"
-                          ? "warning"
-                          : "default"
-                      }
-                    >
-                      {task.priority}
-                    </Badge>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <p className="text-lg font-bold">{greeting}, {user?.name?.split(" ")[0] || ""}!</p>
+          <p className="text-[11px] text-[var(--secondary)] capitalize">{dateStr}</p>
         </div>
-      )}
+        <button onClick={toggle} className="h-9 w-9 rounded-xl bg-[var(--surface)] flex items-center justify-center">
+          {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+        </button>
+      </div>
 
-      <div>
-        <h2 className="text-base font-semibold mb-3">Быстрый доступ</h2>
-        <div className="space-y-2">
-          <Link href="/pomodoro">
-            <Card className="mobile-quick-card group active:scale-[0.98] hover:shadow-lg hover:shadow-[var(--accent)]/10 transition-all duration-300">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/10 group-hover:bg-[var(--accent)]/20 transition-colors duration-300">
-                      <Timer className="h-5 w-5 text-[var(--accent)] group-hover:rotate-12 transition-transform duration-300" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium group-hover:text-[var(--accent)] transition-colors duration-300">Таймер Pomodoro</p>
-                      <p className="text-xs text-[var(--secondary)]">Фокусировка</p>
-                    </div>
-                  </div>
-                  <ArrowRight className="h-4 w-4 text-[var(--secondary)] group-hover:translate-x-1 transition-transform duration-300" />
+      <div className="mobile-content space-y-4">
+        {/* Stats row */}
+        <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 snap-x">
+          {[
+            { label: "Задачи", value: stats.todo, icon: <ListTodo className="h-4 w-4" />, color: "#2563eb", bg: "#2563eb15" },
+            { label: "В работе", value: stats.inProgress, icon: <Clock className="h-4 w-4" />, color: "#d97706", bg: "#d9770615" },
+            { label: "Готово", value: stats.done, icon: <CheckCircle className="h-4 w-4" />, color: "#16a34a", bg: "#16a34a15" },
+            { label: "Срочно", value: stats.urgent, icon: <AlertTriangle className="h-4 w-4" />, color: "#dc2626", bg: "#dc262615" },
+          ].map((s) => (
+            <div key={s.label} className="mobile-stat-card p-3 min-w-[100px] snap-start flex-shrink-0">
+              <div className="flex items-center gap-2 mb-1.5">
+                <div className="h-7 w-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: s.bg }}>
+                  <span style={{ color: s.color }}>{s.icon}</span>
                 </div>
-              </CardContent>
-            </Card>
-          </Link>
-          <Link href="/board">
-            <Card className="mobile-quick-card group active:scale-[0.98] hover:shadow-lg hover:shadow-[var(--success)]/10 transition-all duration-300">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--success)]/10 group-hover:bg-[var(--success)]/20 transition-colors duration-300">
-                      <ListTodo className="h-5 w-5 text-[var(--success)] group-hover:-rotate-6 transition-transform duration-300" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium group-hover:text-[var(--success)] transition-colors duration-300">Доска задач</p>
-                      <p className="text-xs text-[var(--secondary)]">Kanban вид</p>
-                    </div>
-                  </div>
-                  <ArrowRight className="h-4 w-4 text-[var(--secondary)] group-hover:translate-x-1 transition-transform duration-300" />
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
-          <Link href="/calendar">
-            <Card className="mobile-quick-card group active:scale-[0.98] hover:shadow-lg hover:shadow-[var(--warning)]/10 transition-all duration-300">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--warning)]/10 group-hover:bg-[var(--warning)]/20 transition-colors duration-300">
-                      <Clock className="h-5 w-5 text-[var(--warning)] group-hover:rotate-[360deg] transition-transform duration-700" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium group-hover:text-[var(--warning)] transition-colors duration-300">Календарь</p>
-                      <p className="text-xs text-[var(--secondary)]">Задачи по датам</p>
-                    </div>
-                  </div>
-                  <ArrowRight className="h-4 w-4 text-[var(--secondary)] group-hover:translate-x-1 transition-transform duration-300" />
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
+              </div>
+              <p className="text-xl font-bold">{s.value}</p>
+              <p className="text-[10px] text-[var(--secondary)]">{s.label}</p>
+            </div>
+          ))}
         </div>
+
+        {/* Quick Actions */}
+        <div className="grid grid-cols-3 gap-2.5">
+          {[
+            { href: "/pomodoro", icon: <Timer className="h-6 w-6" />, label: "Pomodoro", sub: "Фокус", color: "#2563eb" },
+            { href: "/board", icon: <ListTodo className="h-6 w-6" />, label: "Доска", sub: "Kanban", color: "#16a34a" },
+            { href: "/calendar", icon: <Clock className="h-6 w-6" />, label: "Календарь", sub: "Даты", color: "#d97706" },
+          ].map((a) => (
+            <Link key={a.href} href={a.href} className="mobile-quick-card p-4 flex flex-col items-center gap-2 text-center">
+              <div className="h-12 w-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: a.color + "12" }}>
+                <span style={{ color: a.color }}>{a.icon}</span>
+              </div>
+              <div>
+                <p className="text-[13px] font-semibold">{a.label}</p>
+                <p className="text-[10px] text-[var(--secondary)]">{a.sub}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+
+        {/* Widgets */}
+        <div className="flex gap-2.5 overflow-x-auto pb-1 -mx-4 px-4 snap-x">
+          {weather && (
+            <div className="mobile-widget-card p-3.5 min-w-[130px] snap-start flex-shrink-0">
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <Cloud className="h-3.5 w-3.5 text-blue-400" />
+                <span className="text-[10px] text-[var(--secondary)]">Погода</span>
+              </div>
+              <p className="text-lg font-bold">{weather.temp}</p>
+              <p className="text-[10px] text-[var(--secondary)]">{weather.desc}</p>
+            </div>
+          )}
+          {currency && (
+            <div className="mobile-widget-card p-3.5 min-w-[130px] snap-start flex-shrink-0">
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <DollarSign className="h-3.5 w-3.5 text-green-400" />
+                <span className="text-[10px] text-[var(--secondary)]">Валюта</span>
+              </div>
+              <p className="text-sm font-bold">USD {currency.usd.toFixed(1)} ₽</p>
+              <p className="text-sm font-bold">EUR {currency.eur.toFixed(1)} ₽</p>
+            </div>
+          )}
+          {quote && (
+            <div className="mobile-widget-card p-3.5 min-w-[160px] max-w-[200px] snap-start flex-shrink-0">
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <Quote className="h-3.5 w-3.5 text-purple-400" />
+                <span className="text-[10px] text-[var(--secondary)]">Цитата</span>
+              </div>
+              <p className="text-[11px] italic line-clamp-3">&ldquo;{quote.text}&rdquo;</p>
+              <p className="text-[9px] text-[var(--muted)] mt-1">— {quote.author}</p>
+            </div>
+          )}
+        </div>
+
+        {/* Upcoming */}
+        {upcoming.length > 0 && (
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-semibold">Дедлайны</p>
+              <Link href="/tasks" className="text-[11px] font-semibold text-[var(--accent)]">Все →</Link>
+            </div>
+            <div className="space-y-2">
+              {upcoming.map((task) => (
+                <div key={task.id} className="mobile-task-card p-3 flex items-center gap-3">
+                  <div className="w-1 h-8 rounded-full flex-shrink-0" style={{
+                    backgroundColor: task.priority === "urgent" ? "#dc2626" : task.priority === "high" ? "#ea580c" : task.priority === "medium" ? "#2563eb" : "#16a34a"
+                  }} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px] font-semibold truncate">{task.emoji && `${task.emoji} `}{task.title}</p>
+                    <p className="text-[10px] text-[var(--secondary)]">
+                      {new Date(task.dueDate!).toLocaleDateString("ru-RU", { day: "numeric", month: "short" })}
+                    </p>
+                  </div>
+                  <Badge variant={task.priority as "urgent" | "high" | "medium" | "low"} className="text-[9px] flex-shrink-0">
+                    {task.priority === "urgent" ? "Срочно" : task.priority === "high" ? "Высокий" : task.priority === "medium" ? "Средний" : "Низкий"}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

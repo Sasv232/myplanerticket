@@ -1,322 +1,232 @@
 ﻿"use client";
 
-import { useState, useEffect, useCallback, useMemo, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
-import { Task, CreateTaskInput, TaskStatus, TaskPriority } from "@/types/task";
-import { TaskCard } from "@/components/tasks/task-card";
+import { useState, useEffect, useCallback } from "react";
+import { Task, TaskStatus, TaskPriority } from "@/types/task";
+import { Badge } from "@/components/ui/badge";
 import { TaskForm } from "@/components/tasks/task-form";
 import { TaskDetail } from "@/components/tasks/task-detail";
-import { TaskFilters } from "@/components/tasks/task-filters";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Plus, CheckCircle, Clock, ListTodo, AlertTriangle, Trash2, ArrowUpDown, BookTemplate } from "lucide-react";
-import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import {
+  Plus,
+  Search,
+  Filter,
+  Check,
+  Calendar,
+  Repeat,
+  X,
+} from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 
-type SortBy = "date" | "priority" | "name" | "created";
+const PRIORITY_BADGE: Record<string, { label: string; variant: "urgent" | "high" | "medium" | "low" }> = {
+  urgent: { label: "Срочно", variant: "urgent" },
+  high: { label: "Высокий", variant: "high" },
+  medium: { label: "Средний", variant: "medium" },
+  low: { label: "Низкий", variant: "low" },
+};
 
-const PRIORITY_ORDER: Record<TaskPriority, number> = { urgent: 0, high: 1, medium: 2, low: 3 };
+const FILTERS: { key: string; label: string }[] = [
+  { key: "all", label: "Все" },
+  { key: "todo", label: "К выполнению" },
+  { key: "in_progress", label: "В работе" },
+  { key: "done", label: "Выполнено" },
+];
 
 export function TasksPageMobile() {
-  return (
-    <Suspense fallback={<div className="flex h-64 items-center justify-center"><div className="text-[var(--secondary)]">Загрузка...</div></div>}>
-      <TasksContent />
-    </Suspense>
-  );
-}
-
-function TasksContent() {
-  const searchParams = useSearchParams();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
-  const [formOpen, setFormOpen] = useState(false);
-  const [editingTask, setEditingTask] = useState<Task | undefined>();
-  const [detailTask, setDetailTask] = useState<Task | null>(null);
+  const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<TaskStatus | "all">("all");
-  const [priorityFilter, setPriorityFilter] = useState<TaskPriority | "all">("all");
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [showBulkBar, setShowBulkBar] = useState(false);
-  const [templates, setTemplates] = useState<any[]>([]);
-  const [templateName, setTemplateName] = useState("");
-  const [showTemplates, setShowTemplates] = useState(false);
-  const [sortBy, setSortBy] = useState<SortBy>("created");
-
-  useEffect(() => {
-    if (searchParams.get("new") === "true") {
-      setEditingTask(undefined);
-      setFormOpen(true);
-      window.history.replaceState({}, "", "/tasks");
-    }
-  }, [searchParams]);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editTask, setEditTask] = useState<Task | undefined>();
+  const [detailTask, setDetailTask] = useState<Task | null>(null);
 
   const fetchTasks = useCallback(async () => {
     try {
       const res = await fetch("/api/tasks");
       const data = await res.json();
-      setTasks(
-        data.map((t: Task & { tags: string; repeat_rule: string | null; label: string | null }) => ({
-          ...t,
-          tags: typeof t.tags === "string" ? JSON.parse(t.tags) : t.tags,
-          repeatRule: t.repeat_rule || t.repeatRule || null,
-          label: t.label || null,
-        }))
-      );
+      setTasks(data.map((t: Task & { tags: string }) => ({
+        ...t,
+        tags: typeof t.tags === "string" ? JSON.parse(t.tags) : t.tags,
+      })));
     } catch {} finally { setLoading(false); }
   }, []);
 
-  const fetchTemplates = useCallback(async () => {
-    try {
-      const res = await fetch("/api/templates");
-      setTemplates(await res.json());
-    } catch {}
-  }, []);
+  useEffect(() => { fetchTasks(); }, [fetchTasks]);
 
-  useEffect(() => { fetchTasks(); fetchTemplates(); }, [fetchTasks, fetchTemplates]);
-
-  const shortcuts = useMemo(() => ({
-    "ctrl+n": () => { setEditingTask(undefined); setFormOpen(true); },
-    "ctrl+k": () => { document.querySelector<HTMLInputElement>("[data-search]")?.focus(); },
-    "escape": () => { setFormOpen(false); setDetailTask(null); setShowBulkBar(false); setSelectedIds(new Set()); },
-  }), []);
-
-  useKeyboardShortcuts(shortcuts);
-
-  const sortedTasks = useMemo(() => {
-    return [...tasks].sort((a, b) => {
-      if (sortBy === "priority") return PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority];
-      if (sortBy === "name") return a.title.localeCompare(b.title, "ru");
-      if (sortBy === "date") {
-        if (!a.dueDate && !b.dueDate) return 0;
-        if (!a.dueDate) return 1;
-        if (!b.dueDate) return -1;
-        return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
-      }
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    });
-  }, [tasks, sortBy]);
-
-  const filteredTasks = sortedTasks.filter((task) => {
-    const matchSearch = !search || task.title.toLowerCase().includes(search.toLowerCase()) || task.description?.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = statusFilter === "all" || task.status === statusFilter;
-    const matchPriority = priorityFilter === "all" || task.priority === priorityFilter;
-    return matchSearch && matchStatus && matchPriority;
+  const filtered = tasks.filter((t) => {
+    if (filter !== "all" && t.status !== filter) return false;
+    if (search && !t.title.toLowerCase().includes(search.toLowerCase())) return false;
+    return true;
   });
 
-  const handleCreate = async (data: CreateTaskInput) => {
-    await fetch("/api/tasks", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
-    fetchTasks();
-  };
+  const toggleStatus = useCallback(async (id: string, status: TaskStatus) => {
+    setTasks((prev) => prev.map((t) => t.id === id ? { ...t, status } : t));
+    try {
+      await fetch(`/api/tasks/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+    } catch { fetchTasks(); }
+  }, [fetchTasks]);
 
-  const handleUpdate = async (data: CreateTaskInput) => {
-    if (!editingTask) return;
-    await fetch(`/api/tasks/${editingTask.id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
-    fetchTasks();
-  };
-
-  const handleDelete = async (id: string) => {
-    await fetch(`/api/tasks/${id}`, { method: "DELETE" });
-    fetchTasks();
-  };
-
-  const handleStatusChange = async (id: string, status: TaskStatus) => {
-    await fetch(`/api/tasks/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) });
-    fetchTasks();
-  };
-
-  const toggleSelect = (id: string) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
-      setShowBulkBar(next.size > 0);
-      return next;
-    });
-  };
-
-  const selectAll = () => {
-    if (selectedIds.size === filteredTasks.length) {
-      setSelectedIds(new Set());
-      setShowBulkBar(false);
-    } else {
-      setSelectedIds(new Set(filteredTasks.map((t) => t.id)));
-      setShowBulkBar(true);
-    }
-  };
-
-  const bulkAction = async (action: string, value?: string) => {
-    const ids = Array.from(selectedIds);
-    await fetch("/api/tasks/bulk", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ids, action, value }),
-    });
-    setSelectedIds(new Set());
-    setShowBulkBar(false);
-    fetchTasks();
-  };
-
-  const saveAsTemplate = async () => {
-    if (!templateName.trim()) return;
-    const selectedTasks = tasks.filter((t) => selectedIds.has(t.id));
-    await fetch("/api/templates", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: templateName.trim(),
-        tasks: selectedTasks.map((t) => ({ title: t.title, description: t.description, priority: t.priority, label: t.label })),
-      }),
-    });
-    setTemplateName("");
-    fetchTemplates();
-  };
-
-  const applyTemplate = async (template: any) => {
-    const templateTasks = JSON.parse(template.tasks);
-    for (const t of templateTasks) {
-      await fetch("/api/tasks", {
+  const handleCreate = useCallback(async (data: { title: string; description?: string; priority?: TaskPriority; dueDate?: string; tags?: string[]; repeatRule?: string; label?: string; projectId?: string; emoji?: string }) => {
+    try {
+      const res = await fetch("/api/tasks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: t.title, description: t.description, priority: t.priority, label: t.label }),
+        body: JSON.stringify(data),
       });
-    }
-    fetchTasks();
-  };
+      const newTask = await res.json();
+      setTasks((prev) => [...prev, { ...newTask, tags: newTask.tags ? JSON.parse(newTask.tags) : [] }]);
+    } catch { fetchTasks(); }
+    setFormOpen(false);
+  }, [fetchTasks]);
 
-  const stats = {
-    total: tasks.length,
-    todo: tasks.filter((t) => t.status === "todo").length,
-    inProgress: tasks.filter((t) => t.status === "in_progress").length,
-    done: tasks.filter((t) => t.status === "done").length,
-    urgent: tasks.filter((t) => t.priority === "urgent" && t.status !== "done").length,
-  };
+  const handleUpdate = useCallback(async (data: { title: string; description?: string; priority?: TaskPriority; dueDate?: string; tags?: string[]; repeatRule?: string; label?: string; projectId?: string; emoji?: string }) => {
+    if (!editTask) return;
+    try {
+      const res = await fetch(`/api/tasks/${editTask.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      const updated = await res.json();
+      setTasks((prev) => prev.map((t) => t.id === editTask.id ? { ...updated, tags: updated.tags ? JSON.parse(updated.tags) : [] } : t));
+    } catch { fetchTasks(); }
+    setFormOpen(false);
+    setEditTask(undefined);
+  }, [editTask, fetchTasks]);
 
-  if (loading) {
-    return <div className="flex h-64 items-center justify-center"><div className="text-[var(--secondary)]">Загрузка...</div></div>;
-  }
+  const handleDelete = useCallback(async (id: string) => {
+    setTasks((prev) => prev.filter((t) => t.id !== id));
+    try { await fetch(`/api/tasks/${id}`, { method: "DELETE" }); } catch { fetchTasks(); }
+    setDetailTask(null);
+  }, [fetchTasks]);
 
   return (
-    <div className="space-y-4">
-      <div className="mobile-page-header">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Задачи</h1>
-            <p className="text-sm text-[var(--secondary)]">
-              Всего: {stats.total} · Активных: {stats.todo + stats.inProgress}
-            </p>
+    <div className="mobile-main">
+      {/* Header */}
+      <div className="sticky top-0 z-30 bg-[var(--background)] border-b border-[var(--border)] px-4 py-3">
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-lg font-bold">Задачи</p>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setSearchOpen(!searchOpen)} className="h-9 w-9 rounded-xl bg-[var(--surface)] flex items-center justify-center">
+              {searchOpen ? <X className="h-4 w-4" /> : <Search className="h-4 w-4" />}
+            </button>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => setShowTemplates(!showTemplates)}>
-              <BookTemplate className="h-4 w-4" />
-            </Button>
-          </div>
+        </div>
+        {searchOpen && (
+          <input
+            type="text"
+            placeholder="Поиск задач..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="form-input text-sm mb-2"
+            autoFocus
+          />
+        )}
+        <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-4 px-4">
+          {FILTERS.map((f) => (
+            <button
+              key={f.key}
+              onClick={() => setFilter(f.key)}
+              className={`px-3 py-1.5 rounded-full text-[11px] font-semibold whitespace-nowrap transition-all ${
+                filter === f.key
+                  ? "bg-[var(--accent)] text-white"
+                  : "bg-[var(--surface)] text-[var(--secondary)]"
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
         </div>
       </div>
 
-      {showTemplates && (
-        <Card className="mobile-widget-card">
-          <CardContent className="p-4 space-y-3">
-            <div className="flex items-center gap-2">
-              <input
-                placeholder="Название шаблона"
-                value={templateName}
-                onChange={(e) => setTemplateName(e.target.value)}
-                className="flex h-10 flex-1 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-sm"
-              />
-              <Button size="sm" onClick={saveAsTemplate} disabled={selectedIds.size === 0 || !templateName.trim()}>
-                Сохранить
-              </Button>
-            </div>
-            {templates.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {templates.map((t) => (
-                  <div key={t.id} className="flex items-center gap-1 rounded-xl border border-[var(--border)] px-3 py-1.5 text-sm">
-                    <button onClick={() => applyTemplate(t)} className="hover:text-[var(--accent)]">{t.name}</button>
-                    <button onClick={async () => { await fetch(`/api/templates?id=${t.id}`, { method: "DELETE" }); fetchTemplates(); }} className="ml-1 text-[var(--error)] text-xs">✕</button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {showBulkBar && (
-        <Card className="mobile-widget-card border-[var(--accent)]/30">
-          <CardContent className="flex items-center gap-3 p-3 flex-wrap">
-            <span className="text-sm text-[var(--secondary)]">Выбрано: {selectedIds.size}</span>
-            <Button size="sm" variant="outline" onClick={selectAll}>
-              {selectedIds.size === filteredTasks.length ? "Снять" : "Все"}
-            </Button>
-            <select onChange={(e) => { if (e.target.value) bulkAction("status", e.target.value); e.target.value = ""; }} className="h-8 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-2 text-xs">
-              <option value="">Статус...</option>
-              <option value="todo">К выполнению</option>
-              <option value="in_progress">В работе</option>
-              <option value="done">Выполнено</option>
-            </select>
-            <select onChange={(e) => { if (e.target.value) bulkAction("priority", e.target.value); e.target.value = ""; }} className="h-8 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-2 text-xs">
-              <option value="">Приоритет...</option>
-              <option value="low">Низкий</option>
-              <option value="medium">Средний</option>
-              <option value="high">Высокий</option>
-              <option value="urgent">Срочный</option>
-            </select>
-            <Button size="sm" variant="destructive" onClick={() => bulkAction("delete")}>
-              <Trash2 className="h-3.5 w-3.5" />
-            </Button>
-            <Button size="sm" variant="ghost" onClick={() => { setSelectedIds(new Set()); setShowBulkBar(false); }}>✕</Button>
-          </CardContent>
-        </Card>
-      )}
-
-      <div className="grid grid-cols-2 gap-3">
-        <Card className="mobile-stat-card"><CardContent className="p-4"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/10"><ListTodo className="h-5 w-5 text-[var(--accent)]" /></div><div><p className="text-2xl font-bold">{stats.todo}</p><p className="text-xs text-[var(--secondary)]">К выполнению</p></div></div></CardContent></Card>
-        <Card className="mobile-stat-card"><CardContent className="p-4"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--warning)]/10"><Clock className="h-5 w-5 text-[var(--warning)]" /></div><div><p className="text-2xl font-bold">{stats.inProgress}</p><p className="text-xs text-[var(--secondary)]">В работе</p></div></div></CardContent></Card>
-        <Card className="mobile-stat-card"><CardContent className="p-4"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--success)]/10"><CheckCircle className="h-5 w-5 text-[var(--success)]" /></div><div><p className="text-2xl font-bold">{stats.done}</p><p className="text-xs text-[var(--secondary)]">Выполнено</p></div></div></CardContent></Card>
-        <Card className="mobile-stat-card"><CardContent className="p-4"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--error)]/10"><AlertTriangle className="h-5 w-5 text-[var(--error)]" /></div><div><p className="text-2xl font-bold">{stats.urgent}</p><p className="text-xs text-[var(--secondary)]">Срочных</p></div></div></CardContent></Card>
-      </div>
-
-      <TaskFilters search={search} onSearchChange={setSearch} status={statusFilter} onStatusChange={setStatusFilter} priority={priorityFilter} onPriorityChange={setPriorityFilter} />
-
-      <div className="flex items-center gap-2">
-        <ArrowUpDown className="h-4 w-4 text-[var(--secondary)]" />
-        <select value={sortBy} onChange={(e) => setSortBy(e.target.value as SortBy)} className="h-8 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-2 text-xs flex-1">
-          <option value="created">По дате создания</option>
-          <option value="date">По дедлайну</option>
-          <option value="priority">По приоритету</option>
-          <option value="name">По названию</option>
-        </select>
-        {!showBulkBar && (
-          <Button variant="ghost" size="sm" onClick={() => { setShowBulkBar(true); }}>Выбрать</Button>
-        )}
-      </div>
-
-      <div className="space-y-3">
-        {filteredTasks.length === 0 ? (
-          <Card className="mobile-widget-card">
-            <CardContent className="flex flex-col items-center justify-center py-12 text-[var(--secondary)]">
-              <ListTodo className="mb-3 h-10 w-10 opacity-50" />
-              <p>Задач пока нет</p>
-              <Button variant="ghost" className="mt-2" onClick={() => { setEditingTask(undefined); setFormOpen(true); }}>Создать первую задачу</Button>
-            </CardContent>
-          </Card>
+      {/* Task List */}
+      <div className="mobile-content">
+        {loading ? (
+          <div className="py-20 text-center text-[var(--secondary)] text-sm">Загрузка...</div>
+        ) : filtered.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="text-4xl mb-3">📝</div>
+            <p className="font-semibold mb-1">Нет задач</p>
+            <p className="text-sm text-[var(--secondary)]">Нажмите + чтобы создать</p>
+          </div>
         ) : (
-          filteredTasks.map((task) => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              onEdit={(t) => { setEditingTask(t); setFormOpen(true); }}
-              onDelete={handleDelete}
-              onStatusChange={handleStatusChange}
-              onClick={(t) => { if (!showBulkBar) setDetailTask(t); }}
-              selected={selectedIds.has(task.id)}
-              onSelect={toggleSelect}
-              showCheckbox={showBulkBar}
-            />
-          ))
+          <div className="space-y-2">
+            <AnimatePresence>
+              {filtered.map((task, i) => (
+                <motion.div
+                  key={task.id}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, x: -50 }}
+                  transition={{ delay: i * 0.03 }}
+                  onClick={() => setDetailTask(task)}
+                  className="mobile-task-card p-3.5 flex items-start gap-3 active:scale-[0.98] transition-transform"
+                >
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleStatus(task.id, task.status === "done" ? "todo" : "done");
+                    }}
+                    className={`mt-0.5 h-6 w-6 shrink-0 rounded-lg border-2 flex items-center justify-center transition-all ${
+                      task.status === "done"
+                        ? "bg-[var(--success)] border-[var(--success)] text-white"
+                        : "border-[var(--border)]"
+                    }`}
+                  >
+                    {task.status === "done" && <Check className="h-3.5 w-3.5" />}
+                  </button>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      {task.emoji && <span className="text-sm">{task.emoji}</span>}
+                      <p className={`text-[14px] font-semibold truncate ${task.status === "done" ? "line-through opacity-50" : ""}`}>
+                        {task.title}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge variant={PRIORITY_BADGE[task.priority]?.variant || "medium"} className="text-[9px]">
+                        {PRIORITY_BADGE[task.priority]?.label || task.priority}
+                      </Badge>
+                      {task.dueDate && (
+                        <span className="flex items-center gap-0.5 text-[10px] text-[var(--secondary)]">
+                          <Calendar className="h-2.5 w-2.5" />
+                          {new Date(task.dueDate).toLocaleDateString("ru-RU", { day: "numeric", month: "short" })}
+                        </span>
+                      )}
+                      {task.repeatRule && (
+                        <Repeat className="h-2.5 w-2.5 text-[var(--muted)]" />
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
         )}
       </div>
 
-      <TaskForm open={formOpen} onClose={() => { setFormOpen(false); setEditingTask(undefined); }} onSubmit={editingTask ? handleUpdate : handleCreate} initialData={editingTask} />
-      <TaskDetail task={detailTask} open={!!detailTask} onClose={() => setDetailTask(null)} />
+      {/* FAB */}
+      <button onClick={() => { setEditTask(undefined); setFormOpen(true); }} className="mobile-fab">
+        <Plus className="h-6 w-6" />
+      </button>
+
+      {/* Modals */}
+      <TaskForm
+        open={formOpen}
+        onClose={() => { setFormOpen(false); setEditTask(undefined); }}
+        onSubmit={editTask ? handleUpdate : handleCreate}
+        initialData={editTask}
+      />
+      {detailTask && (
+        <TaskDetail
+          task={detailTask}
+          open={!!detailTask}
+          onClose={() => setDetailTask(null)}
+        />
+      )}
     </div>
   );
 }

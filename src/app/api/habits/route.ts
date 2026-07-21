@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { habits } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { habits, habitLogs } from "@/lib/db/schema";
+import { eq, and, desc } from "drizzle-orm";
 import { v4 as uuid } from "uuid";
 import { getUserFromToken } from "@/lib/auth";
 
@@ -18,7 +18,26 @@ export async function GET(request: NextRequest) {
       .from(habits)
       .where(eq(habits.userId, user.id));
 
-    return NextResponse.json(userHabits);
+    const allLogs = await db
+      .select()
+      .from(habitLogs)
+      .innerJoin(habits, eq(habitLogs.habitId, habits.id))
+      .where(eq(habits.userId, user.id));
+
+    const habitsWithLogs = userHabits.map((habit) => ({
+      ...habit,
+      logs: allLogs
+        .filter((log) => log.habit_logs.habitId === habit.id)
+        .map((log) => ({
+          id: log.habit_logs.id,
+          habitId: log.habit_logs.habitId,
+          date: log.habit_logs.date,
+          count: log.habit_logs.count,
+          note: log.habit_logs.note,
+        })),
+    }));
+
+    return NextResponse.json(habitsWithLogs);
   } catch (error) {
     return NextResponse.json({ error: String(error) }, { status: 500 });
   }
@@ -48,7 +67,7 @@ export async function POST(request: NextRequest) {
     };
 
     await db.insert(habits).values(newHabit);
-    return NextResponse.json(newHabit, { status: 201 });
+    return NextResponse.json({ ...newHabit, logs: [] }, { status: 201 });
   } catch (error) {
     return NextResponse.json({ error: String(error) }, { status: 500 });
   }
