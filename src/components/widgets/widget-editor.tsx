@@ -8,10 +8,9 @@ import {
   ModalHeader,
   ModalTitle,
   ModalDescription,
-  ModalFooter,
 } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
-import { Check, ChevronUp, ChevronDown } from "lucide-react";
+import { Check, ChevronUp, ChevronDown, Plus } from "lucide-react";
 
 interface WidgetEditorProps {
   open: boolean;
@@ -23,7 +22,6 @@ interface WidgetEditorProps {
 export function WidgetEditor({ open, onClose, config, onChange }: WidgetEditorProps) {
   const [local, setLocal] = useState<WidgetConfig[]>([]);
 
-  // Sync when modal opens
   useEffect(() => {
     if (open) {
       setLocal(config.map((w) => ({ ...w })));
@@ -67,7 +65,7 @@ export function WidgetEditor({ open, onClose, config, onChange }: WidgetEditorPr
 
   return (
     <Modal open={open} onOpenChange={onClose}>
-      <ModalContent className="max-w-md max-h-[85vh] flex flex-col">
+      <ModalContent>
         <ModalHeader>
           <ModalTitle>Настроить дашборд</ModalTitle>
           <ModalDescription>
@@ -75,77 +73,72 @@ export function WidgetEditor({ open, onClose, config, onChange }: WidgetEditorPr
           </ModalDescription>
         </ModalHeader>
 
-        <div className="flex-1 overflow-y-auto -mx-6 px-6 py-2">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-[12px] font-medium text-[var(--secondary)]">
-              Активно: <span className="font-bold text-[var(--foreground)]">{enabledCount}</span> из {AVAILABLE_WIDGETS.length}
-            </p>
-          </div>
+        <p className="text-[12px] font-medium text-[var(--secondary)]">
+          Активно: <span className="font-bold text-[var(--foreground)]">{enabledCount}</span> из {AVAILABLE_WIDGETS.length}
+        </p>
 
-          <div className="space-y-2">
-            {sorted.map((w, idx) => {
-              const def = AVAILABLE_WIDGETS.find((d) => d.id === w.id);
-              if (!def) return null;
-              return (
+        <div style={{ maxHeight: "50vh", overflowY: "auto" }} className="space-y-2 pr-1">
+          {sorted.map((w, idx) => {
+            const def = AVAILABLE_WIDGETS.find((d) => d.id === w.id);
+            if (!def) return null;
+            return (
+              <div
+                key={w.id}
+                className="flex items-center gap-3 p-3 rounded-xl border transition-all duration-150"
+                style={{
+                  borderColor: w.enabled ? def.color + "40" : "var(--border)",
+                  backgroundColor: w.enabled ? def.color + "08" : "var(--card)",
+                }}
+              >
                 <div
-                  key={w.id}
-                  className={`flex items-center gap-3 p-3 rounded-xl border transition-all duration-150 ${
-                    w.enabled
-                      ? "border-[var(--accent)]/30 bg-[var(--accent)]/5"
-                      : "border-[var(--border)] bg-[var(--card)]"
-                  }`}
+                  className="text-2xl shrink-0 w-10 h-10 rounded-xl flex items-center justify-center"
+                  style={{ backgroundColor: def.color + "15" }}
                 >
-                  {/* Icon */}
-                  <div className="text-2xl shrink-0 w-10 h-10 rounded-xl flex items-center justify-center"
-                    style={{ backgroundColor: def.color + "12" }}>
-                    {def.icon}
-                  </div>
+                  {def.icon}
+                </div>
 
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-semibold">{def.name}</p>
-                    <p className="text-[10px] text-[var(--secondary)]">{def.description}</p>
-                  </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-semibold">{def.name}</p>
+                  <p className="text-[10px] text-[var(--secondary)]">{def.description}</p>
+                </div>
 
-                  {/* Controls */}
-                  <div className="flex flex-col items-center gap-0.5 shrink-0">
-                    <button
-                      onClick={() => moveUp(w.id)}
-                      disabled={idx === 0}
-                      className="h-6 w-6 rounded-md flex items-center justify-center hover:bg-[var(--surface)] transition-colors text-[var(--secondary)] disabled:opacity-30"
-                    >
-                      <ChevronUp className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      onClick={() => moveDown(w.id)}
-                      disabled={idx === sorted.length - 1}
-                      className="h-6 w-6 rounded-md flex items-center justify-center hover:bg-[var(--surface)] transition-colors text-[var(--secondary)] disabled:opacity-30"
-                    >
-                      <ChevronDown className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-
-                  {/* Toggle */}
+                <div className="flex flex-col items-center gap-0.5 shrink-0">
                   <button
-                    onClick={() => toggleWidget(w.id)}
-                    className={`h-9 w-9 rounded-xl flex items-center justify-center transition-all duration-150 shrink-0 ${
-                      w.enabled
-                        ? "bg-[var(--success)] text-white shadow-sm"
-                        : "bg-[var(--surface)] text-[var(--secondary)] border border-[var(--border)]"
-                    }`}
+                    onClick={() => moveUp(w.id)}
+                    disabled={idx === 0}
+                    className="h-6 w-6 rounded-md flex items-center justify-center hover:bg-[var(--surface)] transition-colors text-[var(--secondary)] disabled:opacity-30"
                   >
-                    {w.enabled ? <Check className="h-4 w-4" /> : <span className="text-lg leading-none">+</span>}
+                    <ChevronUp className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    onClick={() => moveDown(w.id)}
+                    disabled={idx === sorted.length - 1}
+                    className="h-6 w-6 rounded-md flex items-center justify-center hover:bg-[var(--surface)] transition-colors text-[var(--secondary)] disabled:opacity-30"
+                  >
+                    <ChevronDown className="h-3.5 w-3.5" />
                   </button>
                 </div>
-              );
-            })}
-          </div>
+
+                <button
+                  onClick={() => toggleWidget(w.id)}
+                  className="h-9 w-9 rounded-xl flex items-center justify-center transition-all duration-150 shrink-0"
+                  style={{
+                    backgroundColor: w.enabled ? "#16a34a" : "var(--surface)",
+                    color: w.enabled ? "#fff" : "var(--secondary)",
+                    border: w.enabled ? "none" : "1px solid var(--border)",
+                  }}
+                >
+                  {w.enabled ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                </button>
+              </div>
+            );
+          })}
         </div>
 
-        <ModalFooter className="border-t border-[var(--border)] pt-4">
+        <div className="flex gap-2 justify-end pt-2 border-t border-[var(--border)]">
           <Button variant="outline" onClick={onClose}>Отмена</Button>
           <Button onClick={handleSave}>Сохранить</Button>
-        </ModalFooter>
+        </div>
       </ModalContent>
     </Modal>
   );
