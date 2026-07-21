@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Header } from "@/components/layout/header";
+import { useMobileSidebar } from "@/components/layout/mobile-sidebar-context";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -293,6 +294,7 @@ export default function HabitsPage() {
   const [habits, setHabits] = useState<Habit[]>([]);
   const [loading, setLoading] = useState(true);
   const [addOpen, setAddOpen] = useState(false);
+  const { setOpen } = useMobileSidebar();
 
   const fetchHabits = useCallback(async () => {
     try {
@@ -383,9 +385,14 @@ export default function HabitsPage() {
     <div className="mobile-main">
       <div className="mobile-page-header">
         <div className="sticky top-0 z-30 bg-[var(--background)] border-b border-[var(--border)] px-4 py-3 flex items-center justify-between">
-          <div>
-            <p className="text-lg font-bold">Привычки</p>
-            <p className="text-[11px] text-[var(--secondary)]">{doneToday}/{habits.length} сегодня</p>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setOpen(true)} className="h-9 w-9 rounded-xl bg-[var(--accent)]/15 flex items-center justify-center active:scale-95 transition-transform">
+              <span className="text-sm font-bold text-[var(--accent)]">M</span>
+            </button>
+            <div>
+              <p className="text-lg font-bold">Привычки</p>
+              <p className="text-[11px] text-[var(--secondary)]">{doneToday}/{habits.length} сегодня</p>
+            </div>
           </div>
           <button onClick={() => setAddOpen(true)} className="h-9 w-9 rounded-xl bg-[var(--accent)] text-white flex items-center justify-center">
             <Plus className="h-5 w-5" />

@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useMobileSidebar } from "@/components/layout/mobile-sidebar-context";
 
 const PRIORITY_BADGE: Record<string, { label: string; variant: "urgent" | "high" | "medium" | "low" }> = {
   urgent: { label: "Срочно", variant: "urgent" },
@@ -39,6 +40,7 @@ export function TasksPageMobile() {
   const [formOpen, setFormOpen] = useState(false);
   const [editTask, setEditTask] = useState<Task | undefined>();
   const [detailTask, setDetailTask] = useState<Task | null>(null);
+  const { setOpen } = useMobileSidebar();
 
   const fetchTasks = useCallback(async () => {
     try {
@@ -109,7 +111,12 @@ export function TasksPageMobile() {
       {/* Header */}
       <div className="sticky top-0 z-30 bg-[var(--background)] border-b border-[var(--border)] px-4 py-3">
         <div className="flex items-center justify-between mb-2">
-          <p className="text-lg font-bold">Задачи</p>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setOpen(true)} className="h-9 w-9 rounded-xl bg-[var(--accent)]/15 flex items-center justify-center active:scale-95 transition-transform">
+              <span className="text-sm font-bold text-[var(--accent)]">M</span>
+            </button>
+            <p className="text-lg font-bold">Задачи</p>
+          </div>
           <div className="flex items-center gap-2">
             <button onClick={() => setSearchOpen(!searchOpen)} className="h-9 w-9 rounded-xl bg-[var(--surface)] flex items-center justify-center">
               {searchOpen ? <X className="h-4 w-4" /> : <Search className="h-4 w-4" />}

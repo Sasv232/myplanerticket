@@ -2,9 +2,8 @@
 
 import { ReactNode } from "react";
 import { useAuth } from "@/lib/auth-context";
-import { useTheme } from "./theme-provider";
-import { Sun, Moon, Bell } from "lucide-react";
-import Link from "next/link";
+import { useMobileSidebar } from "./mobile-sidebar-context";
+import { Menu, X } from "lucide-react";
 
 interface MobileHeaderProps {
   title?: string;
@@ -13,37 +12,29 @@ interface MobileHeaderProps {
 
 export function MobileHeader({ title, actions }: MobileHeaderProps) {
   const { user } = useAuth();
-  const { theme, toggle } = useTheme();
+  const { open, setOpen } = useMobileSidebar();
 
   return (
     <div className="mobile-header">
       <div className="mobile-header-left">
-        {user && (
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--accent)]/20 text-xs font-bold text-[var(--accent)]">
-            {user.name[0].toUpperCase()}
-          </div>
-        )}
+        <button
+          onClick={() => setOpen(!open)}
+          className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--surface)] transition-all duration-150 active:scale-95"
+        >
+          {open ? (
+            <X className="h-4 w-4 text-[var(--foreground)]" />
+          ) : user ? (
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--accent)]/15 text-[11px] font-bold text-[var(--accent)]">
+              {user.name[0].toUpperCase()}
+            </div>
+          ) : (
+            <Menu className="h-4 w-4 text-[var(--foreground)]" />
+          )}
+        </button>
         {title && <span className="text-sm font-semibold">{title}</span>}
       </div>
       <div className="mobile-header-right">
         {actions}
-        <button
-          onClick={toggle}
-          className="flex h-8 w-8 items-center justify-center rounded-xl bg-[var(--surface)] transition-colors"
-          title={theme === "dark" ? "Светлая тема" : "Тёмная тема"}
-        >
-          {theme === "dark" ? (
-            <Sun className="h-4 w-4 text-[var(--secondary)]" />
-          ) : (
-            <Moon className="h-4 w-4 text-[var(--secondary)]" />
-          )}
-        </button>
-        <Link
-          href="/notifications"
-          className="flex h-8 w-8 items-center justify-center rounded-xl bg-[var(--surface)] transition-colors"
-        >
-          <Bell className="h-4 w-4 text-[var(--secondary)]" />
-        </Link>
       </div>
     </div>
   );

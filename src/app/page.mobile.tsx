@@ -17,6 +17,7 @@ import {
   Moon,
 } from "lucide-react";
 import { useTheme } from "@/components/layout/theme-provider";
+import { useMobileSidebar } from "@/components/layout/mobile-sidebar-context";
 import { useAuth } from "@/lib/auth-context";
 
 interface Weather { temp: string; desc: string; city: string; }
@@ -30,6 +31,7 @@ export function DashboardPageMobile() {
   const [quote, setQuote] = useState<QuoteData | null>(null);
   const { theme, toggle } = useTheme();
   const { user } = useAuth();
+  const { setOpen } = useMobileSidebar();
 
   const fetchTasks = useCallback(async () => {
     try {
@@ -74,8 +76,8 @@ export function DashboardPageMobile() {
           <p className="text-lg font-bold">{greeting}, {user?.name?.split(" ")[0] || ""}!</p>
           <p className="text-[11px] text-[var(--secondary)] capitalize">{dateStr}</p>
         </div>
-        <button onClick={toggle} className="h-9 w-9 rounded-xl bg-[var(--surface)] flex items-center justify-center">
-          {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+        <button onClick={() => setOpen(true)} className="h-9 w-9 rounded-xl bg-[var(--accent)]/15 flex items-center justify-center active:scale-95 transition-transform">
+          <span className="text-sm font-bold text-[var(--accent)]">{user?.name?.[0]?.toUpperCase() || "?"}</span>
         </button>
       </div>
 

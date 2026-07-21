@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { Task, TaskStatus } from "@/types/task";
 import { Header } from "@/components/layout/header";
+import { useMobileSidebar } from "@/components/layout/mobile-sidebar-context";
 import { MobileHeader } from "@/components/layout/mobile-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -93,6 +94,7 @@ export default function TodayPage() {
   const [adding, setAdding] = useState(false);
   const [plannerOrder, setPlannerOrder] = useState<string[]>([]);
   const [dragIdx, setDragIdx] = useState<number | null>(null);
+  const { setOpen } = useMobileSidebar();
 
   const fetchTasks = useCallback(async () => {
     try {
@@ -483,11 +485,16 @@ export default function TodayPage() {
         {/* Sticky header */}
         <div className="sticky top-0 z-30 bg-[var(--background)]/80 backdrop-blur-lg border-b border-[var(--border)]">
           <div className="flex items-center justify-between px-4 py-3">
-            <div>
-              <h1 className="text-lg font-bold">Сегодня</h1>
-              <p className="text-xs text-[var(--muted)]">
-                {format(today, "d MMMM, EEEE", { locale: ru })}
-              </p>
+            <div className="flex items-center gap-2">
+              <button onClick={() => setOpen(true)} className="h-9 w-9 rounded-xl bg-[var(--accent)]/15 flex items-center justify-center active:scale-95 transition-transform">
+                <span className="text-sm font-bold text-[var(--accent)]">M</span>
+              </button>
+              <div>
+                <h1 className="text-lg font-bold">Сегодня</h1>
+                <p className="text-xs text-[var(--muted)]">
+                  {format(today, "d MMMM, EEEE", { locale: ru })}
+                </p>
+              </div>
             </div>
           </div>
         </div>

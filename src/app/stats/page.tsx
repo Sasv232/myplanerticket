@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Header } from "@/components/layout/header";
+import { useMobileSidebar } from "@/components/layout/mobile-sidebar-context";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BarChart3, TrendingUp, CheckCircle, Clock, Flame } from "lucide-react";
@@ -29,6 +30,7 @@ export default function StatsPage() {
   const [karma, setKarma] = useState<Karma | null>(null);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<"week" | "month">("week");
+  const { setOpen } = useMobileSidebar();
 
   useEffect(() => {
     Promise.all([
@@ -190,8 +192,13 @@ export default function StatsPage() {
 
       {/* Mobile */}
       <div className="md:hidden mobile-main">
-        <div className="sticky top-0 z-30 bg-[var(--background)] border-b border-[var(--border)] px-4 py-3">
-          <p className="text-lg font-bold">Статистика</p>
+        <div className="sticky top-0 z-30 bg-[var(--background)] border-b border-[var(--border)] px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <button onClick={() => setOpen(true)} className="h-9 w-9 rounded-xl bg-[var(--accent)]/15 flex items-center justify-center active:scale-95 transition-transform">
+              <span className="text-sm font-bold text-[var(--accent)]">M</span>
+            </button>
+            <p className="text-lg font-bold">Статистика</p>
+          </div>
         </div>
         <div className="mobile-content">
           {loading ? (
