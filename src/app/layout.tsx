@@ -7,6 +7,7 @@ import { AuthGuard } from "@/components/auth-guard";
 import { AppShell } from "@/components/layout/app-shell";
 import { UpdatePrompt } from "@/components/layout/update-prompt";
 import { GlobalSearch } from "@/components/search/global-search";
+import { LangProvider } from "@/lib/i18n/context";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -83,13 +84,15 @@ export default function RootLayout({
       </head>
       <body className="min-h-full">
         <ThemeProvider>
-          <AuthProvider>
-            <AuthGuard>
-              <AppShell>{children}</AppShell>
-            </AuthGuard>
-            <UpdatePrompt />
-            <GlobalSearch />
-          </AuthProvider>
+          <LangProvider>
+            <AuthProvider>
+              <AuthGuard>
+                <AppShell>{children}</AppShell>
+              </AuthGuard>
+              <UpdatePrompt />
+              <GlobalSearch />
+            </AuthProvider>
+          </LangProvider>
         </ThemeProvider>
       </body>
     </html>

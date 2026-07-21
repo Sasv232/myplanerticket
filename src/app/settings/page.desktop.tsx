@@ -16,6 +16,8 @@ import {
   Upload,
 } from "lucide-react";
 import { useTheme } from "@/components/layout/theme-provider";
+import { useLang } from "@/lib/i18n/context";
+import { Globe } from "lucide-react";
 
 const PRIMARY_COLORS = [
   { name: "Синий", value: "#3b82f6" },
@@ -50,6 +52,7 @@ interface Settings {
 
 export function SettingsPageDesktop() {
   const { theme, schedule, setSchedule } = useTheme();
+  const { lang, setLang } = useLang();
   const [primaryColor, setPrimaryColor] = useState("#3b82f6");
   const [secondaryColor, setSecondaryColor] = useState("#6b7280");
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -246,6 +249,38 @@ export function SettingsPageDesktop() {
                 </div>
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Globe className="h-4 w-4" /> Язык
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setLang("ru")}
+                className={`flex-1 py-3 rounded-xl border-2 text-sm font-medium transition-all ${
+                  lang === "ru"
+                    ? "border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)]"
+                    : "border-[var(--border)] hover:border-[var(--accent)]/50"
+                }`}
+              >
+                🇷🇺 Русский
+              </button>
+              <button
+                onClick={() => setLang("en")}
+                className={`flex-1 py-3 rounded-xl border-2 text-sm font-medium transition-all ${
+                  lang === "en"
+                    ? "border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)]"
+                    : "border-[var(--border)] hover:border-[var(--accent)]/50"
+                }`}
+              >
+                🇬🇧 English
+              </button>
+            </div>
           </CardContent>
         </Card>
 

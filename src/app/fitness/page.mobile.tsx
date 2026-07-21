@@ -9,9 +9,9 @@ interface WeightEntry { id: string; weight: number; date: string; }
 interface HealthProfile { height?: number; birthDate?: string; gender?: string; dailyCalorieGoal?: number; dailyWaterGoal?: number; }
 
 const MEAL_TYPES = [
-  { value: "breakfast", label: "Сніданок", emoji: "🌅" },
-  { value: "lunch", label: "Обід", emoji: "☀️" },
-  { value: "dinner", label: "Вечеря", emoji: "🌙" },
+  { value: "breakfast", label: "Завтрак", emoji: "🌅" },
+  { value: "lunch", label: "Обед", emoji: "☀️" },
+  { value: "dinner", label: "Ужин", emoji: "🌙" },
   { value: "snack", label: "Перекус", emoji: "🍎" },
 ];
 
@@ -32,7 +32,6 @@ export function FitnessPageMobile() {
   const [foodCarbs, setFoodCarbs] = useState("");
   const [foodFat, setFoodFat] = useState("");
   const [foodMeal, setFoodMeal] = useState("breakfast");
-  const [waterAmount, setWaterAmount] = useState("250");
   const [weightValue, setWeightValue] = useState("");
   const [pHeight, setPHeight] = useState("");
   const [pCalGoal, setPCalGoal] = useState("");
@@ -89,29 +88,29 @@ export function FitnessPageMobile() {
   return (
     <div className="p-4 space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold">🏋️ Фітнес</h1>
+        <h1 className="text-xl font-bold">🏋️ Фитнес</h1>
         <button onClick={() => setShowProfile(!showProfile)} className="p-2 rounded-xl hover:bg-[var(--surface)]"><Heart className="h-5 w-5" /></button>
       </div>
 
       {showProfile && (
         <div className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 space-y-3">
-          <h3 className="font-semibold text-sm">Профіль здоров&apos;я</h3>
-          <input type="number" placeholder="Зріст (см)" value={pHeight} onChange={e => setPHeight(e.target.value)} className="w-full h-10 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-sm" />
-          <input type="number" placeholder="Ціль калорій" value={pCalGoal} onChange={e => setPCalGoal(e.target.value)} className="w-full h-10 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-sm" />
-          <input type="number" placeholder="Ціль води (мл)" value={pWaterGoal} onChange={e => setPWaterGoal(e.target.value)} className="w-full h-10 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-sm" />
-          <button onClick={saveProfile} className="w-full h-10 rounded-xl bg-[var(--accent)] text-white text-sm">Зберегти</button>
+          <h3 className="font-semibold text-sm">Профиль здоровья</h3>
+          <input type="number" placeholder="Рост (см)" value={pHeight} onChange={e => setPHeight(e.target.value)} className="w-full h-10 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-sm" />
+          <input type="number" placeholder="Цель калорий" value={pCalGoal} onChange={e => setPCalGoal(e.target.value)} className="w-full h-10 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-sm" />
+          <input type="number" placeholder="Цель воды (мл)" value={pWaterGoal} onChange={e => setPWaterGoal(e.target.value)} className="w-full h-10 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-sm" />
+          <button onClick={saveProfile} className="w-full h-10 rounded-xl bg-[var(--accent)] text-white text-sm">Сохранить</button>
         </div>
       )}
 
       <div className="flex items-center justify-center gap-3">
         <button onClick={prevDay} className="p-2 rounded-xl hover:bg-[var(--surface)]"><ChevronLeft className="h-5 w-5" /></button>
-        <span className="font-semibold text-sm">{new Date(date).toLocaleDateString("uk-UA", { day: "numeric", month: "short" })}</span>
+        <span className="font-semibold text-sm">{new Date(date).toLocaleDateString("ru-RU", { day: "numeric", month: "short" })}</span>
         <button onClick={nextDay} className="p-2 rounded-xl hover:bg-[var(--surface)]"><ChevronRight className="h-5 w-5" /></button>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-3">
-          <p className="text-[10px] text-[var(--muted)]">🔥 Калорії</p>
+          <p className="text-[10px] text-[var(--muted)]">🔥 Калории</p>
           <p className="text-lg font-bold">{Math.round(totalCal)}<span className="text-[10px] text-[var(--muted)]">/{profile.dailyCalorieGoal || "—"}</span></p>
           <div className="mt-1 h-1.5 bg-[var(--surface)] rounded-full overflow-hidden"><div className="h-full bg-orange-500 rounded-full" style={{ width: `${Math.min(100, (totalCal / (profile.dailyCalorieGoal || 2000)) * 100)}%` }} /></div>
         </div>
@@ -121,9 +120,9 @@ export function FitnessPageMobile() {
           <div className="mt-1 h-1.5 bg-[var(--surface)] rounded-full overflow-hidden"><div className="h-full bg-blue-500 rounded-full" style={{ width: `${Math.min(100, (totalWater / (profile.dailyWaterGoal || 2000)) * 100)}%` }} /></div>
         </div>
         <div className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-3">
-          <p className="text-[10px] text-[var(--muted)]">⚖️ Вага</p>
+          <p className="text-[10px] text-[var(--muted)]">⚖️ Вес</p>
           <p className="text-lg font-bold">{latestWeight ? `${latestWeight}кг` : "—"}</p>
-          {bmi && <p className="text-[10px] text-[var(--muted)]">ІМТ: {bmi}</p>}
+          {bmi && <p className="text-[10px] text-[var(--muted)]">ИМТ: {bmi}</p>}
         </div>
         <div className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-3">
           <p className="text-[10px] text-[var(--muted)]">📊 БЖУ</p>
@@ -137,19 +136,19 @@ export function FitnessPageMobile() {
 
       <div className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="font-semibold text-sm flex items-center gap-1"><Apple className="h-4 w-4 text-green-500" /> Їжа</h3>
+          <h3 className="font-semibold text-sm flex items-center gap-1"><Apple className="h-4 w-4 text-green-500" /> Еда</h3>
           <button onClick={() => setShowFoodForm(!showFoodForm)} className="p-1.5 rounded-lg hover:bg-[var(--surface)]"><Plus className="h-4 w-4" /></button>
         </div>
         {showFoodForm && (
           <div className="bg-[var(--surface)] rounded-lg p-3 mb-3 space-y-2">
-            <input placeholder="Назва" value={foodName} onChange={e => setFoodName(e.target.value)} className="w-full h-9 rounded-lg border border-[var(--border)] bg-[var(--card)] px-2 text-xs" />
+            <input placeholder="Название" value={foodName} onChange={e => setFoodName(e.target.value)} className="w-full h-9 rounded-lg border border-[var(--border)] bg-[var(--card)] px-2 text-xs" />
             <div className="grid grid-cols-2 gap-2">
               <input type="number" placeholder="ккал" value={foodCal} onChange={e => setFoodCal(e.target.value)} className="h-9 rounded-lg border border-[var(--border)] bg-[var(--card)] px-2 text-xs" />
               <select value={foodMeal} onChange={e => setFoodMeal(e.target.value)} className="h-9 rounded-lg border border-[var(--border)] bg-[var(--card)] px-2 text-xs">
                 {MEAL_TYPES.map(m => <option key={m.value} value={m.value}>{m.emoji} {m.label}</option>)}
               </select>
             </div>
-            <button onClick={addFood} className="w-full h-9 rounded-lg bg-[var(--accent)] text-white text-xs">Додати</button>
+            <button onClick={addFood} className="w-full h-9 rounded-lg bg-[var(--accent)] text-white text-xs">Добавить</button>
           </div>
         )}
         {foods.map(f => (
@@ -161,7 +160,7 @@ export function FitnessPageMobile() {
             </div>
           </div>
         ))}
-        {foods.length === 0 && <p className="text-xs text-[var(--muted)] text-center py-3">Порожньо</p>}
+        {foods.length === 0 && <p className="text-xs text-[var(--muted)] text-center py-3">Пусто</p>}
       </div>
 
       <div className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4">
@@ -181,7 +180,7 @@ export function FitnessPageMobile() {
 
       <div className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="font-semibold text-sm flex items-center gap-1"><Scale className="h-4 w-4 text-purple-500" /> Вага</h3>
+          <h3 className="font-semibold text-sm flex items-center gap-1"><Scale className="h-4 w-4 text-purple-500" /> Вес</h3>
           <button onClick={() => setShowWeightForm(!showWeightForm)} className="p-1.5 rounded-lg hover:bg-[var(--surface)]"><Plus className="h-4 w-4" /></button>
         </div>
         {showWeightForm && (

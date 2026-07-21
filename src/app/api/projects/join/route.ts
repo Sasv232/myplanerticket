@@ -12,25 +12,25 @@ export async function POST(request: NextRequest) {
 
   const body = await request.json();
   const { code } = body;
-  if (!code) return NextResponse.json({ error: "Missing code" }, { status: 400 });
+  if (!code) return NextResponse.json({ error: "Введите код" }, { status: 400 });
 
   const [invite] = await db.select().from(projectInvites)
     .where(eq(projectInvites.code, code.toUpperCase()));
-  if (!invite) return NextResponse.json({ error: "Невірний код запрошення" }, { status: 404 });
-  if (!invite.projectId) return NextResponse.json({ error: "Невірний код" }, { status: 400 });
+  if (!invite) return NextResponse.json({ error: "Неверный код приглашения" }, { status: 404 });
+  if (!invite.projectId) return NextResponse.json({ error: "Неверный код" }, { status: 400 });
 
   if (invite.expiresAt && new Date(invite.expiresAt) < new Date()) {
-    return NextResponse.json({ error: "Запрошення прострочене" }, { status: 400 });
+    return NextResponse.json({ error: "Приглашение просрочено" }, { status: 400 });
   }
 
   if (invite.maxUses && (invite.uses || 0) >= invite.maxUses) {
-    return NextResponse.json({ error: "Запрошення вичерпане" }, { status: 400 });
+    return NextResponse.json({ error: "Приглашение использовано" }, { status: 400 });
   }
 
   const [existing] = await db.select().from(projectMembers)
     .where(and(eq(projectMembers.projectId, invite.projectId), eq(projectMembers.userId, user.id)));
   if (existing) {
-    return NextResponse.json({ error: "Ви вже в проекті" }, { status: 400 });
+    return NextResponse.json({ error: "Вы уже в проекте" }, { status: 400 });
   }
 
   const now = new Date().toISOString();
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     projectId: invite.projectId,
     userId: user.id,
     action: "member_joined",
-    details: `${user.name} приєднався до проекту`,
+    details: `${user.name} присоединился к проекту`,
     createdAt: now,
   });
 
