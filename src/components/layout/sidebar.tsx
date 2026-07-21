@@ -33,7 +33,7 @@ export function Sidebar() {
       <aside
         className={cn(
           "sidebar-desktop fixed left-0 top-0 z-40 h-full w-60 border-r border-[var(--border)] bg-[var(--sidebar)] flex flex-col transition-transform duration-300",
-          mobileOpen ? "translate-x-0" : "-translate-x-full"
+          mobileOpen ? "translate-x-0" : "max-lg:-translate-x-full"
         )}
       >
         <div className="flex h-14 items-center gap-2 border-b border-[var(--border)] px-5">
