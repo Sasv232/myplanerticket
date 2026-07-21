@@ -63,9 +63,9 @@ export const navigation: NavGroup[] = [
     ],
   },
   {
-    title: "Здоров'я",
+    title: "Здоровье",
     items: [
-      { label: "Фітнес", href: "/fitness", icon: Dumbbell },
+      { label: "Фитнес", href: "/fitness", icon: Dumbbell },
     ],
   },
   {
