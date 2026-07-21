@@ -5,33 +5,42 @@ import { Header } from "@/components/layout/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Palette, RefreshCw, CheckCircle, AlertCircle, Mail, Database, Download, Upload } from "lucide-react";
+import {
+  Palette,
+  RefreshCw,
+  CheckCircle,
+  AlertCircle,
+  Mail,
+  Database,
+  Download,
+  Upload,
+} from "lucide-react";
 import { useTheme } from "@/components/layout/theme-provider";
 
 const PRIMARY_COLORS = [
-  { name: "╨б╨╕╨╜╨╕╨╣", value: "#3b82f6", class: "blue" },
-  { name: "╨Ш╨╜╨┤╨╕╨│╨╛", value: "#6366f1", class: "indigo" },
-  { name: "╨д╨╕╨╛╨╗╨╡╤В╨╛╨▓╤Л╨╣", value: "#8b5cf6", class: "violet" },
-  { name: "╨а╨╛╨╖╨╛╨▓╤Л╨╣", value: "#ec4899", class: "pink" },
-  { name: "╨Ъ╤А╨░╤Б╨╜╤Л╨╣", value: "#ef4444", class: "red" },
-  { name: "╨Ю╤А╨░╨╜╨╢╨╡╨▓╤Л╨╣", value: "#f97316", class: "orange" },
-  { name: "╨п╨╜╤В╨░╤А╨╜╤Л╨╣", value: "#f59e0b", class: "amber" },
-  { name: "╨Ч╨╡╨╗╤С╨╜╤Л╨╣", value: "#22c55e", class: "green" },
-  { name: "╨Ш╨╖╤Г╨╝╤А╤Г╨┤╨╜╤Л╨╣", value: "#10b981", class: "emerald" },
-  { name: "╨С╨╕╤А╤О╨╖╨╛╨▓╤Л╨╣", value: "#06b6d4", class: "cyan" },
+  { name: "Синий", value: "#3b82f6" },
+  { name: "Индиго", value: "#6366f1" },
+  { name: "Фиолетовый", value: "#8b5cf6" },
+  { name: "Розовый", value: "#ec4899" },
+  { name: "Красный", value: "#ef4444" },
+  { name: "Оранжевый", value: "#f97316" },
+  { name: "Янтарный", value: "#f59e0b" },
+  { name: "Зелёный", value: "#22c55e" },
+  { name: "Изумрудный", value: "#10b981" },
+  { name: "Бирюзовый", value: "#06b6d4" },
 ];
 
 const SECONDARY_COLORS = [
-  { name: "╨б╨╡╤А╤Л╨╣", value: "#6b7280", class: "gray" },
-  { name: "╨б╨╡╤А╤Л╨╣-600", value: "#4b5563", class: "gray600" },
-  { name: "╨б╨╡╤А╤Л╨╣-700", value: "#374151", class: "gray700" },
-  { name: "╨б╨╡╤А╤Л╨╣-800", value: "#1f2937", class: "gray800" },
-  { name: "╨б╨╡╤А╤Л╨╣-900", value: "#111827", class: "gray900" },
-  { name: "╨Ъ╨╛╤А╨╕╤З╨╜╨╡╨▓╤Л╨╣", value: "#78716c", class: "stone" },
-  { name: "╨ж╨╕╨╜╨║╨╛╨▓╤Л╨╣", value: "#71717a", class: "zinc" },
-  { name: "╨Э╨╡╨╣╤В╤А╨░╨╗╤М╨╜╤Л╨╣", value: "#737373", class: "neutral" },
-  { name: "╨б╨╗╨░╨╜╤Ж╨╡╨▓╤Л╨╣", value: "#64748b", class: "slate" },
-  { name: "╨в╤С╨╝╨╜╨╛-╤Б╨╕╨╜╨╕╨╣", value: "#475569", class: "darkSlate" },
+  { name: "Серый", value: "#6b7280" },
+  { name: "Серый-600", value: "#4b5563" },
+  { name: "Серый-700", value: "#374151" },
+  { name: "Серый-800", value: "#1f2937" },
+  { name: "Серый-900", value: "#111827" },
+  { name: "Коричневый", value: "#78716c" },
+  { name: "Цинковый", value: "#71717a" },
+  { name: "Нейтральный", value: "#737373" },
+  { name: "Сланцевый", value: "#64748b" },
+  { name: "Тёмно-синий", value: "#475569" },
 ];
 
 interface Settings {
@@ -58,7 +67,8 @@ export function SettingsPageDesktop() {
   useEffect(() => {
     fetchSettings();
     const savedPrimary = localStorage.getItem("primaryColor") || "#3b82f6";
-    const savedSecondary = localStorage.getItem("secondaryColor") || "#6b7280";
+    const savedSecondary =
+      localStorage.getItem("secondaryColor") || "#6b7280";
     setPrimaryColor(savedPrimary);
     setSecondaryColor(savedSecondary);
     applyColors(savedPrimary, savedSecondary);
@@ -84,7 +94,9 @@ export function SettingsPageDesktop() {
   const handleExport = async () => {
     const res = await fetch("/api/export");
     const data = await res.json();
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: "application/json",
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -105,34 +117,35 @@ export function SettingsPageDesktop() {
     });
     const result = await res.json();
     if (result.ok) {
-      alert(`╨Ш╨╝╨┐╨╛╤А╤В╨╕╤А╨╛╨▓╨░╨╜╨╛ ╨╖╨░╨┤╨░╤З: ${result.imported}`);
+      alert(`Импортировано задач: ${result.imported}`);
       window.location.reload();
     }
   };
 
   return (
-    <div>
+    <>
       <Header
-        title="╨Э╨░╤Б╤В╤А╨╛╨╣╨║╨╕"
-        description="╨Ъ╨╛╨╜╤Д╨╕╨│╤Г╤А╨░╤Ж╨╕╤П ╨┐╤А╨╕╨╗╨╛╨╢╨╡╨╜╨╕╤П"
+        title="Настройки"
+        description="Конфигурация приложения"
         actions={
           <Button variant="outline" size="sm" onClick={fetchSettings}>
-            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-            ╨Ю╨▒╨╜╨╛╨▓╨╕╤В╤М
+            <RefreshCw
+              className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
+            />
+            Обновить
           </Button>
         }
       />
-      <div className="space-y-4">
+      <main className="p-6 space-y-4">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <Palette className="h-4 w-4" />
-              ╨ж╨▓╨╡╤В╨░ ╤В╨╡╨╝╤Л
+              <Palette className="h-4 w-4" /> Цвета темы
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <p className="mb-2 text-sm font-medium">╨Ю╤Б╨╜╨╛╨▓╨╜╨╛╨╣ ╤Ж╨▓╨╡╤В</p>
+              <p className="mb-2 text-sm font-medium">Основной цвет</p>
               <div className="grid grid-cols-5 gap-2">
                 {PRIMARY_COLORS.map((c) => (
                   <button
@@ -148,13 +161,17 @@ export function SettingsPageDesktop() {
                       className="h-8 w-8 rounded-full shadow-inner"
                       style={{ backgroundColor: c.value }}
                     />
-                    <span className="text-[10px] text-[var(--secondary)]">{c.name}</span>
+                    <span className="text-[10px] text-[var(--secondary)]">
+                      {c.name}
+                    </span>
                   </button>
                 ))}
               </div>
             </div>
             <div>
-              <p className="mb-2 text-sm font-medium">╨Ф╨╛╨┐╨╛╨╗╨╜╨╕╤В╨╡╨╗╤М╨╜╤Л╨╣ ╤Ж╨▓╨╡╤В</p>
+              <p className="mb-2 text-sm font-medium">
+                Дополнительный цвет
+              </p>
               <div className="grid grid-cols-5 gap-2">
                 {SECONDARY_COLORS.map((c) => (
                   <button
@@ -170,7 +187,9 @@ export function SettingsPageDesktop() {
                       className="h-8 w-8 rounded-full shadow-inner"
                       style={{ backgroundColor: c.value }}
                     />
-                    <span className="text-[10px] text-[var(--secondary)]">{c.name}</span>
+                    <span className="text-[10px] text-[var(--secondary)]">
+                      {c.name}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -181,29 +200,30 @@ export function SettingsPageDesktop() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <Mail className="h-4 w-4" />
-              Email ╤Г╨▓╨╡╨┤╨╛╨╝╨╗╨╡╨╜╨╕╤П (Gmail SMTP)
+              <Mail className="h-4 w-4" /> Email уведомления (Gmail SMTP)
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {settings?.smtpConfigured ? (
               <div className="flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-green-500" />
-                <span className="text-sm">╨Э╨░╤Б╤В╤А╨╛╨╡╨╜╨╛</span>
-                <Badge variant="success">╨Р╨║╤В╨╕╨▓╨╜╨╛</Badge>
+                <span className="text-sm">Настроено</span>
+                <Badge variant="success">Активно</Badge>
               </div>
             ) : (
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <AlertCircle className="h-4 w-4 text-yellow-500" />
-                  <span className="text-sm">╨Э╨╡ ╨╜╨░╤Б╤В╤А╨╛╨╡╨╜╨╛</span>
-                  <Badge variant="warning">╨Ю╨╢╨╕╨┤╨░╨╡╤В</Badge>
+                  <span className="text-sm">Не настроено</span>
+                  <Badge variant="warning">Ожидает</Badge>
                 </div>
                 <div className="rounded-lg bg-[var(--surface)] p-3 text-xs text-[var(--secondary)] space-y-1">
-                  <p>╨Ч╨░╨┤╨░╨╣╤В╨╡ ╨┐╨╡╤А╨╡╨╝╨╡╨╜╨╜╤Л╨╡ ╨╛╨║╤А╤Г╨╢╨╡╨╜╨╕╤П ╨▓ Vercel:</p>
+                  <p>Задайте переменные окружения в Vercel:</p>
                   <code className="block rounded bg-[var(--bg)] p-2 mt-1">
-                    SMTP_USER=your@gmail.com<br/>
-                    SMTP_PASS=xxxx-xxxx-xxxx-xxxx<br/>
+                    SMTP_USER=your@gmail.com
+                    <br />
+                    SMTP_PASS=xxxx-xxxx-xxxx-xxxx
+                    <br />
                     NOTIFICATION_EMAIL=your@gmail.com
                   </code>
                 </div>
@@ -215,8 +235,7 @@ export function SettingsPageDesktop() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <Database className="h-4 w-4" />
-              ╨С╨░╨╖╨░ ╨┤╨░╨╜╨╜╤Л╤Е
+              <Database className="h-4 w-4" /> База данных
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -225,12 +244,12 @@ export function SettingsPageDesktop() {
                 <>
                   <CheckCircle className="h-4 w-4 text-green-500" />
                   <span className="text-sm">Supabase PostgreSQL</span>
-                  <Badge variant="success">╨Ю╨╜╨╗╨░╨╣╨╜</Badge>
+                  <Badge variant="success">Онлайн</Badge>
                 </>
               ) : (
                 <>
                   <AlertCircle className="h-4 w-4 text-red-500" />
-                  <span className="text-sm">╨Э╨╡ ╨┐╨╛╨┤╨║╨╗╤О╤З╨╡╨╜╨░</span>
+                  <span className="text-sm">Не подключена</span>
                 </>
               )}
             </div>
@@ -240,27 +259,29 @@ export function SettingsPageDesktop() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <Download className="h-4 w-4" />
-              ╨н╨║╤Б╨┐╨╛╤А╤В / ╨Ш╨╝╨┐╨╛╤А╤В
+              <Download className="h-4 w-4" /> Экспорт / Импорт
             </CardTitle>
           </CardHeader>
           <CardContent className="flex gap-3">
             <Button variant="outline" size="sm" onClick={handleExport}>
-              <Download className="h-4 w-4" />
-              ╨н╨║╤Б╨┐╨╛╤А╤В JSON
+              <Download className="h-4 w-4" /> Экспорт JSON
             </Button>
             <label>
-              <input type="file" accept=".json" className="hidden" onChange={handleImport} />
+              <input
+                type="file"
+                accept=".json"
+                className="hidden"
+                onChange={handleImport}
+              />
               <Button variant="outline" size="sm" asChild>
                 <span>
-                  <Upload className="h-4 w-4" />
-                  ╨Ш╨╝╨┐╨╛╤А╤В JSON
+                  <Upload className="h-4 w-4" /> Импорт JSON
                 </span>
               </Button>
             </label>
           </CardContent>
         </Card>
-      </div>
-    </div>
+      </main>
+    </>
   );
 }
