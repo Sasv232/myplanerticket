@@ -25,15 +25,14 @@ export function Sidebar() {
     <>
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          className="fixed inset-0 z-40 bg-black/50 sidebar-mobile-overlay"
           onClick={() => setMobileOpen(false)}
         />
       )}
 
       <aside
         className={cn(
-          "fixed left-0 top-0 z-40 h-full w-60 border-r border-[var(--border)] bg-[var(--sidebar)] flex flex-col transition-transform duration-300",
-          "lg:translate-x-0 hidden lg:flex",
+          "sidebar-desktop fixed left-0 top-0 z-40 h-full w-60 border-r border-[var(--border)] bg-[var(--sidebar)] flex flex-col transition-transform duration-300",
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >

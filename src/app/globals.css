@@ -232,6 +232,7 @@ body {
 
   .mobile-main {
     padding-bottom: 80px;
+    margin-left: 0 !important;
   }
 
   .mobile-content {
@@ -240,11 +241,11 @@ body {
   }
 
   /* Hide sidebar on mobile */
-  aside {
+  .sidebar-desktop {
     display: none !important;
   }
 
-  main {
+  .desktop-main {
     margin-left: 0 !important;
   }
 }
@@ -259,6 +260,19 @@ body {
 
   .mobile-main {
     padding-bottom: 0;
+  }
+
+  .desktop-main {
+    margin-left: 240px;
+  }
+
+  .sidebar-desktop {
+    display: flex !important;
+    transform: translateX(0) !important;
+  }
+
+  .sidebar-mobile-overlay {
+    display: none !important;
   }
 }
 

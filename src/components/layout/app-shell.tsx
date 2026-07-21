@@ -18,7 +18,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen">
       <Sidebar />
-      <main className="flex-1 lg:ml-60 mobile-main">
+      <main className="flex-1 desktop-main mobile-main">
         <MobileHeader />
         <div className="mobile-content">{children}</div>
       </main>
