@@ -49,7 +49,7 @@ interface Settings {
 }
 
 export function SettingsPageDesktop() {
-  const { theme } = useTheme();
+  const { theme, schedule, setSchedule } = useTheme();
   const [primaryColor, setPrimaryColor] = useState("#3b82f6");
   const [secondaryColor, setSecondaryColor] = useState("#6b7280");
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -194,6 +194,58 @@ export function SettingsPageDesktop() {
                 ))}
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Palette className="h-4 w-4" /> Расписание темы
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Автопереключение</p>
+                <p className="text-[11px] text-[var(--secondary)]">Тёмная днём, светлая ночью (или наоборот)</p>
+              </div>
+              <button
+                onClick={() => setSchedule({ ...schedule, enabled: !schedule.enabled })}
+                className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
+                style={{ backgroundColor: schedule.enabled ? "var(--accent)" : "var(--border)" }}
+              >
+                <span
+                  className="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+                  style={{ transform: schedule.enabled ? "translateX(22px)" : "translateX(2px)" }}
+                />
+              </button>
+            </div>
+            {schedule.enabled && (
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">Тёмная тема с</label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={23}
+                    value={schedule.darkHour}
+                    onChange={(e) => setSchedule({ ...schedule, darkHour: parseInt(e.target.value) || 0 })}
+                    className="mt-1 w-full rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm"
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">Светлая тема с</label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={23}
+                    value={schedule.lightHour}
+                    onChange={(e) => setSchedule({ ...schedule, lightHour: parseInt(e.target.value) || 0 })}
+                    className="mt-1 w-full rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm"
+                  />
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 

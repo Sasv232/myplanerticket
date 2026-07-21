@@ -26,7 +26,10 @@ import {
   Trash2,
   FolderKanban,
   ListTodo,
+  Users,
+  UserPlus,
 } from "lucide-react";
+import { CollabPanel, JoinProjectModal } from "@/components/projects/collab-panel";
 
 interface Project {
   id: string;
@@ -67,6 +70,8 @@ function useProjectsPage() {
   const [projectName, setProjectName] = useState("");
   const [projectEmoji, setProjectEmoji] = useState("📁");
   const [projectColor, setProjectColor] = useState(PROJECT_COLORS[0]);
+  const [collabOpen, setCollabOpen] = useState(false);
+  const [joinOpen, setJoinOpen] = useState(false);
 
   const fetchProjects = useCallback(async () => {
     try {
@@ -217,6 +222,7 @@ function useProjectsPage() {
     handleCreateProject, handleUpdateProject, handleDeleteProject,
     handleCreateTask, handleUpdateTask, handleDeleteTask, handleStatusChange,
     openEditModal, openCreateModal,
+    collabOpen, setCollabOpen, joinOpen, setJoinOpen,
   };
 }
 
@@ -490,6 +496,7 @@ function ProjectsPageDesktop(props: ReturnType<typeof useProjectsPage>) {
     handleCreateProject, handleUpdateProject, handleDeleteProject,
     handleCreateTask, handleUpdateTask, handleDeleteTask, handleStatusChange,
     openEditModal, openCreateModal,
+    collabOpen, setCollabOpen, joinOpen, setJoinOpen,
   } = props;
 
   const filteredTasks = tasks
@@ -518,15 +525,26 @@ function ProjectsPageDesktop(props: ReturnType<typeof useProjectsPage>) {
         }
         actions={
           selectedProject ? (
-            <Button variant="outline" onClick={() => setSelectedProject(null)}>
-              <ArrowLeft className="h-4 w-4" />
-              Все проекты
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setCollabOpen(true)}>
+                <Users className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" onClick={() => setSelectedProject(null)}>
+                <ArrowLeft className="h-4 w-4" />
+                Все проекты
+              </Button>
+            </div>
           ) : (
-            <Button onClick={openCreateModal}>
-              <Plus className="h-4 w-4" />
-              Новый проект
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setJoinOpen(true)}>
+                <UserPlus className="h-4 w-4" />
+                Вступить
+              </Button>
+              <Button onClick={openCreateModal}>
+                <Plus className="h-4 w-4" />
+                Новый проект
+              </Button>
+            </div>
           )
         }
       />
@@ -634,6 +652,10 @@ function ProjectsPageDesktop(props: ReturnType<typeof useProjectsPage>) {
         initialData={editingTask}
       />
       <TaskDetail task={detailTask} open={!!detailTask} onClose={() => setDetailTask(null)} />
+      {selectedProject && collabOpen && (
+        <CollabPanel projectId={selectedProject.id} isOwner={true} onClose={() => setCollabOpen(false)} />
+      )}
+      <JoinProjectModal open={joinOpen} onClose={() => setJoinOpen(false)} />
     </>
   );
 }
@@ -650,6 +672,7 @@ function ProjectsPageMobile(props: ReturnType<typeof useProjectsPage>) {
     handleCreateProject, handleUpdateProject, handleDeleteProject,
     handleCreateTask, handleUpdateTask, handleDeleteTask, handleStatusChange,
     openEditModal, openCreateModal,
+    collabOpen, setCollabOpen, joinOpen, setJoinOpen,
   } = props;
 
   const filteredTasks = tasks
@@ -685,22 +708,26 @@ function ProjectsPageMobile(props: ReturnType<typeof useProjectsPage>) {
                   {selectedProject.emoji} {selectedProject.name}
                 </span>
               </div>
-              <button
-                onClick={() => setTaskFormOpen(true)}
-                className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--accent)] text-white shadow-[var(--shadow-sm)] shrink-0"
-              >
-                <Plus className="h-5 w-5" />
-              </button>
+              <div className="flex gap-2">
+                <button onClick={() => setCollabOpen(true)} className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--surface)] shrink-0">
+                  <Users className="h-5 w-5" />
+                </button>
+                <button onClick={() => setTaskFormOpen(true)} className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--accent)] text-white shrink-0">
+                  <Plus className="h-5 w-5" />
+                </button>
+              </div>
             </>
           ) : (
             <>
               <h1 className="text-xl font-bold tracking-tight">Проекты</h1>
-              <button
-                onClick={openCreateModal}
-                className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--accent)] text-white shadow-[var(--shadow-sm)]"
-              >
-                <Plus className="h-5 w-5" />
-              </button>
+              <div className="flex gap-2">
+                <button onClick={() => setJoinOpen(true)} className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--surface)]">
+                  <UserPlus className="h-5 w-5" />
+                </button>
+                <button onClick={openCreateModal} className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--accent)] text-white">
+                  <Plus className="h-5 w-5" />
+                </button>
+              </div>
             </>
           )}
         </div>
@@ -811,6 +838,10 @@ function ProjectsPageMobile(props: ReturnType<typeof useProjectsPage>) {
         initialData={editingTask}
       />
       <TaskDetail task={detailTask} open={!!detailTask} onClose={() => setDetailTask(null)} />
+      {selectedProject && collabOpen && (
+        <CollabPanel projectId={selectedProject.id} isOwner={true} onClose={() => setCollabOpen(false)} />
+      )}
+      <JoinProjectModal open={joinOpen} onClose={() => setJoinOpen(false)} />
     </div>
   );
 }

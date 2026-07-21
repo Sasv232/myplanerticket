@@ -46,6 +46,8 @@ export function TasksPageDesktop() {
   const [priorityFilter, setPriorityFilter] = useState<TaskPriority | "all">(
     "all"
   );
+  const [labelFilter, setLabelFilter] = useState("");
+  const [projectFilter, setProjectFilter] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showBulkBar, setShowBulkBar] = useState(false);
   const [templates, setTemplates] = useState<any[]>([]);
@@ -142,7 +144,11 @@ export function TasksPageDesktop() {
       statusFilter === "all" || task.status === statusFilter;
     const matchPriority =
       priorityFilter === "all" || task.priority === priorityFilter;
-    return matchSearch && matchStatus && matchPriority;
+    const matchLabel =
+      !labelFilter || task.label === labelFilter;
+    const matchProject =
+      !projectFilter || task.projectId === projectFilter;
+    return matchSearch && matchStatus && matchPriority && matchLabel && matchProject;
   });
 
   const handleCreate = async (data: CreateTaskInput) => {
@@ -446,6 +452,10 @@ export function TasksPageDesktop() {
             onStatusChange={setStatusFilter}
             priority={priorityFilter}
             onPriorityChange={setPriorityFilter}
+            label={labelFilter}
+            onLabelChange={setLabelFilter}
+            projectId={projectFilter}
+            onProjectChange={setProjectFilter}
           />
           <div className="flex items-center gap-1 ml-auto">
             <ArrowUpDown className="h-4 w-4 text-[var(--secondary)]" />

@@ -13,6 +13,7 @@ import {
   Music,
   StickyNote,
   BookOpen,
+  Dumbbell,
 } from "lucide-react";
 
 export interface NavItem {
@@ -59,6 +60,12 @@ export const navigation: NavGroup[] = [
     items: [
       { label: "Заметки", href: "/notes", icon: StickyNote },
       { label: "Дневник", href: "/journal", icon: BookOpen },
+    ],
+  },
+  {
+    title: "Здоров'я",
+    items: [
+      { label: "Фітнес", href: "/fitness", icon: Dumbbell },
     ],
   },
   {

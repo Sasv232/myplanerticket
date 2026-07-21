@@ -1,4 +1,4 @@
-import { pgTable, text, integer, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, integer, boolean, real } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
   id: text("id").primaryKey(),
@@ -178,4 +178,74 @@ export const journalEntries = pgTable("journal_entries", {
   pinned: boolean("pinned").default(false),
   createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
   updatedAt: text("updated_at").notNull().$defaultFn(() => new Date().toISOString()),
+});
+
+export const foodEntries = pgTable("food_entries", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  calories: real("calories").notNull(),
+  protein: real("protein").default(0),
+  carbs: real("carbs").default(0),
+  fat: real("fat").default(0),
+  mealType: text("meal_type").notNull(),
+  date: text("date").notNull(),
+  createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
+});
+
+export const waterEntries = pgTable("water_entries", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
+  amount: real("amount").notNull(),
+  date: text("date").notNull(),
+  createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
+});
+
+export const weightEntries = pgTable("weight_entries", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
+  weight: real("weight").notNull(),
+  date: text("date").notNull(),
+  createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
+});
+
+export const healthProfile = pgTable("health_profile", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").references(() => users.id, { onDelete: "cascade" }).unique(),
+  height: real("height"),
+  birthDate: text("birth_date"),
+  gender: text("gender"),
+  activityLevel: text("activity_level").default("sedentary"),
+  dailyCalorieGoal: real("daily_calorie_goal"),
+  dailyWaterGoal: real("daily_water_goal"),
+  createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
+  updatedAt: text("updated_at").notNull().$defaultFn(() => new Date().toISOString()),
+});
+
+export const projectMembers = pgTable("project_members", {
+  id: text("id").primaryKey(),
+  projectId: text("project_id").references(() => projects.id, { onDelete: "cascade" }),
+  userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
+  role: text("role").notNull().default("member"),
+  createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
+});
+
+export const projectInvites = pgTable("project_invites", {
+  id: text("id").primaryKey(),
+  projectId: text("project_id").references(() => projects.id, { onDelete: "cascade" }),
+  code: text("code").notNull().unique(),
+  role: text("role").notNull().default("member"),
+  maxUses: integer("max_uses"),
+  uses: integer("uses").default(0),
+  expiresAt: text("expires_at"),
+  createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
+});
+
+export const projectActivity = pgTable("project_activity", {
+  id: text("id").primaryKey(),
+  projectId: text("project_id").references(() => projects.id, { onDelete: "cascade" }),
+  userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
+  action: text("action").notNull(),
+  details: text("details"),
+  createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
 });
