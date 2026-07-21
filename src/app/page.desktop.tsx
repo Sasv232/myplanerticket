@@ -272,36 +272,43 @@ export function DashboardPageDesktop() {
 
           <div className="grid grid-cols-3 gap-4">
             <Link href="/pomodoro">
-              <Card className="hover:bg-muted/50 transition-colors cursor-pointer h-full">
+              <Card className="group hover:scale-[1.03] hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 cursor-pointer h-full border border-border/50 hover:border-primary/30">
                 <CardContent className="p-6 flex flex-col items-center gap-3 text-center">
-                  <Timer className="h-8 w-8 text-primary" />
+                  <div className="relative">
+                    <div className="absolute inset-0 rounded-full bg-primary/10 scale-0 group-hover:scale-150 transition-transform duration-500 opacity-0 group-hover:opacity-100" />
+                    <Timer className="h-8 w-8 text-primary relative z-10 group-hover:rotate-12 transition-transform duration-300" />
+                  </div>
                   <div>
-                    <p className="font-semibold">Pomodoro</p>
+                    <p className="font-semibold group-hover:text-primary transition-colors duration-300">Pomodoro</p>
                     <p className="text-sm text-muted-foreground">Фокусировка</p>
                   </div>
                 </CardContent>
               </Card>
             </Link>
             <Link href="/board">
-              <Card className="hover:bg-muted/50 transition-colors cursor-pointer h-full">
+              <Card className="group hover:scale-[1.03] hover:shadow-lg hover:shadow-green-500/10 transition-all duration-300 cursor-pointer h-full border border-border/50 hover:border-green-500/30">
                 <CardContent className="p-6 flex flex-col items-center gap-3 text-center">
-                  <ListTodo className="h-8 w-8 text-green-500" />
+                  <div className="relative">
+                    <div className="absolute inset-0 rounded-full bg-green-500/10 scale-0 group-hover:scale-150 transition-transform duration-500 opacity-0 group-hover:opacity-100" />
+                    <ListTodo className="h-8 w-8 text-green-500 relative z-10 group-hover:-rotate-6 transition-transform duration-300" />
+                  </div>
                   <div>
-                    <p className="font-semibold">Доска задач</p>
+                    <p className="font-semibold group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-300">Доска задач</p>
                     <p className="text-sm text-muted-foreground">Kanban вид</p>
                   </div>
                 </CardContent>
               </Card>
             </Link>
             <Link href="/calendar">
-              <Card className="hover:bg-muted/50 transition-colors cursor-pointer h-full">
+              <Card className="group hover:scale-[1.03] hover:shadow-lg hover:shadow-orange-500/10 transition-all duration-300 cursor-pointer h-full border border-border/50 hover:border-orange-500/30">
                 <CardContent className="p-6 flex flex-col items-center gap-3 text-center">
-                  <Clock className="h-8 w-8 text-orange-500" />
+                  <div className="relative">
+                    <div className="absolute inset-0 rounded-full bg-orange-500/10 scale-0 group-hover:scale-150 transition-transform duration-500 opacity-0 group-hover:opacity-100" />
+                    <Clock className="h-8 w-8 text-orange-500 relative z-10 group-hover:rotate-[360deg] transition-transform duration-700" />
+                  </div>
                   <div>
-                    <p className="font-semibold">Календарь</p>
-                    <p className="text-sm text-muted-foreground">
-                      Задачи по датам
-                    </p>
+                    <p className="font-semibold group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors duration-300">Календарь</p>
+                    <p className="text-sm text-muted-foreground">Задачи по датам</p>
                   </div>
                 </CardContent>
               </Card>

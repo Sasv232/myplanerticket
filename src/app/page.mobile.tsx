@@ -275,55 +275,55 @@ export function DashboardPageMobile() {
         <h2 className="text-base font-semibold mb-3">Быстрый доступ</h2>
         <div className="space-y-2">
           <Link href="/pomodoro">
-            <Card className="mobile-quick-card">
+            <Card className="mobile-quick-card group active:scale-[0.98] hover:shadow-lg hover:shadow-[var(--accent)]/10 transition-all duration-300">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/10">
-                      <Timer className="h-5 w-5 text-[var(--accent)]" />
+                    <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/10 group-hover:bg-[var(--accent)]/20 transition-colors duration-300">
+                      <Timer className="h-5 w-5 text-[var(--accent)] group-hover:rotate-12 transition-transform duration-300" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium">Таймер Pomodoro</p>
+                      <p className="text-sm font-medium group-hover:text-[var(--accent)] transition-colors duration-300">Таймер Pomodoro</p>
                       <p className="text-xs text-[var(--secondary)]">Фокусировка</p>
                     </div>
                   </div>
-                  <ArrowRight className="h-4 w-4 text-[var(--secondary)]" />
+                  <ArrowRight className="h-4 w-4 text-[var(--secondary)] group-hover:translate-x-1 transition-transform duration-300" />
                 </div>
               </CardContent>
             </Card>
           </Link>
           <Link href="/board">
-            <Card className="mobile-quick-card">
+            <Card className="mobile-quick-card group active:scale-[0.98] hover:shadow-lg hover:shadow-[var(--success)]/10 transition-all duration-300">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--success)]/10">
-                      <ListTodo className="h-5 w-5 text-[var(--success)]" />
+                    <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--success)]/10 group-hover:bg-[var(--success)]/20 transition-colors duration-300">
+                      <ListTodo className="h-5 w-5 text-[var(--success)] group-hover:-rotate-6 transition-transform duration-300" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium">Доска задач</p>
+                      <p className="text-sm font-medium group-hover:text-[var(--success)] transition-colors duration-300">Доска задач</p>
                       <p className="text-xs text-[var(--secondary)]">Kanban вид</p>
                     </div>
                   </div>
-                  <ArrowRight className="h-4 w-4 text-[var(--secondary)]" />
+                  <ArrowRight className="h-4 w-4 text-[var(--secondary)] group-hover:translate-x-1 transition-transform duration-300" />
                 </div>
               </CardContent>
             </Card>
           </Link>
           <Link href="/calendar">
-            <Card className="mobile-quick-card">
+            <Card className="mobile-quick-card group active:scale-[0.98] hover:shadow-lg hover:shadow-[var(--warning)]/10 transition-all duration-300">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--warning)]/10">
-                      <Clock className="h-5 w-5 text-[var(--warning)]" />
+                    <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--warning)]/10 group-hover:bg-[var(--warning)]/20 transition-colors duration-300">
+                      <Clock className="h-5 w-5 text-[var(--warning)] group-hover:rotate-[360deg] transition-transform duration-700" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium">Календарь</p>
+                      <p className="text-sm font-medium group-hover:text-[var(--warning)] transition-colors duration-300">Календарь</p>
                       <p className="text-xs text-[var(--secondary)]">Задачи по датам</p>
                     </div>
                   </div>
-                  <ArrowRight className="h-4 w-4 text-[var(--secondary)]" />
+                  <ArrowRight className="h-4 w-4 text-[var(--secondary)] group-hover:translate-x-1 transition-transform duration-300" />
                 </div>
               </CardContent>
             </Card>
