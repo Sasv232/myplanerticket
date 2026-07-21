@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { navigation } from "@/config/navigation";
+import { useNavigation } from "@/config/use-navigation";
 import { useState } from "react";
 import { Menu, X, Train, Sun, Moon, LogOut, Shield } from "lucide-react";
 import { useTheme } from "./theme-provider";
@@ -15,6 +15,7 @@ export function Sidebar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { theme, toggle } = useTheme();
   const { user, logout } = useAuth();
+  const navigation = useNavigation();
 
   const handleLogout = async () => {
     await logout();

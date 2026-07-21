@@ -57,7 +57,7 @@ export function TasksPageDesktop() {
 
   const fetchTasks = useCallback(async () => {
     try {
-      const res = await fetch("/api/tasks");
+      const res = await fetch("/api/tasks?t=" + Date.now());
       const data = await res.json();
       setTasks(
         data.map(
@@ -83,7 +83,7 @@ export function TasksPageDesktop() {
 
   const fetchTemplates = useCallback(async () => {
     try {
-      const res = await fetch("/api/templates");
+      const res = await fetch("/api/templates?t=" + Date.now());
       setTemplates(await res.json());
     } catch {}
   }, []);
@@ -91,6 +91,8 @@ export function TasksPageDesktop() {
   useEffect(() => {
     fetchTasks();
     fetchTemplates();
+    const interval = setInterval(fetchTasks, 15000);
+    return () => clearInterval(interval);
   }, [fetchTasks, fetchTemplates]);
 
   const shortcuts = useMemo(
@@ -157,7 +159,7 @@ export function TasksPageDesktop() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
-    fetchTasks();
+    await fetchTasks();
   };
 
   const handleUpdate = async (data: CreateTaskInput) => {
@@ -167,12 +169,12 @@ export function TasksPageDesktop() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
-    fetchTasks();
+    await fetchTasks();
   };
 
   const handleDelete = async (id: string) => {
     await fetch(`/api/tasks/${id}`, { method: "DELETE" });
-    fetchTasks();
+    await fetchTasks();
   };
 
   const handleStatusChange = async (id: string, status: TaskStatus) => {

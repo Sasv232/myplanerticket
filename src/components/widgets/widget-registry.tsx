@@ -14,15 +14,20 @@ import { AnimatePresence, motion } from "framer-motion";
 export function TaskStatsWidget() {
   const [data, setData] = useState<{ todo: number; inProgress: number; done: number; urgent: number } | null>(null);
   useEffect(() => {
-    fetch("/api/tasks").then((r) => r.json()).then((tasks) => {
-      if (!Array.isArray(tasks)) return;
-      setData({
-        todo: tasks.filter((t: { status: string }) => t.status === "todo").length,
-        inProgress: tasks.filter((t: { status: string }) => t.status === "in_progress").length,
-        done: tasks.filter((t: { status: string }) => t.status === "done").length,
-        urgent: tasks.filter((t: { status: string; priority: string }) => t.priority === "urgent" && t.status !== "done").length,
-      });
-    }).catch(() => {});
+    const fetchData = () => {
+      fetch("/api/tasks?t=" + Date.now()).then((r) => r.json()).then((tasks) => {
+        if (!Array.isArray(tasks)) return;
+        setData({
+          todo: tasks.filter((t: { status: string }) => t.status === "todo").length,
+          inProgress: tasks.filter((t: { status: string }) => t.status === "in_progress").length,
+          done: tasks.filter((t: { status: string }) => t.status === "done").length,
+          urgent: tasks.filter((t: { status: string; priority: string }) => t.priority === "urgent" && t.status !== "done").length,
+        });
+      }).catch(() => {});
+    };
+    fetchData();
+    const interval = setInterval(fetchData, 15000);
+    return () => clearInterval(interval);
   }, []);
   if (!data) return <WidgetSkeleton />;
 
@@ -125,7 +130,12 @@ export function QuoteWidget() {
 export function HabitsTodayWidget() {
   const [habits, setHabits] = useState<{ id: string; name: string; emoji: string; color: string; logs: { date: string }[] }[]>([]);
   useEffect(() => {
-    fetch("/api/habits").then((r) => r.json()).then((d) => { if (Array.isArray(d)) setHabits(d); }).catch(() => {});
+    const fetchData = () => {
+      fetch("/api/habits?t=" + Date.now()).then((r) => r.json()).then((d) => { if (Array.isArray(d)) setHabits(d); }).catch(() => {});
+    };
+    fetchData();
+    const interval = setInterval(fetchData, 15000);
+    return () => clearInterval(interval);
   }, []);
 
   const today = new Date().toISOString().split("T")[0];
@@ -170,14 +180,19 @@ export function HabitsTodayWidget() {
 export function UpcomingWidget() {
   const [tasks, setTasks] = useState<{ id: string; title: string; emoji: string | null; dueDate: string; priority: string }[]>([]);
   useEffect(() => {
-    fetch("/api/tasks").then((r) => r.json()).then((d) => {
-      if (!Array.isArray(d)) return;
-      const upcoming = d
-        .filter((t: { dueDate: string | null; status: string }) => t.dueDate && t.status !== "done")
-        .sort((a: { dueDate: string }, b: { dueDate: string }) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
-        .slice(0, 4);
-      setTasks(upcoming);
-    }).catch(() => {});
+    const fetchData = () => {
+      fetch("/api/tasks?t=" + Date.now()).then((r) => r.json()).then((d) => {
+        if (!Array.isArray(d)) return;
+        const upcoming = d
+          .filter((t: { dueDate: string | null; status: string }) => t.dueDate && t.status !== "done")
+          .sort((a: { dueDate: string }, b: { dueDate: string }) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
+          .slice(0, 4);
+        setTasks(upcoming);
+      }).catch(() => {});
+    };
+    fetchData();
+    const interval = setInterval(fetchData, 15000);
+    return () => clearInterval(interval);
   }, []);
 
   if (tasks.length === 0) return (
@@ -220,7 +235,12 @@ export function PomodoroWidget() {
 export function KarmaWidget() {
   const [karma, setKarma] = useState<{ points: number; level: number; streak: number } | null>(null);
   useEffect(() => {
-    fetch("/api/karma").then((r) => r.json()).then((d) => { if (d && d.points !== undefined) setKarma(d); }).catch(() => {});
+    const fetchData = () => {
+      fetch("/api/karma?t=" + Date.now()).then((r) => r.json()).then((d) => { if (d && d.points !== undefined) setKarma(d); }).catch(() => {});
+    };
+    fetchData();
+    const interval = setInterval(fetchData, 30000);
+    return () => clearInterval(interval);
   }, []);
   if (!karma) return <WidgetSkeleton />;
 

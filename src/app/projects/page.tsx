@@ -75,7 +75,7 @@ function useProjectsPage() {
 
   const fetchProjects = useCallback(async () => {
     try {
-      const res = await fetch("/api/projects");
+      const res = await fetch("/api/projects?t=" + Date.now());
       const data = await res.json();
       setProjects(data);
     } catch {} finally {
@@ -85,7 +85,7 @@ function useProjectsPage() {
 
   const fetchTasks = useCallback(async (projectId?: string) => {
     try {
-      const url = projectId ? `/api/tasks?projectId=${projectId}` : "/api/tasks";
+      const url = projectId ? `/api/tasks?projectId=${projectId}&t=${Date.now()}` : `/api/tasks?t=${Date.now()}`;
       const res = await fetch(url);
       const data = await res.json();
       setTasks(
@@ -104,7 +104,12 @@ function useProjectsPage() {
   useEffect(() => {
     fetchProjects();
     fetchTasks();
-  }, [fetchProjects, fetchTasks]);
+    const interval = setInterval(() => {
+      fetchProjects();
+      fetchTasks(selectedProject?.id);
+    }, 15000);
+    return () => clearInterval(interval);
+  }, [fetchProjects, fetchTasks, selectedProject?.id]);
 
   useEffect(() => {
     if (selectedProject) {
