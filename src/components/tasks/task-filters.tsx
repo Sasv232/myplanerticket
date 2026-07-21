@@ -1,7 +1,9 @@
 "use client";
 
+import { useCallback } from "react";
 import { TaskStatus, TaskPriority } from "@/types/task";
 import { Search } from "lucide-react";
+import { VoiceButton } from "@/components/ui/voice-button";
 
 interface TaskFiltersProps {
   search: string;
@@ -20,6 +22,10 @@ export function TaskFilters({
   priority,
   onPriorityChange,
 }: TaskFiltersProps) {
+  const handleVoiceSearch = useCallback((text: string) => {
+    onSearchChange(text);
+  }, [onSearchChange]);
+
   return (
     <div className="space-y-3">
       <div className="relative">
@@ -29,7 +35,12 @@ export function TaskFilters({
           placeholder="Поиск задач..."
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="flex h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)] transition-colors"
+          className="flex h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] pl-10 pr-12 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)] transition-colors"
+        />
+        <VoiceButton
+          onResult={handleVoiceSearch}
+          size="sm"
+          className="absolute right-2 top-1/2 -translate-y-1/2"
         />
       </div>
       <div className="flex gap-2">

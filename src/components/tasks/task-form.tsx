@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Task, CreateTaskInput, TaskPriority } from "@/types/task";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { VoiceButton } from "@/components/ui/voice-button";
 import {
   Modal,
   ModalContent,
@@ -52,6 +53,20 @@ export function TaskForm({ open, onClose, onSubmit, initialData }: TaskFormProps
   const [repeatRule, setRepeatRule] = useState(initialData?.repeatRule || "");
   const [label, setLabel] = useState(initialData?.label || "");
 
+  const handleVoiceTitle = useCallback((text: string) => {
+    setTitle((prev) => {
+      const newText = prev ? prev + " " + text : text;
+      return newText;
+    });
+  }, []);
+
+  const handleVoiceDescription = useCallback((text: string) => {
+    setDescription((prev) => {
+      const newText = prev ? prev + " " + text : text;
+      return newText;
+    });
+  }, []);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
@@ -87,20 +102,35 @@ export function TaskForm({ open, onClose, onSubmit, initialData }: TaskFormProps
             </ModalDescription>
           </ModalHeader>
           <div className="grid gap-4 py-4">
-            <Input
-              placeholder="Название задачи"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              autoFocus
-            />
+            <div className="relative">
+              <Input
+                placeholder="Название задачи"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                autoFocus
+                className="pr-12"
+              />
+              <VoiceButton
+                onResult={handleVoiceTitle}
+                size="sm"
+                className="absolute right-2 top-1/2 -translate-y-1/2"
+              />
+            </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium">Описание (Markdown)</label>
-              <textarea
-                placeholder="**Жирный**, *курсив*, - список"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="flex min-h-[100px] w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm font-mono text-[var(--foreground)] placeholder:text-[var(--secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
-              />
+              <div className="relative">
+                <textarea
+                  placeholder="**Жирный**, *курсив*, - список"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="flex min-h-[100px] w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 pr-12 text-sm font-mono text-[var(--foreground)] placeholder:text-[var(--secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                />
+                <VoiceButton
+                  onResult={handleVoiceDescription}
+                  size="sm"
+                  className="absolute right-2 top-2"
+                />
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>

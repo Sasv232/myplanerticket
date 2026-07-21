@@ -326,3 +326,43 @@ body {
     gap: 16px;
   }
 }
+
+/* ===== VOICE BUTTON PULSE ===== */
+@keyframes voice-pulse-ring {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+@keyframes voice-pulse-dot {
+  0% {
+    transform: scale(0.9);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(0.9);
+  }
+}
+
+.voice-pulse {
+  position: relative;
+  animation: voice-pulse-dot 1.5s ease-in-out infinite;
+}
+
+.voice-pulse::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  background: var(--error);
+  opacity: 0.4;
+  animation: voice-pulse-ring 1.5s ease-out infinite;
+  z-index: -1;
+}
