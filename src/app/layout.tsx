@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/layout/theme-provider";
 import { AuthProvider } from "@/lib/auth-context";
 import { AuthGuard } from "@/components/auth-guard";
 import { AppShell } from "@/components/layout/app-shell";
+import { UpdatePrompt } from "@/components/layout/update-prompt";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -54,7 +55,11 @@ const themeScript = `
 const swScript = `
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", function() {
-      navigator.serviceWorker.register("/sw.js").catch(function() {});
+      navigator.serviceWorker.register("/sw.js").then(function(registration) {
+        setInterval(function() {
+          registration.update();
+        }, 60 * 1000);
+      }).catch(function() {});
     });
   }
 `;
@@ -81,6 +86,7 @@ export default function RootLayout({
             <AuthGuard>
               <AppShell>{children}</AppShell>
             </AuthGuard>
+            <UpdatePrompt />
           </AuthProvider>
         </ThemeProvider>
       </body>
