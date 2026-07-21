@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { WidgetConfig, AVAILABLE_WIDGETS, saveWidgetConfig } from "@/lib/widgets";
+import { WidgetConfig, AVAILABLE_WIDGETS, loadWidgetConfig, saveWidgetConfig } from "@/lib/widgets";
 import {
   Modal,
   ModalContent,
@@ -15,18 +15,17 @@ import { Check, ChevronUp, ChevronDown, Plus } from "lucide-react";
 interface WidgetEditorProps {
   open: boolean;
   onClose: () => void;
-  config: WidgetConfig[];
-  onChange: (config: WidgetConfig[]) => void;
+  onChange?: (config: WidgetConfig[]) => void;
 }
 
-export function WidgetEditor({ open, onClose, config, onChange }: WidgetEditorProps) {
+export function WidgetEditor({ open, onClose, onChange }: WidgetEditorProps) {
   const [local, setLocal] = useState<WidgetConfig[]>([]);
 
   useEffect(() => {
     if (open) {
-      setLocal(config.map((w) => ({ ...w })));
+      setLocal(loadWidgetConfig());
     }
-  }, [open, config]);
+  }, [open]);
 
   const toggleWidget = (id: string) => {
     setLocal((prev) =>
@@ -55,8 +54,8 @@ export function WidgetEditor({ open, onClose, config, onChange }: WidgetEditorPr
   };
 
   const handleSave = () => {
-    onChange(local);
     saveWidgetConfig(local);
+    if (onChange) onChange(local);
     onClose();
   };
 

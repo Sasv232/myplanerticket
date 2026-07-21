@@ -42,7 +42,6 @@ export function DashboardPageDesktop() {
       <WidgetEditor
         open={editorOpen}
         onClose={() => setEditorOpen(false)}
-        config={widgetConfig}
         onChange={handleConfigChange}
       />
     </>
