@@ -1,6 +1,6 @@
 const NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 
-export type WaveformType = "sine" | "square" | "sawtooth" | "triangle";
+export type WaveformType = "sine" | "square" | "sawtooth" | "triangle" | "piano";
 
 export function noteToMidi(note: string): number {
   const match = note.match(/^([A-G]#?)(\d)$/);
@@ -37,18 +37,62 @@ export interface PlayNoteOptions {
   duration?: number;
 }
 
+function playPianoNote(ctx: AudioContext, freq: number, vol: number, dur: number): { stop: () => void } {
+  const oscs: OscillatorNode[] = [];
+  const gains: GainNode[] = [];
+  const masterGain = ctx.createGain();
+  masterGain.connect(ctx.destination);
+
+  const harmonics = [
+    { ratio: 1, gain: 1.0 },
+    { ratio: 2, gain: 0.5 },
+    { ratio: 3, gain: 0.25 },
+    { ratio: 4, gain: 0.12 },
+    { ratio: 5, gain: 0.06 },
+  ];
+
+  harmonics.forEach((h) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(freq * h.ratio, ctx.currentTime);
+    gain.gain.setValueAtTime(0, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(vol * h.gain, ctx.currentTime + 0.008);
+    gain.gain.exponentialRampToValueAtTime(Math.max(vol * h.gain * 0.3, 0.001), ctx.currentTime + dur * 0.4);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+    osc.connect(gain);
+    gain.connect(masterGain);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + dur + 0.05);
+    oscs.push(osc);
+    gains.push(gain);
+  });
+
+  masterGain.gain.setValueAtTime(1, ctx.currentTime);
+  masterGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur + 0.05);
+
+  return {
+    stop: () => {
+      oscs.forEach((o) => { try { o.stop(); } catch {} });
+    },
+  };
+}
+
 export function playNote(note: string, opts: PlayNoteOptions): { stop: () => void } {
   const ctx = getCtx();
   const freq = noteToFrequency(note);
+  const vol = opts.volume;
+  const dur = opts.duration ?? 0.4;
+
+  if (opts.waveform === "piano") {
+    return playPianoNote(ctx, freq, vol, dur);
+  }
 
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
 
   osc.type = opts.waveform;
   osc.frequency.setValueAtTime(freq, ctx.currentTime);
-
-  const vol = opts.volume;
-  const dur = opts.duration ?? 0.4;
 
   gain.gain.setValueAtTime(0, ctx.currentTime);
   gain.gain.linearRampToValueAtTime(vol, ctx.currentTime + 0.02);
@@ -69,7 +113,6 @@ export function playNote(note: string, opts: PlayNoteOptions): { stop: () => voi
 }
 
 let analyserNode: AnalyserNode | null = null;
-let analyserSource: MediaStreamAudioSourceNode | null = null;
 
 export function getAnalyser(): AnalyserNode | null {
   try {

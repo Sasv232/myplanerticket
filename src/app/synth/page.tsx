@@ -194,7 +194,7 @@ export default function SynthPage() {
             Звук
           </label>
           <div className="flex gap-1">
-            {(["sine", "square", "sawtooth", "triangle"] as WaveformType[]).map((w) => (
+            {(["sine", "square", "sawtooth", "triangle", "piano"] as WaveformType[]).map((w) => (
               <Button
                 key={w}
                 variant={waveform === w ? "default" : "outline"}
@@ -202,7 +202,7 @@ export default function SynthPage() {
                 onClick={() => setWaveform(w)}
                 className="text-[11px]"
               >
-                {w === "sine" ? "Синус" : w === "square" ? "Квадрат" : w === "sawtooth" ? "Пила" : "Треуг."}
+                {w === "sine" ? "Синус" : w === "square" ? "Квадрат" : w === "sawtooth" ? "Пила" : w === "triangle" ? "Треуг." : "Пианино"}
               </Button>
             ))}
           </div>
