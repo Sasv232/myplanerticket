@@ -10,7 +10,7 @@ import {
   ModalDescription,
 } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
-import { Check, ChevronUp, ChevronDown, Plus } from "lucide-react";
+import { Check, ChevronUp, ChevronDown, Plus, X } from "lucide-react";
 
 interface WidgetEditorProps {
   open: boolean;
@@ -18,12 +18,23 @@ interface WidgetEditorProps {
   onChange?: (config: WidgetConfig[]) => void;
 }
 
+function mergeWidgets(saved: WidgetConfig[]): WidgetConfig[] {
+  return AVAILABLE_WIDGETS.map((def, i) => {
+    const found = saved.find((w) => w.id === def.id);
+    return {
+      id: def.id,
+      enabled: found ? found.enabled : ["task-stats", "weather", "currency", "habits-today", "upcoming", "pomodoro"].includes(def.id),
+      order: found ? found.order : i,
+    };
+  });
+}
+
 export function WidgetEditor({ open, onClose, onChange }: WidgetEditorProps) {
-  const [local, setLocal] = useState<WidgetConfig[]>([]);
+  const [local, setLocal] = useState<WidgetConfig[]>(() => mergeWidgets([]));
 
   useEffect(() => {
     if (open) {
-      setLocal(loadWidgetConfig());
+      setLocal(mergeWidgets(loadWidgetConfig()));
     }
   }, [open]);
 

@@ -37,7 +37,14 @@ export function loadWidgetConfig(): WidgetConfig[] {
   if (typeof window === "undefined") return DEFAULT_WIDGETS;
   try {
     const saved = localStorage.getItem("dashboard-widgets");
-    if (saved) return JSON.parse(saved);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        const savedIds = new Set(parsed.map((w: WidgetConfig) => w.id));
+        const missing = DEFAULT_WIDGETS.filter((w) => !savedIds.has(w.id));
+        return [...parsed, ...missing];
+      }
+    }
   } catch {}
   return DEFAULT_WIDGETS;
 }
