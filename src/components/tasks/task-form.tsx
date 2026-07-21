@@ -66,6 +66,7 @@ export function TaskForm({ open, onClose, onSubmit, initialData }: TaskFormProps
   const [emoji, setEmoji] = useState(initialData?.emoji || "");
   const [projects, setProjects] = useState<Project[]>([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [titleError, setTitleError] = useState(false);
 
   useEffect(() => {
     fetch("/api/projects")
@@ -101,7 +102,10 @@ export function TaskForm({ open, onClose, onSubmit, initialData }: TaskFormProps
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) return;
+    if (!title.trim()) {
+      setTitleError(true);
+      return;
+    }
 
     onSubmit({
       title: title.trim(),
@@ -139,26 +143,27 @@ export function TaskForm({ open, onClose, onSubmit, initialData }: TaskFormProps
           </ModalHeader>
           <div className="grid gap-4 py-4">
             {/* Title + Emoji */}
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Input
-                  placeholder="Название задачи (или попробуйте: 'завтра в 10:00 позвонить маме !high')"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  onBlur={() => {
-                    if (title && !initialData && title.length > 5) {
-                      handleNlpInput(title);
-                    }
-                  }}
-                  autoFocus
-                  className="pr-12"
-                />
-                <VoiceButton
-                  onResult={handleVoiceTitle}
-                  size="sm"
-                  className="absolute right-2 top-1/2 -translate-y-1/2"
-                />
-              </div>
+            <div>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Input
+                    placeholder="Название задачи (или попробуйте: 'завтра в 10:00 позвонить маме !high')"
+                    value={title}
+                    onChange={(e) => { setTitle(e.target.value); setTitleError(false); }}
+                    onBlur={() => {
+                      if (title && !initialData && title.length > 5) {
+                        handleNlpInput(title);
+                      }
+                    }}
+                    autoFocus
+                    className={`pr-12 ${titleError ? "!border-[var(--error)] !ring-[var(--error)]/20" : ""}`}
+                  />
+                  <VoiceButton
+                    onResult={handleVoiceTitle}
+                    size="sm"
+                    className="absolute right-2 top-1/2 -translate-y-1/2"
+                  />
+                </div>
               <div className="relative">
                 <button
                   type="button"
@@ -182,6 +187,12 @@ export function TaskForm({ open, onClose, onSubmit, initialData }: TaskFormProps
                   </div>
                 )}
               </div>
+              </div>
+              {titleError && (
+                <p className="mt-2 text-sm text-[var(--error)] font-medium animate-slide-down">
+                  Обязательно заполните название задачи
+                </p>
+              )}
             </div>
 
             {/* NLP hint */}
