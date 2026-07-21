@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { Sidebar } from "./sidebar";
 import { MobileNav } from "./mobile-nav";
 import { MobileHeader } from "./mobile-header";
+import { PageTransition } from "@/components/ui/page-transition";
 
 const PUBLIC_PATHS = ["/login", "/register"];
 
@@ -20,7 +21,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <Sidebar />
       <main className="flex-1 desktop-main mobile-main">
         <MobileHeader />
-        <div className="mobile-content">{children}</div>
+        <div className="mobile-content">
+          <PageTransition>{children}</PageTransition>
+        </div>
       </main>
       <MobileNav />
     </div>
