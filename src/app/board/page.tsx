@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Task, TaskStatus } from "@/types/task";
+import { Header } from "@/components/layout/header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, GripVertical } from "lucide-react";
@@ -65,73 +66,83 @@ export default function BoardPage() {
     e.preventDefault();
   };
 
-  return (
-    <div className="space-y-4">
-      <div className="mobile-page-header">
-        <h1 className="text-2xl font-bold tracking-tight">Доска</h1>
-        <p className="text-sm text-[var(--secondary)]">Перетаскивайте задачи</p>
-      </div>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        {columns.map((col) => {
-          const columnTasks = tasks.filter((t) => t.status === col.status);
-          return (
-            <div
-              key={col.status}
-              className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3"
-              onDrop={(e) => handleDrop(e, col.status)}
-              onDragOver={handleDragOver}
-            >
-              <div className="mb-3 flex items-center gap-2 px-1">
-                <div className="h-3 w-3 rounded-full" style={{ backgroundColor: col.color }} />
-                <h3 className="text-sm font-semibold">{col.title}</h3>
-                <span className="ml-auto rounded-full bg-[var(--card)] px-2 py-0.5 text-xs text-[var(--secondary)]">
-                  {columnTasks.length}
-                </span>
-              </div>
-              <div className="space-y-2">
-                {columnTasks.map((task) => (
-                  <Card
-                    key={task.id}
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, task.id)}
-                    className="mobile-task-card cursor-grab active:cursor-grabbing"
-                  >
-                    <CardContent className="p-3">
-                      <div className="flex items-start gap-2">
-                        <GripVertical className="mt-0.5 h-3.5 w-3.5 text-[var(--muted)]" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{task.title}</p>
-                          {task.description && (
-                            <p className="mt-1 text-xs text-[var(--secondary)] line-clamp-2">
-                              {task.description}
-                            </p>
+  const renderColumns = (itemClass: string) => (
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+      {columns.map((col) => {
+        const columnTasks = tasks.filter((t) => t.status === col.status);
+        return (
+          <div
+            key={col.status}
+            className={`${itemClass} border border-[var(--border)] bg-[var(--surface)] p-3`}
+            onDrop={(e) => handleDrop(e, col.status)}
+            onDragOver={handleDragOver}
+          >
+            <div className="mb-3 flex items-center gap-2 px-1">
+              <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: col.color }} />
+              <h3 className="text-sm font-semibold">{col.title}</h3>
+              <span className="ml-auto rounded-full bg-[var(--card)] px-2 py-0.5 text-xs text-[var(--secondary)]">
+                {columnTasks.length}
+              </span>
+            </div>
+            <div className="space-y-2">
+              {columnTasks.map((task) => (
+                <Card
+                  key={task.id}
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, task.id)}
+                  className="cursor-grab active:cursor-grabbing hover:border-[var(--accent)]/30"
+                >
+                  <CardContent className="p-3">
+                    <div className="flex items-start gap-2">
+                      <GripVertical className="mt-0.5 h-3.5 w-3.5 text-[var(--muted)]" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{task.title}</p>
+                        {task.description && (
+                          <p className="mt-1 text-xs text-[var(--secondary)] line-clamp-2">
+                            {task.description}
+                          </p>
+                        )}
+                        <div className="mt-2 flex items-center gap-2">
+                          <Badge variant={priorityVariant[task.priority]} className="text-[10px]">
+                            {task.priority}
+                          </Badge>
+                          {task.dueDate && (
+                            <span className="flex items-center gap-1 text-[10px] text-[var(--secondary)]">
+                              <Calendar className="h-2.5 w-2.5" />
+                              {format(new Date(task.dueDate), "d MMM", { locale: ru })}
+                            </span>
                           )}
-                          <div className="mt-2 flex items-center gap-2">
-                            <Badge variant={priorityVariant[task.priority]} className="text-[10px]">
-                              {task.priority}
-                            </Badge>
-                            {task.dueDate && (
-                              <span className="flex items-center gap-1 text-[10px] text-[var(--secondary)]">
-                                <Calendar className="h-2.5 w-2.5" />
-                                {format(new Date(task.dueDate), "d MMM", { locale: ru })}
-                              </span>
-                            )}
-                          </div>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
-                {columnTasks.length === 0 && (
-                  <div className="rounded-2xl border border-dashed border-[var(--border)] p-6 text-center text-xs text-[var(--muted)]">
-                    Перетащите задачу
-                  </div>
-                )}
-              </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+              {columnTasks.length === 0 && (
+                <div className="rounded-lg border border-dashed border-[var(--border)] p-6 text-center text-xs text-[var(--muted)]">
+                  Перетащите задачу
+                </div>
+              )}
             </div>
-          );
-        })}
-      </div>
+          </div>
+        );
+      })}
     </div>
+  );
+
+  return (
+    <>
+      <div className="hidden md:block">
+        <Header title="Доска" description="Перетаскивайте задачи между колонками" />
+        {renderColumns("rounded-xl")}
+      </div>
+      <div className="md:hidden space-y-4">
+        <div className="mobile-page-header">
+          <h1 className="text-2xl font-bold tracking-tight">Доска</h1>
+          <p className="text-sm text-[var(--secondary)]">Перетаскивайте задачи</p>
+        </div>
+        {renderColumns("rounded-2xl")}
+      </div>
+    </>
   );
 }

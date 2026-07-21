@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Task, CreateTaskInput, TaskStatus, TaskPriority } from "@/types/task";
+import { Header } from "@/components/layout/header";
 import { TaskCard } from "@/components/tasks/task-card";
 import { TaskForm } from "@/components/tasks/task-form";
 import { TaskDetail } from "@/components/tasks/task-detail";
@@ -194,179 +195,257 @@ function TasksContent() {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="mobile-page-header">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Задачи</h1>
-            <p className="text-sm text-[var(--secondary)]">
-              Всего: {stats.total} · Активных: {stats.todo + stats.inProgress}
-            </p>
+    <>
+      {/* ===== DESKTOP ===== */}
+      <div className="hidden md:block">
+        <Header
+          title="Задачи"
+          description={`Всего: ${stats.total} · Активных: ${stats.todo + stats.inProgress}`}
+          actions={
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => setShowTemplates(!showTemplates)}>
+                <BookTemplate className="h-4 w-4" /> Шаблоны
+              </Button>
+              <Button onClick={() => { setEditingTask(undefined); setFormOpen(true); }}>
+                <Plus className="h-4 w-4" /> Новая задача
+              </Button>
+            </div>
+          }
+        />
+
+        {showTemplates && (
+          <Card className="mb-4">
+            <CardContent className="p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <input
+                  placeholder="Название шаблона"
+                  value={templateName}
+                  onChange={(e) => setTemplateName(e.target.value)}
+                  className="flex h-8 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-sm"
+                />
+                <Button size="sm" onClick={saveAsTemplate} disabled={selectedIds.size === 0 || !templateName.trim()}>
+                  Сохранить выбранные ({selectedIds.size})
+                </Button>
+              </div>
+              {templates.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {templates.map((t) => (
+                    <div key={t.id} className="flex items-center gap-1 rounded-lg border border-[var(--border)] px-3 py-1.5 text-sm">
+                      <button onClick={() => applyTemplate(t)} className="hover:text-[var(--accent)]">{t.name}</button>
+                      <button onClick={async () => { await fetch(`/api/templates?id=${t.id}`, { method: "DELETE" }); fetchTemplates(); }} className="ml-1 text-[var(--error)] text-xs">✕</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {showBulkBar && (
+          <Card className="mb-4 border-[var(--accent)]/30">
+            <CardContent className="flex items-center gap-3 p-3">
+              <span className="text-sm text-[var(--secondary)]">Выбрано: {selectedIds.size}</span>
+              <Button size="sm" variant="outline" onClick={selectAll}>
+                {selectedIds.size === filteredTasks.length ? "Снять выделение" : "Выбрать все"}
+              </Button>
+              <select onChange={(e) => { if (e.target.value) bulkAction("status", e.target.value); e.target.value = ""; }} className="h-8 rounded border border-[var(--border)] bg-[var(--surface)] px-2 text-xs">
+                <option value="">Статус...</option>
+                <option value="todo">К выполнению</option>
+                <option value="in_progress">В работе</option>
+                <option value="done">Выполнено</option>
+              </select>
+              <select onChange={(e) => { if (e.target.value) bulkAction("priority", e.target.value); e.target.value = ""; }} className="h-8 rounded border border-[var(--border)] bg-[var(--surface)] px-2 text-xs">
+                <option value="">Приоритет...</option>
+                <option value="low">Низкий</option>
+                <option value="medium">Средний</option>
+                <option value="high">Высокий</option>
+                <option value="urgent">Срочный</option>
+              </select>
+              <Button size="sm" variant="destructive" onClick={() => bulkAction("delete")}>
+                <Trash2 className="h-3.5 w-3.5" /> Удалить
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => { setSelectedIds(new Set()); setShowBulkBar(false); }}>Отмена</Button>
+            </CardContent>
+          </Card>
+        )}
+
+        <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <Card><CardContent className="flex items-center gap-3 p-4"><ListTodo className="h-5 w-5 text-[var(--accent)]" /><div><p className="text-2xl font-bold">{stats.todo}</p><p className="text-xs text-[var(--secondary)]">К выполнению</p></div></CardContent></Card>
+          <Card><CardContent className="flex items-center gap-3 p-4"><Clock className="h-5 w-5 text-[var(--warning)]" /><div><p className="text-2xl font-bold">{stats.inProgress}</p><p className="text-xs text-[var(--secondary)]">В работе</p></div></CardContent></Card>
+          <Card><CardContent className="flex items-center gap-3 p-4"><CheckCircle className="h-5 w-5 text-[var(--success)]" /><div><p className="text-2xl font-bold">{stats.done}</p><p className="text-xs text-[var(--secondary)]">Выполнено</p></div></CardContent></Card>
+          <Card><CardContent className="flex items-center gap-3 p-4"><AlertTriangle className="h-5 w-5 text-[var(--error)]" /><div><p className="text-2xl font-bold">{stats.urgent}</p><p className="text-xs text-[var(--secondary)]">Срочных</p></div></CardContent></Card>
+        </div>
+
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <TaskFilters search={search} onSearchChange={setSearch} status={statusFilter} onStatusChange={setStatusFilter} priority={priorityFilter} onPriorityChange={setPriorityFilter} />
+          <div className="flex items-center gap-1 ml-auto">
+            <ArrowUpDown className="h-4 w-4 text-[var(--secondary)]" />
+            <select value={sortBy} onChange={(e) => setSortBy(e.target.value as SortBy)} className="h-8 rounded border border-[var(--border)] bg-[var(--surface)] px-2 text-xs">
+              <option value="created">По дате создания</option>
+              <option value="date">По дедлайну</option>
+              <option value="priority">По приоритету</option>
+              <option value="name">По названию</option>
+            </select>
+            {!showBulkBar && (
+              <Button variant="ghost" size="sm" onClick={() => { setShowBulkBar(true); }}>
+                Выбрать
+              </Button>
+            )}
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => setShowTemplates(!showTemplates)}>
-              <BookTemplate className="h-4 w-4" />
-            </Button>
-          </div>
+        </div>
+
+        <div className="space-y-2">
+          {filteredTasks.length === 0 ? (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-12 text-[var(--secondary)]">
+                <ListTodo className="mb-3 h-10 w-10 opacity-50" />
+                <p>Задач пока нет</p>
+                <Button variant="ghost" className="mt-2" onClick={() => { setEditingTask(undefined); setFormOpen(true); }}>Создать первую задачу</Button>
+              </CardContent>
+            </Card>
+          ) : (
+            filteredTasks.map((task) => (
+              <TaskCard
+                key={task.id}
+                task={task}
+                onEdit={(t) => { setEditingTask(t); setFormOpen(true); }}
+                onDelete={handleDelete}
+                onStatusChange={handleStatusChange}
+                onClick={(t) => { if (!showBulkBar) setDetailTask(t); }}
+                selected={selectedIds.has(task.id)}
+                onSelect={toggleSelect}
+                showCheckbox={showBulkBar}
+              />
+            ))
+          )}
         </div>
       </div>
 
-      {showTemplates && (
-        <Card className="mobile-widget-card">
-          <CardContent className="p-4 space-y-3">
-            <div className="flex items-center gap-2">
-              <input
-                placeholder="Название шаблона"
-                value={templateName}
-                onChange={(e) => setTemplateName(e.target.value)}
-                className="flex h-10 flex-1 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-sm"
-              />
-              <Button size="sm" onClick={saveAsTemplate} disabled={selectedIds.size === 0 || !templateName.trim()}>
-                Сохранить
+      {/* ===== MOBILE ===== */}
+      <div className="md:hidden space-y-4">
+        <div className="mobile-page-header">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">Задачи</h1>
+              <p className="text-sm text-[var(--secondary)]">
+                Всего: {stats.total} · Активных: {stats.todo + stats.inProgress}
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => setShowTemplates(!showTemplates)}>
+                <BookTemplate className="h-4 w-4" />
               </Button>
             </div>
-            {templates.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {templates.map((t) => (
-                  <div key={t.id} className="flex items-center gap-1 rounded-xl border border-[var(--border)] px-3 py-1.5 text-sm">
-                    <button onClick={() => applyTemplate(t)} className="hover:text-[var(--accent)]">{t.name}</button>
-                    <button onClick={async () => { await fetch(`/api/templates?id=${t.id}`, { method: "DELETE" }); fetchTemplates(); }} className="ml-1 text-[var(--error)] text-xs">✕</button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
+          </div>
+        </div>
 
-      {showBulkBar && (
-        <Card className="mobile-widget-card border-[var(--accent)]/30">
-          <CardContent className="flex items-center gap-3 p-3 flex-wrap">
-            <span className="text-sm text-[var(--secondary)]">Выбрано: {selectedIds.size}</span>
-            <Button size="sm" variant="outline" onClick={selectAll}>
-              {selectedIds.size === filteredTasks.length ? "Снять" : "Все"}
-            </Button>
-            <select onChange={(e) => { if (e.target.value) bulkAction("status", e.target.value); e.target.value = ""; }} className="h-8 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-2 text-xs">
-              <option value="">Статус...</option>
-              <option value="todo">К выполнению</option>
-              <option value="in_progress">В работе</option>
-              <option value="done">Выполнено</option>
-            </select>
-            <select onChange={(e) => { if (e.target.value) bulkAction("priority", e.target.value); e.target.value = ""; }} className="h-8 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-2 text-xs">
-              <option value="">Приоритет...</option>
-              <option value="low">Низкий</option>
-              <option value="medium">Средний</option>
-              <option value="high">Высокий</option>
-              <option value="urgent">Срочный</option>
-            </select>
-            <Button size="sm" variant="destructive" onClick={() => bulkAction("delete")}>
-              <Trash2 className="h-3.5 w-3.5" />
-            </Button>
-            <Button size="sm" variant="ghost" onClick={() => { setSelectedIds(new Set()); setShowBulkBar(false); }}>✕</Button>
-          </CardContent>
-        </Card>
-      )}
-
-      <div className="grid grid-cols-2 gap-3">
-        <Card className="mobile-stat-card">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/10">
-                <ListTodo className="h-5 w-5 text-[var(--accent)]" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{stats.todo}</p>
-                <p className="text-xs text-[var(--secondary)]">К выполнению</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="mobile-stat-card">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--warning)]/10">
-                <Clock className="h-5 w-5 text-[var(--warning)]" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{stats.inProgress}</p>
-                <p className="text-xs text-[var(--secondary)]">В работе</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="mobile-stat-card">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--success)]/10">
-                <CheckCircle className="h-5 w-5 text-[var(--success)]" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{stats.done}</p>
-                <p className="text-xs text-[var(--secondary)]">Выполнено</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="mobile-stat-card">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--error)]/10">
-                <AlertTriangle className="h-5 w-5 text-[var(--error)]" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{stats.urgent}</p>
-                <p className="text-xs text-[var(--secondary)]">Срочных</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <TaskFilters search={search} onSearchChange={setSearch} status={statusFilter} onStatusChange={setStatusFilter} priority={priorityFilter} onPriorityChange={setPriorityFilter} />
-
-      <div className="flex items-center gap-2">
-        <ArrowUpDown className="h-4 w-4 text-[var(--secondary)]" />
-        <select value={sortBy} onChange={(e) => setSortBy(e.target.value as SortBy)} className="h-8 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-2 text-xs flex-1">
-          <option value="created">По дате создания</option>
-          <option value="date">По дедлайну</option>
-          <option value="priority">По приоритету</option>
-          <option value="name">По названию</option>
-        </select>
-        {!showBulkBar && (
-          <Button variant="ghost" size="sm" onClick={() => { setShowBulkBar(true); }}>
-            Выбрать
-          </Button>
-        )}
-      </div>
-
-      <div className="space-y-3">
-        {filteredTasks.length === 0 ? (
+        {showTemplates && (
           <Card className="mobile-widget-card">
-            <CardContent className="flex flex-col items-center justify-center py-12 text-[var(--secondary)]">
-              <ListTodo className="mb-3 h-10 w-10 opacity-50" />
-              <p>Задач пока нет</p>
-              <Button variant="ghost" className="mt-2" onClick={() => { setEditingTask(undefined); setFormOpen(true); }}>Создать первую задачу</Button>
+            <CardContent className="p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <input
+                  placeholder="Название шаблона"
+                  value={templateName}
+                  onChange={(e) => setTemplateName(e.target.value)}
+                  className="flex h-10 flex-1 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-sm"
+                />
+                <Button size="sm" onClick={saveAsTemplate} disabled={selectedIds.size === 0 || !templateName.trim()}>
+                  Сохранить
+                </Button>
+              </div>
+              {templates.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {templates.map((t) => (
+                    <div key={t.id} className="flex items-center gap-1 rounded-xl border border-[var(--border)] px-3 py-1.5 text-sm">
+                      <button onClick={() => applyTemplate(t)} className="hover:text-[var(--accent)]">{t.name}</button>
+                      <button onClick={async () => { await fetch(`/api/templates?id=${t.id}`, { method: "DELETE" }); fetchTemplates(); }} className="ml-1 text-[var(--error)] text-xs">✕</button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
-        ) : (
-          filteredTasks.map((task) => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              onEdit={(t) => { setEditingTask(t); setFormOpen(true); }}
-              onDelete={handleDelete}
-              onStatusChange={handleStatusChange}
-              onClick={(t) => { if (!showBulkBar) setDetailTask(t); }}
-              selected={selectedIds.has(task.id)}
-              onSelect={toggleSelect}
-              showCheckbox={showBulkBar}
-            />
-          ))
         )}
+
+        {showBulkBar && (
+          <Card className="mobile-widget-card border-[var(--accent)]/30">
+            <CardContent className="flex items-center gap-3 p-3 flex-wrap">
+              <span className="text-sm text-[var(--secondary)]">Выбрано: {selectedIds.size}</span>
+              <Button size="sm" variant="outline" onClick={selectAll}>
+                {selectedIds.size === filteredTasks.length ? "Снять" : "Все"}
+              </Button>
+              <select onChange={(e) => { if (e.target.value) bulkAction("status", e.target.value); e.target.value = ""; }} className="h-8 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-2 text-xs">
+                <option value="">Статус...</option>
+                <option value="todo">К выполнению</option>
+                <option value="in_progress">В работе</option>
+                <option value="done">Выполнено</option>
+              </select>
+              <select onChange={(e) => { if (e.target.value) bulkAction("priority", e.target.value); e.target.value = ""; }} className="h-8 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-2 text-xs">
+                <option value="">Приоритет...</option>
+                <option value="low">Низкий</option>
+                <option value="medium">Средний</option>
+                <option value="high">Высокий</option>
+                <option value="urgent">Срочный</option>
+              </select>
+              <Button size="sm" variant="destructive" onClick={() => bulkAction("delete")}>
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => { setSelectedIds(new Set()); setShowBulkBar(false); }}>✕</Button>
+            </CardContent>
+          </Card>
+        )}
+
+        <div className="grid grid-cols-2 gap-3">
+          <Card className="mobile-stat-card"><CardContent className="p-4"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/10"><ListTodo className="h-5 w-5 text-[var(--accent)]" /></div><div><p className="text-2xl font-bold">{stats.todo}</p><p className="text-xs text-[var(--secondary)]">К выполнению</p></div></div></CardContent></Card>
+          <Card className="mobile-stat-card"><CardContent className="p-4"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--warning)]/10"><Clock className="h-5 w-5 text-[var(--warning)]" /></div><div><p className="text-2xl font-bold">{stats.inProgress}</p><p className="text-xs text-[var(--secondary)]">В работе</p></div></div></CardContent></Card>
+          <Card className="mobile-stat-card"><CardContent className="p-4"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--success)]/10"><CheckCircle className="h-5 w-5 text-[var(--success)]" /></div><div><p className="text-2xl font-bold">{stats.done}</p><p className="text-xs text-[var(--secondary)]">Выполнено</p></div></div></CardContent></Card>
+          <Card className="mobile-stat-card"><CardContent className="p-4"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--error)]/10"><AlertTriangle className="h-5 w-5 text-[var(--error)]" /></div><div><p className="text-2xl font-bold">{stats.urgent}</p><p className="text-xs text-[var(--secondary)]">Срочных</p></div></div></CardContent></Card>
+        </div>
+
+        <TaskFilters search={search} onSearchChange={setSearch} status={statusFilter} onStatusChange={setStatusFilter} priority={priorityFilter} onPriorityChange={setPriorityFilter} />
+
+        <div className="flex items-center gap-2">
+          <ArrowUpDown className="h-4 w-4 text-[var(--secondary)]" />
+          <select value={sortBy} onChange={(e) => setSortBy(e.target.value as SortBy)} className="h-8 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-2 text-xs flex-1">
+            <option value="created">По дате создания</option>
+            <option value="date">По дедлайну</option>
+            <option value="priority">По приоритету</option>
+            <option value="name">По названию</option>
+          </select>
+          {!showBulkBar && (
+            <Button variant="ghost" size="sm" onClick={() => { setShowBulkBar(true); }}>Выбрать</Button>
+          )}
+        </div>
+
+        <div className="space-y-3">
+          {filteredTasks.length === 0 ? (
+            <Card className="mobile-widget-card">
+              <CardContent className="flex flex-col items-center justify-center py-12 text-[var(--secondary)]">
+                <ListTodo className="mb-3 h-10 w-10 opacity-50" />
+                <p>Задач пока нет</p>
+                <Button variant="ghost" className="mt-2" onClick={() => { setEditingTask(undefined); setFormOpen(true); }}>Создать первую задачу</Button>
+              </CardContent>
+            </Card>
+          ) : (
+            filteredTasks.map((task) => (
+              <TaskCard
+                key={task.id}
+                task={task}
+                onEdit={(t) => { setEditingTask(t); setFormOpen(true); }}
+                onDelete={handleDelete}
+                onStatusChange={handleStatusChange}
+                onClick={(t) => { if (!showBulkBar) setDetailTask(t); }}
+                selected={selectedIds.has(task.id)}
+                onSelect={toggleSelect}
+                showCheckbox={showBulkBar}
+              />
+            ))
+          )}
+        </div>
       </div>
 
       <TaskForm open={formOpen} onClose={() => { setFormOpen(false); setEditingTask(undefined); }} onSubmit={editingTask ? handleUpdate : handleCreate} initialData={editingTask} />
       <TaskDetail task={detailTask} open={!!detailTask} onClose={() => setDetailTask(null)} />
-    </div>
+    </>
   );
 }
