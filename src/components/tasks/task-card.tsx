@@ -20,11 +20,11 @@ interface TaskCardProps {
   showCheckbox?: boolean;
 }
 
-const priorityConfig: Record<TaskPriority, { label: string; variant: "destructive" | "warning" | "default" | "secondary" }> = {
-  urgent: { label: "Срочно", variant: "destructive" },
-  high: { label: "Высокий", variant: "warning" },
-  medium: { label: "Средний", variant: "default" },
-  low: { label: "Низкий", variant: "secondary" },
+const priorityConfig: Record<TaskPriority, { label: string; variant: "urgent" | "high" | "medium" | "low" }> = {
+  urgent: { label: "Срочно", variant: "urgent" },
+  high: { label: "Высокий", variant: "high" },
+  medium: { label: "Средний", variant: "medium" },
+  low: { label: "Низкий", variant: "low" },
 };
 
 const repeatLabels: Record<string, string> = {
@@ -38,13 +38,13 @@ const repeatLabels: Record<string, string> = {
 };
 
 const LABEL_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-  work: { label: "Работа", color: "#3b82f6", bg: "#3b82f620" },
-  personal: { label: "Личное", color: "#22c55e", bg: "#22c55e20" },
-  urgent: { label: "Срочно", color: "#ef4444", bg: "#ef444420" },
-  study: { label: "Учёба", color: "#8b5cf6", bg: "#8b5cf620" },
-  health: { label: "Здоровье", color: "#f97316", bg: "#f9731620" },
-  finance: { label: "Финансы", color: "#06b6d4", bg: "#06b6d420" },
-  home: { label: "Дом", color: "#ec4899", bg: "#ec489920" },
+  work: { label: "Работа", color: "#3b82f6", bg: "#3b82f615" },
+  personal: { label: "Личное", color: "#22c55e", bg: "#22c55e15" },
+  urgent: { label: "Срочно", color: "#ef4444", bg: "#ef444415" },
+  study: { label: "Учёба", color: "#8b5cf6", bg: "#8b5cf615" },
+  health: { label: "Здоровье", color: "#f97316", bg: "#f9731615" },
+  finance: { label: "Финансы", color: "#06b6d4", bg: "#06b6d415" },
+  home: { label: "Дом", color: "#ec4899", bg: "#ec489915" },
 };
 
 export function TaskCard({ task, onEdit, onDelete, onStatusChange, onClick, selected, onSelect, showCheckbox }: TaskCardProps) {
@@ -62,7 +62,10 @@ export function TaskCard({ task, onEdit, onDelete, onStatusChange, onClick, sele
 
   return (
     <Card
-      className={`group p-4 hover:border-[var(--accent)]/30 mobile-task-card ${labelCfg ? `border-l-4` : ""}`}
+      hover
+      className={`group p-4 ${labelCfg ? "border-l-[3px]" : ""} ${
+        task.status === "done" ? "opacity-60" : ""
+      }`}
       style={labelCfg ? { borderLeftColor: labelCfg.color } : undefined}
       onClick={() => onClick?.(task)}
     >
@@ -77,32 +80,33 @@ export function TaskCard({ task, onEdit, onDelete, onStatusChange, onClick, sele
         ) : (
           <button
             onClick={handleQuickComplete}
-            className={`mt-0.5 flex h-6 w-6 items-center justify-center rounded-lg border-2 transition-all ${
+            className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border-2 transition-all duration-150 ${
               task.status === "done"
-                ? "bg-[var(--success)] border-[var(--success)] text-white"
-                : "border-[var(--border)] hover:border-[var(--accent)]"
+                ? "bg-[var(--success)] border-[var(--success)] text-white scale-110"
+                : "border-[var(--border)] hover:border-[var(--accent)] hover:bg-[var(--accent)]/5"
             }`}
           >
             {task.status === "done" && <Check className="h-3.5 w-3.5" />}
           </button>
         )}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1 flex-wrap">
-            <h3 className={`font-medium truncate ${task.status === "done" ? "line-through opacity-60" : ""}`}>
+          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+            {task.emoji && <span className="text-base">{task.emoji}</span>}
+            <h3 className={`font-semibold text-[15px] truncate ${task.status === "done" ? "line-through" : ""}`}>
               {task.title}
             </h3>
             <Badge variant={priority.variant} className="text-[10px]">{priority.label}</Badge>
           </div>
           {labelCfg && (
             <span
-              className="inline-block rounded-full px-2 py-0.5 text-[10px] font-medium mb-1"
+              className="inline-block rounded-full px-2.5 py-0.5 text-[10px] font-semibold tracking-wide mb-1.5"
               style={{ color: labelCfg.color, backgroundColor: labelCfg.bg }}
             >
               {labelCfg.label}
             </span>
           )}
           {task.repeatRule && (
-            <div className="flex items-center gap-1 text-[10px] text-[var(--secondary)] mb-1">
+            <div className="flex items-center gap-1 text-[11px] text-[var(--secondary)] mb-1.5">
               <Repeat className="h-3 w-3" />
               {repeatLabels[task.repeatRule] || task.repeatRule}
             </div>
@@ -122,13 +126,13 @@ export function TaskCard({ task, onEdit, onDelete, onStatusChange, onClick, sele
             {task.tags.length > 0 && (
               <div className="flex gap-1">
                 {task.tags.map((tag) => (
-                  <span key={tag} className="rounded-lg bg-[var(--surface)] px-1.5 py-0.5 text-[10px]">{tag}</span>
+                  <span key={tag} className="rounded-full bg-[var(--surface)] px-2 py-0.5 text-[10px] font-medium">{tag}</span>
                 ))}
               </div>
             )}
           </div>
         </div>
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); onEdit(task); }}>
             <Pencil className="h-3.5 w-3.5" />
           </Button>

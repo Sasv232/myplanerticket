@@ -18,9 +18,19 @@ export const sessions = pgTable("sessions", {
   createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
 });
 
+export const projects = pgTable("projects", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  emoji: text("emoji").default("📁"),
+  color: text("color").default("#3b82f6"),
+  createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
+});
+
 export const tasks = pgTable("tasks", {
   id: text("id").primaryKey(),
   userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
+  projectId: text("project_id").references(() => projects.id, { onDelete: "set null" }),
   title: text("title").notNull(),
   description: text("description"),
   status: text("status", { enum: ["todo", "in_progress", "done"] })
@@ -32,7 +42,65 @@ export const tasks = pgTable("tasks", {
   dueDate: text("due_date"),
   tags: text("tags").default("[]"),
   repeatRule: text("repeat_rule"),
+  repeatAfterComplete: boolean("repeat_after_complete").default(false),
   label: text("label"),
+  emoji: text("emoji"),
+  completedAt: text("completed_at"),
+  createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
+  updatedAt: text("updated_at").notNull().$defaultFn(() => new Date().toISOString()),
+});
+
+export const subtasks = pgTable("subtasks", {
+  id: text("id").primaryKey(),
+  taskId: text("task_id")
+    .notNull()
+    .references(() => tasks.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  completed: boolean("completed").notNull().default(false),
+  order: integer("order").notNull().default(0),
+  createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
+});
+
+export const habits = pgTable("habits", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  emoji: text("emoji").default("✅"),
+  color: text("color").default("#22c55e"),
+  frequency: text("frequency", { enum: ["daily", "weekly", "monthly"] }).notNull().default("daily"),
+  targetCount: integer("target_count").notNull().default(1),
+  createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
+});
+
+export const habitLogs = pgTable("habit_logs", {
+  id: text("id").primaryKey(),
+  habitId: text("habit_id")
+    .notNull()
+    .references(() => habits.id, { onDelete: "cascade" }),
+  date: text("date").notNull(),
+  count: integer("count").notNull().default(1),
+  note: text("note"),
+  createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
+});
+
+export const goals = pgTable("goals", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  targetCount: integer("target_count").notNull().default(10),
+  currentCount: integer("current_count").notNull().default(0),
+  emoji: text("emoji").default("🎯"),
+  resetPeriod: text("reset_period", { enum: ["daily", "weekly", "monthly", "none"] }).notNull().default("weekly"),
+  createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
+});
+
+export const karma = pgTable("karma", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").references(() => users.id, { onDelete: "cascade" }).unique(),
+  points: integer("points").notNull().default(0),
+  level: integer("level").notNull().default(1),
+  streak: integer("streak").notNull().default(0),
+  lastActiveDate: text("last_active_date"),
   createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
   updatedAt: text("updated_at").notNull().$defaultFn(() => new Date().toISOString()),
 });

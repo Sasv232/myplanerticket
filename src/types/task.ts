@@ -3,6 +3,8 @@ export type TaskPriority = "low" | "medium" | "high" | "urgent";
 
 export interface Task {
   id: string;
+  userId?: string;
+  projectId: string | null;
   title: string;
   description: string | null;
   status: TaskStatus;
@@ -10,7 +12,10 @@ export interface Task {
   dueDate: string | null;
   tags: string[];
   repeatRule: string | null;
+  repeatAfterComplete: boolean;
   label: string | null;
+  emoji: string | null;
+  completedAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -23,7 +28,12 @@ export interface CreateTaskInput {
   dueDate?: string;
   tags?: string[];
   repeatRule?: string;
+  repeatAfterComplete?: boolean;
   label?: string;
+  projectId?: string;
+  emoji?: string;
 }
 
-export interface UpdateTaskInput extends Partial<CreateTaskInput> {}
+export interface UpdateTaskInput extends Partial<CreateTaskInput> {
+  completedAt?: string | null;
+}

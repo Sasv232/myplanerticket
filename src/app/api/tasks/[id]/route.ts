@@ -37,7 +37,11 @@ export async function PUT(
     if (body.dueDate !== undefined) updates.dueDate = body.dueDate;
     if (body.tags !== undefined) updates.tags = JSON.stringify(body.tags);
     if (body.repeatRule !== undefined) updates.repeatRule = body.repeatRule || null;
+    if (body.repeatAfterComplete !== undefined) updates.repeatAfterComplete = body.repeatAfterComplete;
     if (body.label !== undefined) updates.label = body.label || null;
+    if (body.projectId !== undefined) updates.projectId = body.projectId || null;
+    if (body.emoji !== undefined) updates.emoji = body.emoji || null;
+    if (body.completedAt !== undefined) updates.completedAt = body.completedAt || null;
 
     await db.update(tasks).set(updates).where(eq(tasks.id, id));
 
