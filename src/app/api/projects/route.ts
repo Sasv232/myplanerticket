@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { projects, projectMembers } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { v4 as uuid } from "uuid";
 import { getUserFromToken } from "@/lib/auth";
 
@@ -13,12 +13,35 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userProjects = await db
+    const ownedProjects = await db
       .select()
       .from(projects)
       .where(eq(projects.userId, user.id));
 
-    return NextResponse.json(userProjects);
+    const memberRecords = await db
+      .select({ projectId: projectMembers.projectId })
+      .from(projectMembers)
+      .where(eq(projectMembers.userId, user.id));
+
+    const memberProjectIds = memberRecords.map(r => r.projectId).filter(Boolean) as string[];
+
+    let memberProjects: typeof ownedProjects = [];
+    if (memberProjectIds.length > 0) {
+      memberProjects = await db
+        .select()
+        .from(projects)
+        .where(sql`${projects.id} IN (${sql.join(memberProjectIds.map(id => sql`${id}`), sql`, `)})`);
+    }
+
+    const allProjects = [...ownedProjects];
+    const ownedIds = new Set(ownedProjects.map(p => p.id));
+    for (const p of memberProjects) {
+      if (!ownedIds.has(p.id)) {
+        allProjects.push(p);
+      }
+    }
+
+    return NextResponse.json(allProjects);
   } catch (error) {
     return NextResponse.json({ error: String(error) }, { status: 500 });
   }
