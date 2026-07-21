@@ -99,7 +99,7 @@ export function Piano({ waveform, volume, activeNotes, onNotePlay }: PianoProps)
         <span className="text-[10px] font-bold text-[var(--muted)] uppercase tracking-widest">Октава 5</span>
       </div>
 
-      <div className="relative" style={{ paddingBottom: `${whiteWidth * 16}%` }}>
+      <div className="relative" style={{ paddingBottom: "55%" }}>
         {/* White keys */}
         {WHITE_NOTES.map((note, i) => (
           <button
