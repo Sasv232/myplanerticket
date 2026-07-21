@@ -52,7 +52,7 @@ interface Settings {
 
 export function SettingsPageDesktop() {
   const { theme, schedule, setSchedule } = useTheme();
-  const { lang, setLang } = useLang();
+  const { t, lang, setLang } = useLang();
   const [primaryColor, setPrimaryColor] = useState("#3b82f6");
   const [secondaryColor, setSecondaryColor] = useState("#6b7280");
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -120,7 +120,7 @@ export function SettingsPageDesktop() {
     });
     const result = await res.json();
     if (result.ok) {
-      alert(`Импортировано задач: ${result.imported}`);
+      alert(`${t("settings_imported")} ${result.imported}`);
       window.location.reload();
     }
   };
@@ -128,14 +128,14 @@ export function SettingsPageDesktop() {
   return (
     <>
       <Header
-        title="Настройки"
-        description="Конфигурация приложения"
+        title={t("settings_title")}
+        description={t("settings_desc")}
         actions={
           <Button variant="outline" size="sm" onClick={fetchSettings}>
             <RefreshCw
               className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
             />
-            Обновить
+            {t("settings_refresh")}
           </Button>
         }
       />
@@ -143,12 +143,12 @@ export function SettingsPageDesktop() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <Palette className="h-4 w-4" /> Цвета темы
+              <Palette className="h-4 w-4" /> {t("settings_colors")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <p className="mb-2 text-sm font-medium">Основной цвет</p>
+              <p className="mb-2 text-sm font-medium">{t("settings_primary")}</p>
               <div className="grid grid-cols-5 gap-2">
                 {PRIMARY_COLORS.map((c) => (
                   <button
@@ -173,7 +173,7 @@ export function SettingsPageDesktop() {
             </div>
             <div>
               <p className="mb-2 text-sm font-medium">
-                Дополнительный цвет
+                {t("settings_secondary")}
               </p>
               <div className="grid grid-cols-5 gap-2">
                 {SECONDARY_COLORS.map((c) => (
@@ -203,14 +203,14 @@ export function SettingsPageDesktop() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <Palette className="h-4 w-4" /> Расписание темы
+              <Palette className="h-4 w-4" /> {t("settings_theme_schedule")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium">Автопереключение</p>
-                <p className="text-[11px] text-[var(--secondary)]">Тёмная днём, светлая ночью (или наоборот)</p>
+                <p className="text-sm font-medium">{t("settings_auto_switch")}</p>
+                <p className="text-[11px] text-[var(--secondary)]">{t("settings_auto_switch_desc")}</p>
               </div>
               <button
                 onClick={() => setSchedule({ ...schedule, enabled: !schedule.enabled })}
@@ -226,7 +226,7 @@ export function SettingsPageDesktop() {
             {schedule.enabled && (
               <div className="flex gap-4">
                 <div className="flex-1">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">Тёмная тема с</label>
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">{t("settings_dark_from")}</label>
                   <input
                     type="number"
                     min={0}
@@ -237,7 +237,7 @@ export function SettingsPageDesktop() {
                   />
                 </div>
                 <div className="flex-1">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">Светлая тема с</label>
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">{t("settings_light_from")}</label>
                   <input
                     type="number"
                     min={0}
@@ -255,7 +255,7 @@ export function SettingsPageDesktop() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <Globe className="h-4 w-4" /> Язык
+              <Globe className="h-4 w-4" /> {t("settings_language")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -287,25 +287,25 @@ export function SettingsPageDesktop() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <Mail className="h-4 w-4" /> Email уведомления (Gmail SMTP)
+              <Mail className="h-4 w-4" /> {t("settings_email")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {settings?.smtpConfigured ? (
               <div className="flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-green-500" />
-                <span className="text-sm">Настроено</span>
+                <span className="text-sm">{t("settings_smtp_ok")}</span>
                 <Badge variant="success">Активно</Badge>
               </div>
             ) : (
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <AlertCircle className="h-4 w-4 text-yellow-500" />
-                  <span className="text-sm">Не настроено</span>
-                  <Badge variant="warning">Ожидает</Badge>
+                  <span className="text-sm">{t("settings_smtp_not")}</span>
+                  <Badge variant="warning">{t("settings_smtp_wait")}</Badge>
                 </div>
                 <div className="rounded-lg bg-[var(--surface)] p-3 text-xs text-[var(--secondary)] space-y-1">
-                  <p>Задайте переменные окружения в Vercel:</p>
+                  <p>{t("settings_smtp_hint")}</p>
                   <code className="block rounded bg-[var(--bg)] p-2 mt-1">
                     SMTP_USER=your@gmail.com
                     <br />
@@ -322,7 +322,7 @@ export function SettingsPageDesktop() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <Database className="h-4 w-4" /> База данных
+              <Database className="h-4 w-4" /> {t("settings_db")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -331,12 +331,12 @@ export function SettingsPageDesktop() {
                 <>
                   <CheckCircle className="h-4 w-4 text-green-500" />
                   <span className="text-sm">Supabase PostgreSQL</span>
-                  <Badge variant="success">Онлайн</Badge>
+                  <Badge variant="success">{t("settings_db_online")}</Badge>
                 </>
               ) : (
                 <>
                   <AlertCircle className="h-4 w-4 text-red-500" />
-                  <span className="text-sm">Не подключена</span>
+                  <span className="text-sm">{t("settings_db_offline")}</span>
                 </>
               )}
             </div>
@@ -346,12 +346,12 @@ export function SettingsPageDesktop() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <Download className="h-4 w-4" /> Экспорт / Импорт
+              <Download className="h-4 w-4" /> {t("settings_export")}
             </CardTitle>
           </CardHeader>
           <CardContent className="flex gap-3">
             <Button variant="outline" size="sm" onClick={handleExport}>
-              <Download className="h-4 w-4" /> Экспорт JSON
+              <Download className="h-4 w-4" /> {t("settings_export_json")}
             </Button>
             <label>
               <input
@@ -362,7 +362,7 @@ export function SettingsPageDesktop() {
               />
               <Button variant="outline" size="sm" asChild>
                 <span>
-                  <Upload className="h-4 w-4" /> Импорт JSON
+                  <Upload className="h-4 w-4" /> {t("settings_import_json")}
                 </span>
               </Button>
             </label>

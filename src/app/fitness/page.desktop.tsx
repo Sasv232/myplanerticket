@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Droplets, Apple, Scale, Heart, Plus, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { useLang } from "@/lib/i18n/context";
 
 interface FoodEntry { id: string; name: string; calories: number; protein: number; carbs: number; fat: number; mealType: string; date: string; }
 interface WaterEntry { id: string; amount: number; date: string; }
@@ -9,17 +10,25 @@ interface WeightEntry { id: string; weight: number; date: string; }
 interface HealthProfile { height?: number; birthDate?: string; gender?: string; dailyCalorieGoal?: number; dailyWaterGoal?: number; }
 
 const MEAL_TYPES = [
-  { value: "breakfast", label: "Завтрак", emoji: "🌅" },
-  { value: "lunch", label: "Обед", emoji: "☀️" },
-  { value: "dinner", label: "Ужин", emoji: "🌙" },
-  { value: "snack", label: "Перекус", emoji: "🍎" },
+  { value: "breakfast", emoji: "🌅" },
+  { value: "lunch", emoji: "☀️" },
+  { value: "dinner", emoji: "🌙" },
+  { value: "snack", emoji: "🍎" },
 ];
+
+const MEAL_LABELS: Record<string, string> = {
+  breakfast: "fitness_breakfast",
+  lunch: "fitness_lunch",
+  dinner: "fitness_dinner",
+  snack: "fitness_snack",
+};
 
 function getToday() {
   return new Date().toISOString().split("T")[0];
 }
 
 export function FitnessPageDesktop() {
+  const { t } = useLang();
   const [date, setDate] = useState(getToday());
   const [foods, setFoods] = useState<FoodEntry[]>([]);
   const [waters, setWaters] = useState<WaterEntry[]>([]);
@@ -139,7 +148,7 @@ export function FitnessPageDesktop() {
   const latestWeight = weights[0]?.weight;
 
   const bmi = pHeight && latestWeight ? (Number(latestWeight) / ((Number(pHeight) / 100) ** 2)).toFixed(1) : null;
-  const bmiLabel = bmi ? (+bmi < 18.5 ? "Недовес" : +bmi < 25 ? "Норма" : +bmi < 30 ? "Избыток" : "Ожирение") : null;
+  const bmiLabel = bmi ? (+bmi < 18.5 ? t("fitness_bmi_under") : +bmi < 25 ? t("fitness_bmi_normal") : +bmi < 30 ? t("fitness_bmi_over") : t("fitness_bmi_obese")) : null;
 
   const formatDate = (d: string) => {
     const dateObj = new Date(d);
@@ -149,45 +158,45 @@ export function FitnessPageDesktop() {
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold flex items-center gap-2">🏋️ Фитнес-трекер</h1>
+        <h1 className="text-2xl font-bold flex items-center gap-2">🏋️ {t("fitness_title")}</h1>
         <button onClick={() => setShowProfile(!showProfile)} className="px-4 py-2 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-sm hover:bg-[var(--accent)]/10 transition-colors flex items-center gap-2">
-          <Heart className="h-4 w-4" /> Профиль
+          <Heart className="h-4 w-4" /> {t("fitness_profile")}
         </button>
       </div>
 
       {showProfile && (
         <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 space-y-4">
-          <h3 className="font-semibold">🏥 Здоровье и цели</h3>
+          <h3 className="font-semibold">🏥 {t("fitness_health")}</h3>
           <div className="grid grid-cols-4 gap-4">
             <div>
-              <label className="text-xs text-[var(--muted)]">Рост (см)</label>
+              <label className="text-xs text-[var(--muted)]">{t("fitness_height")}</label>
               <input type="number" value={pHeight} onChange={e => setPHeight(e.target.value)} className="w-full h-10 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-sm mt-1" />
             </div>
             <div>
-              <label className="text-xs text-[var(--muted)]">Дата рождения</label>
+              <label className="text-xs text-[var(--muted)]">{t("fitness_birth")}</label>
               <input type="date" value={pBirth} onChange={e => setPBirth(e.target.value)} className="w-full h-10 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-sm mt-1" />
             </div>
             <div>
-              <label className="text-xs text-[var(--muted)]">Пол</label>
+              <label className="text-xs text-[var(--muted)]">{t("fitness_gender")}</label>
               <select value={pGender} onChange={e => setPGender(e.target.value)} className="w-full h-10 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-sm mt-1">
-                <option value="male">Мужской</option>
-                <option value="female">Женский</option>
+                <option value="male">{t("fitness_male")}</option>
+                <option value="female">{t("fitness_female")}</option>
               </select>
             </div>
             <div>
-              <label className="text-xs text-[var(--muted)]">Вес (кг)</label>
+              <label className="text-xs text-[var(--muted)]">{t("fitness_weight")}</label>
               <input type="number" step="0.1" value={pWeight} onChange={e => setPWeight(e.target.value)} className="w-full h-10 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-sm mt-1" />
             </div>
             <div>
-              <label className="text-xs text-[var(--muted)]">Цель по калориям (ккал/день)</label>
+              <label className="text-xs text-[var(--muted)]">{t("fitness_cal_goal")}</label>
               <input type="number" value={pCalGoal} onChange={e => setPCalGoal(e.target.value)} className="w-full h-10 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-sm mt-1" />
             </div>
             <div>
-              <label className="text-xs text-[var(--muted)]">Цель по воде (мл/день)</label>
+              <label className="text-xs text-[var(--muted)]">{t("fitness_water_goal")}</label>
               <input type="number" value={pWaterGoal} onChange={e => setPWaterGoal(e.target.value)} className="w-full h-10 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-sm mt-1" />
             </div>
           </div>
-          <button onClick={saveProfile} className="px-4 py-2 rounded-xl bg-[var(--accent)] text-white text-sm font-medium">Сохранить</button>
+          <button onClick={saveProfile} className="px-4 py-2 rounded-xl bg-[var(--accent)] text-white text-sm font-medium">{t("fitness_save")}</button>
         </div>
       )}
 
@@ -199,30 +208,30 @@ export function FitnessPageDesktop() {
 
       <div className="grid grid-cols-4 gap-4">
         <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4">
-          <p className="text-xs text-[var(--muted)] mb-1">🔥 Калории</p>
+          <p className="text-xs text-[var(--muted)] mb-1">🔥 {t("fitness_calories")}</p>
           <p className="text-2xl font-bold">{Math.round(totalCal)} <span className="text-sm font-normal text-[var(--muted)]">/ {profile.dailyCalorieGoal || "—"} ккал</span></p>
           <div className="mt-2 h-2 bg-[var(--surface)] rounded-full overflow-hidden">
             <div className="h-full bg-orange-500 rounded-full transition-all" style={{ width: `${Math.min(100, (totalCal / (profile.dailyCalorieGoal || 2000)) * 100)}%` }} />
           </div>
         </div>
         <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4">
-          <p className="text-xs text-[var(--muted)] mb-1">💧 Вода</p>
+          <p className="text-xs text-[var(--muted)] mb-1">💧 {t("fitness_water")}</p>
           <p className="text-2xl font-bold">{Math.round(totalWater)} <span className="text-sm font-normal text-[var(--muted)]">/ {profile.dailyWaterGoal || "—"} мл</span></p>
           <div className="mt-2 h-2 bg-[var(--surface)] rounded-full overflow-hidden">
             <div className="h-full bg-blue-500 rounded-full transition-all" style={{ width: `${Math.min(100, (totalWater / (profile.dailyWaterGoal || 2000)) * 100)}%` }} />
           </div>
         </div>
         <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4">
-          <p className="text-xs text-[var(--muted)] mb-1">⚖️ Вес</p>
+          <p className="text-xs text-[var(--muted)] mb-1">⚖️ {t("fitness_weight_title")}</p>
           <p className="text-2xl font-bold">{latestWeight ? `${latestWeight} кг` : "—"}</p>
-          {bmi && <p className="text-xs text-[var(--muted)] mt-1">ИМТ: {bmi} ({bmiLabel})</p>}
+          {bmi && <p className="text-xs text-[var(--muted)] mt-1">{t("fitness_bmi")}: {bmi} ({bmiLabel})</p>}
         </div>
         <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4">
-          <p className="text-xs text-[var(--muted)] mb-1">📊 БЖУ</p>
+          <p className="text-xs text-[var(--muted)] mb-1">📊 {t("fitness_bju")}</p>
           <div className="flex gap-4 mt-1">
-            <div><p className="text-lg font-bold text-red-500">{Math.round(totalProtein)}г</p><p className="text-[10px] text-[var(--muted)]">Белок</p></div>
-            <div><p className="text-lg font-bold text-yellow-500">{Math.round(totalCarbs)}г</p><p className="text-[10px] text-[var(--muted)]">Углеводы</p></div>
-            <div><p className="text-lg font-bold text-green-500">{Math.round(totalFat)}г</p><p className="text-[10px] text-[var(--muted)]">Жиры</p></div>
+            <div><p className="text-lg font-bold text-red-500">{Math.round(totalProtein)}г</p><p className="text-[10px] text-[var(--muted)]">{t("fitness_protein")}</p></div>
+            <div><p className="text-lg font-bold text-yellow-500">{Math.round(totalCarbs)}г</p><p className="text-[10px] text-[var(--muted)]">{t("fitness_carbs")}</p></div>
+            <div><p className="text-lg font-bold text-green-500">{Math.round(totalFat)}г</p><p className="text-[10px] text-[var(--muted)]">{t("fitness_fat")}</p></div>
           </div>
         </div>
       </div>
@@ -230,22 +239,22 @@ export function FitnessPageDesktop() {
       <div className="grid grid-cols-2 gap-6">
         <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold flex items-center gap-2"><Apple className="h-4 w-4 text-green-500" /> Питание</h3>
+            <h3 className="font-semibold flex items-center gap-2"><Apple className="h-4 w-4 text-green-500" /> {t("fitness_nutrition")}</h3>
             <button onClick={() => setShowFoodForm(!showFoodForm)} className="p-2 rounded-xl hover:bg-[var(--surface)]"><Plus className="h-4 w-4" /></button>
           </div>
           {showFoodForm && (
             <div className="bg-[var(--surface)] rounded-xl p-4 mb-4 space-y-3">
-              <input placeholder="Название блюда" value={foodName} onChange={e => setFoodName(e.target.value)} className="w-full h-10 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 text-sm" />
+              <input placeholder={t("fitness_food_name")} value={foodName} onChange={e => setFoodName(e.target.value)} className="w-full h-10 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 text-sm" />
               <div className="grid grid-cols-4 gap-2">
-                <input type="number" placeholder="Калории" value={foodCal} onChange={e => setFoodCal(e.target.value)} className="h-10 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 text-sm" />
-                <input type="number" placeholder="Белок (г)" value={foodProtein} onChange={e => setFoodProtein(e.target.value)} className="h-10 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 text-sm" />
-                <input type="number" placeholder="Углеводы (г)" value={foodCarbs} onChange={e => setFoodCarbs(e.target.value)} className="h-10 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 text-sm" />
-                <input type="number" placeholder="Жиры (г)" value={foodFat} onChange={e => setFoodFat(e.target.value)} className="h-10 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 text-sm" />
+                <input type="number" placeholder={t("fitness_calories")} value={foodCal} onChange={e => setFoodCal(e.target.value)} className="h-10 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 text-sm" />
+                <input type="number" placeholder={t("fitness_food_protein")} value={foodProtein} onChange={e => setFoodProtein(e.target.value)} className="h-10 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 text-sm" />
+                <input type="number" placeholder={t("fitness_food_carbs")} value={foodCarbs} onChange={e => setFoodCarbs(e.target.value)} className="h-10 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 text-sm" />
+                <input type="number" placeholder={t("fitness_food_fat")} value={foodFat} onChange={e => setFoodFat(e.target.value)} className="h-10 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 text-sm" />
               </div>
               <select value={foodMeal} onChange={e => setFoodMeal(e.target.value)} className="w-full h-10 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 text-sm">
-                {MEAL_TYPES.map(m => <option key={m.value} value={m.value}>{m.emoji} {m.label}</option>)}
+                {MEAL_TYPES.map(m => <option key={m.value} value={m.value}>{m.emoji} {t(MEAL_LABELS[m.value] as any)}</option>)}
               </select>
-              <button onClick={addFood} className="w-full h-10 rounded-xl bg-[var(--accent)] text-white text-sm font-medium">Добавить</button>
+              <button onClick={addFood} className="w-full h-10 rounded-xl bg-[var(--accent)] text-white text-sm font-medium">{t("fitness_add")}</button>
             </div>
           )}
           {Object.entries(MEAL_TYPES).map(([key, meal]) => {
@@ -253,7 +262,7 @@ export function FitnessPageDesktop() {
             if (mealFoods.length === 0) return null;
             return (
               <div key={key} className="mb-3">
-                <p className="text-xs text-[var(--muted)] mb-1">{meal.emoji} {meal.label}</p>
+                <p className="text-xs text-[var(--muted)] mb-1">{meal.emoji} {t(MEAL_LABELS[key] as any)}</p>
                 {mealFoods.map(f => (
                   <div key={f.id} className="flex items-center justify-between py-1.5 text-sm">
                     <span>{f.name}</span>
@@ -266,12 +275,12 @@ export function FitnessPageDesktop() {
               </div>
             );
           })}
-          {foods.length === 0 && <p className="text-sm text-[var(--muted)] text-center py-4">Нет записей</p>}
+          {foods.length === 0 && <p className="text-sm text-[var(--muted)] text-center py-4">{t("fitness_no_records")}</p>}
         </div>
 
         <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold flex items-center gap-2"><Droplets className="h-4 w-4 text-blue-500" /> Вода</h3>
+            <h3 className="font-semibold flex items-center gap-2"><Droplets className="h-4 w-4 text-blue-500" /> {t("fitness_water")}</h3>
           </div>
           <div className="grid grid-cols-4 gap-2 mb-4">
             {[150, 250, 350, 500].map(amount => (
@@ -288,16 +297,16 @@ export function FitnessPageDesktop() {
               </div>
             ))}
           </div>
-          {waters.length === 0 && <p className="text-sm text-[var(--muted)] text-center py-4">Нет записей</p>}
+          {waters.length === 0 && <p className="text-sm text-[var(--muted)] text-center py-4">{t("fitness_no_records")}</p>}
 
           <div className="border-t border-[var(--border)] mt-4 pt-4">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold flex items-center gap-2"><Scale className="h-4 w-4 text-purple-500" /> Вес</h3>
+              <h3 className="font-semibold flex items-center gap-2"><Scale className="h-4 w-4 text-purple-500" /> {t("fitness_weight_title")}</h3>
               <button onClick={() => setShowWeightForm(!showWeightForm)} className="p-2 rounded-xl hover:bg-[var(--surface)]"><Plus className="h-4 w-4" /></button>
             </div>
             {showWeightForm && (
               <div className="flex gap-2 mb-3">
-                <input type="number" step="0.1" placeholder="Вес (кг)" value={weightValue} onChange={e => setWeightValue(e.target.value)} className="flex-1 h-10 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-sm" />
+                <input type="number" step="0.1" placeholder={t("fitness_weight")} value={weightValue} onChange={e => setWeightValue(e.target.value)} className="flex-1 h-10 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-sm" />
                 <button onClick={addWeight} className="px-4 h-10 rounded-xl bg-[var(--accent)] text-white text-sm font-medium">ОК</button>
               </div>
             )}

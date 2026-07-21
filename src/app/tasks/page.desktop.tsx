@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { useLang } from "@/lib/i18n/context";
 import {
   Task,
   CreateTaskInput,
@@ -36,6 +37,7 @@ const PRIORITY_ORDER: Record<TaskPriority, number> = {
 };
 
 export function TasksPageDesktop() {
+  const { t } = useLang();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
@@ -268,7 +270,7 @@ export function TasksPageDesktop() {
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <div className="text-[var(--secondary)]">Загрузка...</div>
+        <div className="text-[var(--secondary)]">{t("common_loading")}</div>
       </div>
     );
   }
@@ -276,7 +278,7 @@ export function TasksPageDesktop() {
   return (
     <>
       <Header
-        title="Задачи"
+        title={t("tasks_title")}
         description={`Всего: ${stats.total} · Активных: ${stats.todo + stats.inProgress}`}
         actions={
           <div className="flex gap-2">
@@ -285,7 +287,7 @@ export function TasksPageDesktop() {
               size="sm"
               onClick={() => setShowTemplates(!showTemplates)}
             >
-              <BookTemplate className="h-4 w-4" /> Шаблоны
+              <BookTemplate className="h-4 w-4" /> {t("tasks_templates")}
             </Button>
             <Button
               onClick={() => {
@@ -293,7 +295,7 @@ export function TasksPageDesktop() {
                 setFormOpen(true);
               }}
             >
-              <Plus className="h-4 w-4" /> Новая задача
+              <Plus className="h-4 w-4" /> {t("tasks_new")}
             </Button>
           </div>
         }
@@ -305,7 +307,7 @@ export function TasksPageDesktop() {
             <CardContent className="p-4 space-y-3">
               <div className="flex items-center gap-2">
                 <input
-                  placeholder="Название шаблона"
+                  placeholder={t("tasks_template_name")}
                   value={templateName}
                   onChange={(e) => setTemplateName(e.target.value)}
                   className="flex h-8 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-sm"
@@ -369,9 +371,9 @@ export function TasksPageDesktop() {
                 className="h-8 rounded border border-[var(--border)] bg-[var(--surface)] px-2 text-xs"
               >
                 <option value="">Статус...</option>
-                <option value="todo">К выполнению</option>
-                <option value="in_progress">В работе</option>
-                <option value="done">Выполнено</option>
+                <option value="todo">{t("tasks_todo")}</option>
+                <option value="in_progress">{t("tasks_in_progress")}</option>
+                <option value="done">{t("tasks_done")}</option>
               </select>
               <select
                 onChange={(e) => {
@@ -381,17 +383,17 @@ export function TasksPageDesktop() {
                 className="h-8 rounded border border-[var(--border)] bg-[var(--surface)] px-2 text-xs"
               >
                 <option value="">Приоритет...</option>
-                <option value="low">Низкий</option>
-                <option value="medium">Средний</option>
-                <option value="high">Высокий</option>
-                <option value="urgent">Срочный</option>
+                <option value="low">{t("tasks_low")}</option>
+                <option value="medium">{t("tasks_medium")}</option>
+                <option value="high">{t("tasks_high")}</option>
+                <option value="urgent">{t("tasks_urgent")}</option>
               </select>
               <Button
                 size="sm"
                 variant="destructive"
                 onClick={() => bulkAction("delete")}
               >
-                <Trash2 className="h-3.5 w-3.5" /> Удалить
+                <Trash2 className="h-3.5 w-3.5" /> {t("common_delete")}
               </Button>
               <Button
                 size="sm"
@@ -413,7 +415,7 @@ export function TasksPageDesktop() {
               <ListTodo className="h-5 w-5 text-[var(--accent)]" />
               <div>
                 <p className="text-2xl font-bold">{stats.todo}</p>
-                <p className="text-xs text-[var(--secondary)]">К выполнению</p>
+                <p className="text-xs text-[var(--secondary)]">{t("tasks_todo")}</p>
               </div>
             </CardContent>
           </Card>
@@ -422,7 +424,7 @@ export function TasksPageDesktop() {
               <Clock className="h-5 w-5 text-[var(--warning)]" />
               <div>
                 <p className="text-2xl font-bold">{stats.inProgress}</p>
-                <p className="text-xs text-[var(--secondary)]">В работе</p>
+                <p className="text-xs text-[var(--secondary)]">{t("tasks_in_progress")}</p>
               </div>
             </CardContent>
           </Card>
@@ -431,7 +433,7 @@ export function TasksPageDesktop() {
               <CheckCircle className="h-5 w-5 text-[var(--success)]" />
               <div>
                 <p className="text-2xl font-bold">{stats.done}</p>
-                <p className="text-xs text-[var(--secondary)]">Выполнено</p>
+                <p className="text-xs text-[var(--secondary)]">{t("tasks_done")}</p>
               </div>
             </CardContent>
           </Card>
@@ -466,10 +468,10 @@ export function TasksPageDesktop() {
               onChange={(e) => setSortBy(e.target.value as SortBy)}
               className="h-8 rounded border border-[var(--border)] bg-[var(--surface)] px-2 text-xs"
             >
-              <option value="created">По дате создания</option>
-              <option value="date">По дедлайну</option>
-              <option value="priority">По приоритету</option>
-              <option value="name">По названию</option>
+              <option value="created">{t("tasks_sort_created")}</option>
+              <option value="date">{t("tasks_sort_date")}</option>
+              <option value="priority">{t("tasks_sort_priority")}</option>
+              <option value="name">{t("tasks_sort_name")}</option>
             </select>
             {!showBulkBar && (
               <Button
@@ -490,7 +492,7 @@ export function TasksPageDesktop() {
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12 text-[var(--secondary)]">
                 <ListTodo className="mb-3 h-10 w-10 opacity-50" />
-                <p>Задач пока нет</p>
+                <p>{t("tasks_empty")}</p>
                 <Button
                   variant="ghost"
                   className="mt-2"
@@ -499,7 +501,7 @@ export function TasksPageDesktop() {
                     setFormOpen(true);
                   }}
                 >
-                  Создать первую задачу
+                  {t("tasks_create_first")}
                 </Button>
               </CardContent>
             </Card>

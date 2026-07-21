@@ -30,6 +30,7 @@ import {
   UserPlus,
 } from "lucide-react";
 import { CollabPanel, JoinProjectModal } from "@/components/projects/collab-panel";
+import { useLang } from "@/lib/i18n/context";
 
 interface Project {
   id: string;
@@ -58,6 +59,7 @@ const PROJECT_EMOJIS = [
 ];
 
 function useProjectsPage() {
+  const { t } = useLang();
   const [projects, setProjects] = useState<Project[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
@@ -157,7 +159,7 @@ function useProjectsPage() {
   };
 
   const handleDeleteProject = async (id: string) => {
-    if (!confirm("Удалить проект? Задачи не будут удалены.")) return;
+    if (!confirm(t("projects_delete_confirm"))) return;
     await fetch(`/api/projects/${id}`, { method: "DELETE" });
     if (selectedProject?.id === id) setSelectedProject(null);
     fetchProjects();
@@ -254,6 +256,7 @@ function ProjectCardDesktop({
   onEdit: () => void;
   onDelete: () => void;
 }) {
+  const { t } = useLang();
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -271,7 +274,7 @@ function ProjectCardDesktop({
               <div className="min-w-0">
                 <h3 className="font-semibold text-[var(--foreground)] truncate">{project.name}</h3>
                 <Badge variant="secondary" className="mt-1">
-                  {taskCount} {taskCount === 1 ? "задача" : taskCount < 5 ? "задачи" : "задач"}
+                  {taskCount} {taskCount === 1 ? t("projects_tasks") : taskCount < 5 ? t("projects_tasks2") : t("projects_tasks3")}
                 </Badge>
               </div>
             </div>
@@ -298,14 +301,14 @@ function ProjectCardDesktop({
                         className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--surface)] transition-colors"
                       >
                         <Pencil className="h-3.5 w-3.5" />
-                        Редактировать
+                        {t("projects_edit")}
                       </button>
                       <button
                         onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onDelete(); }}
                         className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[var(--error)] hover:bg-[var(--surface)] transition-colors"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
-                        Удалить
+                        {t("projects_delete")}
                       </button>
                     </motion.div>
                   </>
@@ -396,26 +399,27 @@ function ProjectFormModal({
   onCreate: () => void;
   onUpdate: () => void;
 }) {
+  const { t } = useLang();
   return (
     <Modal open={open} onOpenChange={onOpenChange}>
       <ModalContent>
         <ModalHeader>
-          <ModalTitle>{editingProject ? "Редактировать проект" : "Новый проект"}</ModalTitle>
+          <ModalTitle>{editingProject ? t("projects_edit") : t("projects_new")}</ModalTitle>
         </ModalHeader>
         <div className="space-y-4">
           <div>
-            <label className="text-sm font-medium text-[var(--foreground)] mb-2 block">Название</label>
+            <label className="text-sm font-medium text-[var(--foreground)] mb-2 block">{t("projects_name")}</label>
             <input
               type="text"
               value={projectName}
               onChange={(e) => onNameChange(e.target.value)}
-              placeholder="Название проекта"
+              placeholder={t("projects_name_placeholder")}
               className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-all"
               autoFocus
             />
           </div>
           <div>
-            <label className="text-sm font-medium text-[var(--foreground)] mb-2 block">Эмодзи</label>
+            <label className="text-sm font-medium text-[var(--foreground)] mb-2 block">{t("projects_emoji")}</label>
             <div className="flex flex-wrap gap-2">
               {PROJECT_EMOJIS.map((emoji) => (
                 <button
@@ -433,7 +437,7 @@ function ProjectFormModal({
             </div>
           </div>
           <div>
-            <label className="text-sm font-medium text-[var(--foreground)] mb-2 block">Цвет</label>
+            <label className="text-sm font-medium text-[var(--foreground)] mb-2 block">{t("projects_color")}</label>
             <div className="flex flex-wrap gap-2">
               {PROJECT_COLORS.map((color) => (
                 <button
@@ -450,23 +454,23 @@ function ProjectFormModal({
             </div>
           </div>
           <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3">
-            <p className="text-xs text-[var(--secondary)] mb-2">Предпросмотр</p>
+            <p className="text-xs text-[var(--secondary)] mb-2">{t("projects_preview")}</p>
             <div className="flex items-center gap-2">
               <span className="text-xl">{projectEmoji}</span>
-              <span className="font-medium">{projectName.trim() || "Название проекта"}</span>
+              <span className="font-medium">{projectName.trim() || t("projects_name_placeholder")}</span>
               <div className="h-3 w-3 rounded-full" style={{ backgroundColor: projectColor }} />
             </div>
           </div>
         </div>
         <ModalFooter>
           <ModalClose asChild>
-            <Button variant="outline">Отмена</Button>
+            <Button variant="outline">{t("projects_cancel")}</Button>
           </ModalClose>
           <Button
             onClick={editingProject ? onUpdate : onCreate}
             disabled={!projectName.trim()}
           >
-            {editingProject ? "Сохранить" : "Создать"}
+            {editingProject ? t("projects_save") : t("projects_create")}
           </Button>
         </ModalFooter>
       </ModalContent>
@@ -490,6 +494,7 @@ export default function ProjectsPage() {
 }
 
 function ProjectsPageDesktop(props: ReturnType<typeof useProjectsPage>) {
+  const { t } = useLang();
   const {
     projects, tasks, loading, selectedProject, setSelectedProject,
     formOpen, setFormOpen, editingProject,
@@ -514,7 +519,7 @@ function ProjectsPageDesktop(props: ReturnType<typeof useProjectsPage>) {
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <div className="text-[var(--secondary)]">Загрузка...</div>
+        <div className="text-[var(--secondary)]">{t("common_loading")}</div>
       </div>
     );
   }
@@ -522,10 +527,10 @@ function ProjectsPageDesktop(props: ReturnType<typeof useProjectsPage>) {
   return (
     <>
       <Header
-        title={selectedProject ? `${selectedProject.emoji} ${selectedProject.name}` : "Проекты"}
+        title={selectedProject ? `${selectedProject.emoji} ${selectedProject.name}` : t("projects_title")}
         description={
           selectedProject
-            ? `${filteredTasks.length} ${filteredTasks.length === 1 ? "задача" : filteredTasks.length < 5 ? "задачи" : "задач"}`
+            ? `${filteredTasks.length} ${filteredTasks.length === 1 ? t("projects_tasks") : filteredTasks.length < 5 ? t("projects_tasks2") : t("projects_tasks3")}`
             : `Всего проектов: ${projects.length}`
         }
         actions={
@@ -536,18 +541,18 @@ function ProjectsPageDesktop(props: ReturnType<typeof useProjectsPage>) {
               </Button>
               <Button variant="outline" onClick={() => setSelectedProject(null)}>
                 <ArrowLeft className="h-4 w-4" />
-                Все проекты
+                {t("projects_back")}
               </Button>
             </div>
           ) : (
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setJoinOpen(true)}>
                 <UserPlus className="h-4 w-4" />
-                Вступить
+                {t("projects_join")}
               </Button>
               <Button onClick={openCreateModal}>
                 <Plus className="h-4 w-4" />
-                Новый проект
+                {t("projects_new")}
               </Button>
             </div>
           )
@@ -564,7 +569,7 @@ function ProjectsPageDesktop(props: ReturnType<typeof useProjectsPage>) {
               <h2 className="text-lg font-bold">{selectedProject.name}</h2>
               <Button size="sm" className="ml-auto" onClick={() => setTaskFormOpen(true)}>
                 <Plus className="h-4 w-4" />
-                Задача
+                {t("projects_tasks")}
               </Button>
             </div>
 
@@ -573,9 +578,9 @@ function ProjectsPageDesktop(props: ReturnType<typeof useProjectsPage>) {
                 <Card>
                   <CardContent className="flex flex-col items-center justify-center py-12 text-[var(--secondary)]">
                     <ListTodo className="mb-3 h-10 w-10 opacity-50" />
-                    <p>Задач в проекте пока нет</p>
+                    <p>{t("tasks_empty")}</p>
                     <Button variant="ghost" className="mt-2" onClick={() => setTaskFormOpen(true)}>
-                      Создать первую задачу
+                      {t("tasks_create_first")}
                     </Button>
                   </CardContent>
                 </Card>
@@ -608,9 +613,9 @@ function ProjectsPageDesktop(props: ReturnType<typeof useProjectsPage>) {
               <Card>
                 <CardContent className="flex flex-col items-center justify-center py-16 text-[var(--secondary)]">
                   <FolderKanban className="mb-3 h-12 w-12 opacity-40" />
-                  <p className="text-lg font-medium">Проектов пока нет</p>
+                  <p className="text-lg font-medium">{t("projects_empty")}</p>
                   <Button variant="ghost" className="mt-2" onClick={openCreateModal}>
-                    Создать первый проект
+                    {t("projects_create_first")}
                   </Button>
                 </CardContent>
               </Card>
@@ -666,6 +671,7 @@ function ProjectsPageDesktop(props: ReturnType<typeof useProjectsPage>) {
 }
 
 function ProjectsPageMobile(props: ReturnType<typeof useProjectsPage>) {
+  const { t } = useLang();
   const {
     projects, tasks, loading, selectedProject, setSelectedProject,
     formOpen, setFormOpen, editingProject,
@@ -690,7 +696,7 @@ function ProjectsPageMobile(props: ReturnType<typeof useProjectsPage>) {
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <div className="text-[var(--secondary)]">Загрузка...</div>
+        <div className="text-[var(--secondary)]">{t("common_loading")}</div>
       </div>
     );
   }
@@ -724,7 +730,7 @@ function ProjectsPageMobile(props: ReturnType<typeof useProjectsPage>) {
             </>
           ) : (
             <>
-              <h1 className="text-xl font-bold tracking-tight">Проекты</h1>
+              <h1 className="text-xl font-bold tracking-tight">{t("projects_title")}</h1>
               <div className="flex gap-2">
                 <button onClick={() => setJoinOpen(true)} className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--surface)]">
                   <UserPlus className="h-5 w-5" />
@@ -745,9 +751,9 @@ function ProjectsPageMobile(props: ReturnType<typeof useProjectsPage>) {
               <Card>
                 <CardContent className="flex flex-col items-center justify-center py-12 text-[var(--secondary)]">
                   <ListTodo className="mb-3 h-10 w-10 opacity-50" />
-                  <p className="text-center">Задач в проекте пока нет</p>
+                  <p className="text-center">{t("tasks_empty")}</p>
                   <Button variant="ghost" className="mt-2" onClick={() => setTaskFormOpen(true)}>
-                    Создать первую задачу
+                    {t("tasks_create_first")}
                   </Button>
                 </CardContent>
               </Card>
@@ -781,9 +787,9 @@ function ProjectsPageMobile(props: ReturnType<typeof useProjectsPage>) {
               <Card>
                 <CardContent className="flex flex-col items-center justify-center py-12 text-[var(--secondary)]">
                   <FolderKanban className="mb-3 h-10 w-10 opacity-50" />
-                  <p className="text-center">Проектов пока нет</p>
+                  <p className="text-center">{t("projects_empty")}</p>
                   <Button variant="ghost" className="mt-2" onClick={openCreateModal}>
-                    Создать первый проект
+                    {t("projects_create_first")}
                   </Button>
                 </CardContent>
               </Card>

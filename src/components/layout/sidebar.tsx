@@ -8,6 +8,7 @@ import { useState } from "react";
 import { Menu, X, Train, Sun, Moon, LogOut, Shield } from "lucide-react";
 import { useTheme } from "./theme-provider";
 import { useAuth } from "@/lib/auth-context";
+import { useLang } from "@/lib/i18n/context";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -16,6 +17,7 @@ export function Sidebar() {
   const { theme, toggle } = useTheme();
   const { user, logout } = useAuth();
   const navigation = useNavigation();
+  const { t } = useLang();
 
   const handleLogout = async () => {
     await logout();
@@ -45,7 +47,7 @@ export function Sidebar() {
           <button
             onClick={toggle}
             className="ml-auto flex h-8 w-8 items-center justify-center rounded-xl hover:bg-[var(--surface)] transition-all duration-150"
-            title={theme === "dark" ? "Светлая тема" : "Тёмная тема"}
+            title={theme === "dark" ? t("common_theme_light") : t("common_theme_dark")}
           >
             {theme === "dark" ? (
               <Sun className="h-4 w-4 text-[var(--secondary)]" />
@@ -112,7 +114,7 @@ export function Sidebar() {
                     )}
                   >
                     <Shield className="h-[18px] w-[18px] shrink-0" />
-                    Админ-панель
+                    {t("admin_title")}
                   </Link>
                 </li>
               </ul>
@@ -130,14 +132,14 @@ export function Sidebar() {
               <button
                 onClick={handleLogout}
                 className="ml-auto flex h-7 w-7 items-center justify-center rounded-xl hover:bg-[var(--surface)] transition-all duration-150"
-                title="Выйти"
+                title={t("common_logout")}
               >
                 <LogOut className="h-3.5 w-3.5 text-[var(--secondary)]" />
               </button>
             </div>
           )}
           <p className="text-[10px] text-[var(--muted)] text-center font-medium">
-            v0.2.0 — Personal
+            v0.2.0 — {t("common_version")}
           </p>
         </div>
       </aside>

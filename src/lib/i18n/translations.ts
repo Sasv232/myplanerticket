@@ -27,6 +27,13 @@ export const translations = {
     group_health: "Здоровье",
     group_fun: "Развлечения",
 
+    // Dashboard
+    dashboard_title: "Дашборд",
+    dashboard_desc: "Персональная панель управления",
+    dashboard_configure: "Настроить",
+    dashboard_no_widgets: "Нет виджетов",
+    dashboard_no_widgets_desc: "Нажмите настройки чтобы добавить виджеты",
+
     // Tasks
     tasks_title: "Задачи",
     tasks_search: "Поиск задач...",
@@ -43,6 +50,36 @@ export const translations = {
     tasks_all_projects: "Все проекты",
     tasks_clear: "Сбросить",
     tasks_new: "Новая задача",
+    tasks_empty: "Задач пока нет",
+    tasks_create_first: "Создайте первую задачу",
+    tasks_completed: "Задача",
+    tasks_completed2: "задачи",
+    tasks_completed3: "задач",
+    tasks_select_all: "Выбрать все",
+    tasks_bulk_status: "Статус",
+    tasks_bulk_priority: "Приоритет",
+    tasks_bulk_delete: "Удалить выбранные",
+    tasks_bulk_label: "Метка",
+    tasks_bulk_project: "Проект",
+    tasks_templates: "Шаблоны",
+    tasks_save_template: "Сохранить как шаблон",
+    tasks_template_name: "Название шаблона",
+    tasks_sort_by: "Сортировка",
+    tasks_sort_date: "По дате",
+    tasks_sort_priority: "По приоритету",
+    tasks_sort_name: "По названию",
+    tasks_sort_created: "По созданию",
+
+    // Task form
+    task_form_title: "Название задачи",
+    task_form_desc: "Описание",
+    task_form_priority: "Приоритет",
+    task_form_status: "Статус",
+    task_form_due: "Срок",
+    task_form_label: "Метка",
+    task_form_project: "Проект",
+    task_form_emoji: "Эмодзи",
+    task_form_nlp_hint: "Попробуйте: 'завтра в 10:00 позвонить маме !high'",
 
     // Projects
     projects_title: "Проекты",
@@ -53,6 +90,7 @@ export const translations = {
     projects_create_first: "Создать первый проект",
     projects_edit: "Редактировать",
     projects_delete: "Удалить",
+    projects_delete_confirm: "Удалить проект? Задачи не будут удалены.",
     projects_name: "Название",
     projects_name_placeholder: "Название проекта",
     projects_emoji: "Эмодзи",
@@ -62,6 +100,9 @@ export const translations = {
     projects_save: "Сохранить",
     projects_cancel: "Отмена",
     projects_back: "Все проекты",
+    projects_tasks: "задача",
+    projects_tasks2: "задачи",
+    projects_tasks3: "задач",
 
     // Fitness
     fitness_title: "Фитнес-трекер",
@@ -97,6 +138,10 @@ export const translations = {
     fitness_bmi_normal: "Норма",
     fitness_bmi_over: "Избыток",
     fitness_bmi_obese: "Ожирение",
+    fitness_breakfast: "Завтрак",
+    fitness_lunch: "Обед",
+    fitness_dinner: "Ужин",
+    fitness_snack: "Перекус",
 
     // Collaboration
     collab_team: "Команда",
@@ -117,12 +162,91 @@ export const translations = {
     collab_join: "Присоединиться к проекту",
     collab_join_code: "Код приглашения",
     collab_join_btn: "Присоединиться",
+    collab_cancel: "Отмена",
 
     // Settings
     settings_title: "Настройки",
+    settings_desc: "Конфигурация приложения",
     settings_language: "Язык",
     settings_ru: "Русский",
     settings_en: "English",
+    settings_colors: "Цвета темы",
+    settings_primary: "Основной цвет",
+    settings_secondary: "Дополнительный цвет",
+    settings_theme_schedule: "Расписание темы",
+    settings_auto_switch: "Автопереключение",
+    settings_auto_switch_desc: "Тёмная днём, светлая ночью (или наоборот)",
+    settings_dark_from: "Тёмная тема с",
+    settings_light_from: "Светлая тема с",
+    settings_email: "Email уведомления (Gmail SMTP)",
+    settings_smtp_ok: "Настроено",
+    settings_smtp_wait: "Ожидает",
+    settings_smtp_not: "Не настроено",
+    settings_smtp_hint: "Задайте переменные окружения в Vercel:",
+    settings_db: "База данных",
+    settings_db_online: "Онлайн",
+    settings_db_offline: "Не подключена",
+    settings_export: "Экспорт / Импорт",
+    settings_export_json: "Экспорт JSON",
+    settings_import_json: "Импорт JSON",
+    settings_imported: "Импортировано задач:",
+    settings_refresh: "Обновить",
+
+    // Notes
+    notes_title: "Заметки",
+    notes_new: "Новая заметка",
+    notes_search: "Поиск заметок...",
+    notes_empty: "Заметок пока нет",
+    notes_create_first: "Создайте первую заметку",
+    notes_placeholder: "Текст заметки...",
+    notes_title_placeholder: "Заголовок",
+
+    // Journal
+    journal_title: "Дневник",
+    journal_new: "Новая запись",
+    journal_search: "Поиск по дневнику...",
+    journal_empty: "Записей пока нет",
+    journal_create_first: "Создайте первую запись",
+    journal_placeholder: "Как прошёл день?",
+    journal_mood: "Настроение",
+
+    // Habits
+    habits_title: "Привычки",
+    habits_new: "Новая привычка",
+    habits_empty: "Привычек пока нет",
+    habits_create_first: "Создайте первую привычку",
+    habits_today: "Сегодня",
+    habits_streak: "Серия",
+    habits_done: "Выполнено",
+
+    // Board
+    board_title: "Доска",
+
+    // Calendar
+    calendar_title: "Календарь",
+
+    // Pomodoro
+    pomodoro_title: "Таймер",
+    pomodoro_start: "Начать",
+    pomodoro_pause: "Пауза",
+    pomodoro_reset: "Сбросить",
+    pomodoro_work: "Работа",
+    pomodoro_break: "Перерыв",
+
+    // Stats
+    stats_title: "Статистика",
+
+    // Notifications
+    notifications_title: "Уведомления",
+    notifications_empty: "Нет уведомлений",
+
+    // Synth
+    synth_title: "Синтезатор",
+
+    // Admin
+    admin_title: "Админ-панель",
+    admin_users: "Пользователи",
+    admin_roles: "Роли",
 
     // Common
     common_loading: "Загрузка...",
@@ -131,6 +255,19 @@ export const translations = {
     common_save: "Сохранить",
     common_cancel: "Отмена",
     common_ok: "ОК",
+    common_create: "Создать",
+    common_edit: "Редактировать",
+    common_back: "Назад",
+    common_search: "Поиск...",
+    common_no_data: "Нет данных",
+    common_confirm: "Подтвердить",
+    common_close: "Закрыть",
+    common_theme_light: "Светлая тема",
+    common_theme_dark: "Тёмная тема",
+    common_logout: "Выйти",
+    common_admin: "Администратор",
+    common_user: "Пользователь",
+    common_version: "v0.2.0 — Personal",
   },
   en: {
     // Navigation
@@ -158,6 +295,13 @@ export const translations = {
     group_health: "Health",
     group_fun: "Fun",
 
+    // Dashboard
+    dashboard_title: "Dashboard",
+    dashboard_desc: "Personal control panel",
+    dashboard_configure: "Configure",
+    dashboard_no_widgets: "No widgets",
+    dashboard_no_widgets_desc: "Click settings to add widgets",
+
     // Tasks
     tasks_title: "Tasks",
     tasks_search: "Search tasks...",
@@ -174,6 +318,36 @@ export const translations = {
     tasks_all_projects: "All projects",
     tasks_clear: "Clear",
     tasks_new: "New task",
+    tasks_empty: "No tasks yet",
+    tasks_create_first: "Create your first task",
+    tasks_completed: "task",
+    tasks_completed2: "tasks",
+    tasks_completed3: "tasks",
+    tasks_select_all: "Select all",
+    tasks_bulk_status: "Status",
+    tasks_bulk_priority: "Priority",
+    tasks_bulk_delete: "Delete selected",
+    tasks_bulk_label: "Label",
+    tasks_bulk_project: "Project",
+    tasks_templates: "Templates",
+    tasks_save_template: "Save as template",
+    tasks_template_name: "Template name",
+    tasks_sort_by: "Sort by",
+    tasks_sort_date: "By date",
+    tasks_sort_priority: "By priority",
+    tasks_sort_name: "By name",
+    tasks_sort_created: "By created",
+
+    // Task form
+    task_form_title: "Task title",
+    task_form_desc: "Description",
+    task_form_priority: "Priority",
+    task_form_status: "Status",
+    task_form_due: "Due date",
+    task_form_label: "Label",
+    task_form_project: "Project",
+    task_form_emoji: "Emoji",
+    task_form_nlp_hint: "Try: 'tomorrow at 10:00 call mom !high'",
 
     // Projects
     projects_title: "Projects",
@@ -184,6 +358,7 @@ export const translations = {
     projects_create_first: "Create first project",
     projects_edit: "Edit",
     projects_delete: "Delete",
+    projects_delete_confirm: "Delete project? Tasks won't be deleted.",
     projects_name: "Name",
     projects_name_placeholder: "Project name",
     projects_emoji: "Emoji",
@@ -193,6 +368,9 @@ export const translations = {
     projects_save: "Save",
     projects_cancel: "Cancel",
     projects_back: "All projects",
+    projects_tasks: "task",
+    projects_tasks2: "tasks",
+    projects_tasks3: "tasks",
 
     // Fitness
     fitness_title: "Fitness Tracker",
@@ -228,6 +406,10 @@ export const translations = {
     fitness_bmi_normal: "Normal",
     fitness_bmi_over: "Overweight",
     fitness_bmi_obese: "Obese",
+    fitness_breakfast: "Breakfast",
+    fitness_lunch: "Lunch",
+    fitness_dinner: "Dinner",
+    fitness_snack: "Snack",
 
     // Collaboration
     collab_team: "Team",
@@ -248,12 +430,91 @@ export const translations = {
     collab_join: "Join project",
     collab_join_code: "Invite code",
     collab_join_btn: "Join",
+    collab_cancel: "Cancel",
 
     // Settings
     settings_title: "Settings",
+    settings_desc: "App configuration",
     settings_language: "Language",
     settings_ru: "Русский",
     settings_en: "English",
+    settings_colors: "Theme colors",
+    settings_primary: "Primary color",
+    settings_secondary: "Secondary color",
+    settings_theme_schedule: "Theme schedule",
+    settings_auto_switch: "Auto switch",
+    settings_auto_switch_desc: "Dark by day, light by night (or vice versa)",
+    settings_dark_from: "Dark theme from",
+    settings_light_from: "Light theme from",
+    settings_email: "Email notifications (Gmail SMTP)",
+    settings_smtp_ok: "Configured",
+    settings_smtp_wait: "Pending",
+    settings_smtp_not: "Not configured",
+    settings_smtp_hint: "Set environment variables in Vercel:",
+    settings_db: "Database",
+    settings_db_online: "Online",
+    settings_db_offline: "Not connected",
+    settings_export: "Export / Import",
+    settings_export_json: "Export JSON",
+    settings_import_json: "Import JSON",
+    settings_imported: "Tasks imported:",
+    settings_refresh: "Refresh",
+
+    // Notes
+    notes_title: "Notes",
+    notes_new: "New note",
+    notes_search: "Search notes...",
+    notes_empty: "No notes yet",
+    notes_create_first: "Create your first note",
+    notes_placeholder: "Note text...",
+    notes_title_placeholder: "Title",
+
+    // Journal
+    journal_title: "Journal",
+    journal_new: "New entry",
+    journal_search: "Search journal...",
+    journal_empty: "No entries yet",
+    journal_create_first: "Create your first entry",
+    journal_placeholder: "How was your day?",
+    journal_mood: "Mood",
+
+    // Habits
+    habits_title: "Habits",
+    habits_new: "New habit",
+    habits_empty: "No habits yet",
+    habits_create_first: "Create your first habit",
+    habits_today: "Today",
+    habits_streak: "Streak",
+    habits_done: "Done",
+
+    // Board
+    board_title: "Board",
+
+    // Calendar
+    calendar_title: "Calendar",
+
+    // Pomodoro
+    pomodoro_title: "Timer",
+    pomodoro_start: "Start",
+    pomodoro_pause: "Pause",
+    pomodoro_reset: "Reset",
+    pomodoro_work: "Work",
+    pomodoro_break: "Break",
+
+    // Stats
+    stats_title: "Statistics",
+
+    // Notifications
+    notifications_title: "Notifications",
+    notifications_empty: "No notifications",
+
+    // Synth
+    synth_title: "Synthesizer",
+
+    // Admin
+    admin_title: "Admin Panel",
+    admin_users: "Users",
+    admin_roles: "Roles",
 
     // Common
     common_loading: "Loading...",
@@ -262,6 +523,19 @@ export const translations = {
     common_save: "Save",
     common_cancel: "Cancel",
     common_ok: "OK",
+    common_create: "Create",
+    common_edit: "Edit",
+    common_back: "Back",
+    common_search: "Search...",
+    common_no_data: "No data",
+    common_confirm: "Confirm",
+    common_close: "Close",
+    common_theme_light: "Light theme",
+    common_theme_dark: "Dark theme",
+    common_logout: "Logout",
+    common_admin: "Administrator",
+    common_user: "User",
+    common_version: "v0.2.0 — Personal",
   },
 } as const;
 

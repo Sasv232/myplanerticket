@@ -8,6 +8,7 @@ import { useEffect } from "react";
 import { Train, Sun, Moon, LogOut, Shield, X } from "lucide-react";
 import { useTheme } from "./theme-provider";
 import { useAuth } from "@/lib/auth-context";
+import { useLang } from "@/lib/i18n/context";
 
 interface MobileSidebarProps {
   open: boolean;
@@ -20,6 +21,7 @@ export function MobileSidebar({ open, onClose }: MobileSidebarProps) {
   const { theme, toggle } = useTheme();
   const { user, logout } = useAuth();
   const navigation = useNavigation();
+  const { t } = useLang();
 
   useEffect(() => {
     if (open) {
@@ -82,7 +84,7 @@ export function MobileSidebar({ open, onClose }: MobileSidebarProps) {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold truncate">{user.name}</p>
-                <p className="text-[11px] text-[var(--secondary)] truncate">{user.role === "admin" ? "Администратор" : "Пользователь"}</p>
+                <p className="text-[11px] text-[var(--secondary)] truncate">{user.role === "admin" ? t("common_admin") : t("common_user")}</p>
               </div>
             </div>
           </div>
@@ -139,7 +141,7 @@ export function MobileSidebar({ open, onClose }: MobileSidebarProps) {
                     )}
                   >
                     <Shield className="h-5 w-5 shrink-0" />
-                    Админ-панель
+                    {t("admin_title")}
                   </button>
                 </li>
               </ul>
@@ -154,7 +156,7 @@ export function MobileSidebar({ open, onClose }: MobileSidebarProps) {
             className="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-medium text-[var(--secondary)] active:bg-[var(--surface)] transition-all"
           >
             {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-            {theme === "dark" ? "Светлая тема" : "Тёмная тема"}
+            {theme === "dark" ? t("common_theme_light") : t("common_theme_dark")}
           </button>
           {user && (
             <button
@@ -162,11 +164,11 @@ export function MobileSidebar({ open, onClose }: MobileSidebarProps) {
               className="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-medium text-[var(--error)] active:bg-[var(--error)]/10 transition-all"
             >
               <LogOut className="h-5 w-5" />
-              Выйти
+              {t("common_logout")}
             </button>
           )}
           <p className="text-[10px] text-[var(--muted)] text-center font-medium">
-            v0.2.0 — Personal
+            v0.2.0 — {t("common_version")}
           </p>
         </div>
       </aside>
