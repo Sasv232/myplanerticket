@@ -11,6 +11,8 @@ import {
   Repeat,
   FolderKanban,
   Music,
+  StickyNote,
+  BookOpen,
 } from "lucide-react";
 
 export interface NavItem {
@@ -50,6 +52,13 @@ export const navigation: NavGroup[] = [
     items: [
       { label: "Уведомления", href: "/notifications", icon: Bell },
       { label: "Настройки", href: "/settings", icon: Settings },
+    ],
+  },
+  {
+    title: "Записи",
+    items: [
+      { label: "Заметки", href: "/notes", icon: StickyNote },
+      { label: "Дневник", href: "/journal", icon: BookOpen },
     ],
   },
   {

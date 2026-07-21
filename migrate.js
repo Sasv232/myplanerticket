@@ -1,33 +1,19 @@
-import pg from "pg";
-const { Pool } = pg;
+const { Pool } = require("pg");
+const fs = require("fs");
+const path = require("path");
 
-const url = process.env.DATABASE_URL;
-if (!url) { console.error("Set DATABASE_URL"); process.exit(1); }
-
-const pool = new Pool({ connectionString: url, ssl: { rejectUnauthorized: false } });
-
-const migrations = [
-  `ALTER TABLE tasks ADD COLUMN IF NOT EXISTS label TEXT`,
-  `CREATE TABLE IF NOT EXISTS templates (
-    id TEXT PRIMARY KEY,
-    user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
-    name TEXT NOT NULL,
-    tasks TEXT NOT NULL DEFAULT '[]',
-    created_at TEXT NOT NULL
-  )`,
-];
-
-async function migrate() {
-  for (const stmt of migrations) {
-    try {
-      await pool.query(stmt);
-      const match = stmt.match(/CREATE TABLE IF NOT EXISTS (\w+)/);
-      const alterMatch = stmt.match(/ALTER TABLE (\w+)/);
-      console.log(`OK: ${match?.[1] || alterMatch?.[1]}`);
-    } catch (e) { console.error("ERR:", e.message); }
-  }
+async function main() {
+  const sql = fs.readFileSync(path.join(__dirname, "migrate.sql"), "utf8");
+  const pool = new Pool({
+    connectionString: "postgresql://postgres.uqzqgrbkgbwnhapsciwb:sasvqwert4671@aws-0-eu-west-1.pooler.supabase.com:6543/postgres",
+    ssl: { rejectUnauthorized: false },
+  });
+  await pool.query(sql);
+  console.log("Migration done!");
   await pool.end();
-  console.log("Done");
 }
 
-migrate();
+main().catch((e) => {
+  console.error(e.message);
+  process.exit(1);
+});
