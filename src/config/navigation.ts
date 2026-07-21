@@ -10,6 +10,7 @@ import {
   BarChart3,
   Repeat,
   FolderKanban,
+  Music,
 } from "lucide-react";
 
 export interface NavItem {
@@ -49,6 +50,12 @@ export const navigation: NavGroup[] = [
     items: [
       { label: "Уведомления", href: "/notifications", icon: Bell },
       { label: "Настройки", href: "/settings", icon: Settings },
+    ],
+  },
+  {
+    title: "Развлечения",
+    items: [
+      { label: "Синтезатор", href: "/synth", icon: Music },
     ],
   },
 ];
