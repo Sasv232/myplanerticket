@@ -2,6 +2,30 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { tasks } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import { v4 as uuid } from "uuid";
+import { addDays, addWeeks, addMonths, addYears, format } from "date-fns";
+
+function getNextDueDate(currentDueDate: string, repeatRule: string): string {
+  const date = new Date(currentDueDate);
+  switch (repeatRule) {
+    case "daily": return format(addDays(date, 1), "yyyy-MM-dd");
+    case "weekly": return format(addWeeks(date, 1), "yyyy-MM-dd");
+    case "biweekly": return format(addWeeks(date, 2), "yyyy-MM-dd");
+    case "monthly": return format(addMonths(date, 1), "yyyy-MM-dd");
+    case "yearly": return format(addYears(date, 1), "yyyy-MM-dd");
+    case "weekdays": {
+      let next = addDays(date, 1);
+      while (next.getDay() === 0 || next.getDay() === 6) next = addDays(next, 1);
+      return format(next, "yyyy-MM-dd");
+    }
+    case "weekends": {
+      let next = addDays(date, 1);
+      while (next.getDay() !== 0 && next.getDay() !== 6) next = addDays(next, 1);
+      return format(next, "yyyy-MM-dd");
+    }
+    default: return format(addDays(date, 1), "yyyy-MM-dd");
+  }
+}
 
 export async function GET(
   _request: NextRequest,
@@ -44,6 +68,35 @@ export async function PUT(
     if (body.completedAt !== undefined) updates.completedAt = body.completedAt || null;
 
     await db.update(tasks).set(updates).where(eq(tasks.id, id));
+
+    // Auto-create next recurring task when status changes to "done"
+    if (body.status === "done") {
+      const rows2 = await db.select().from(tasks).where(eq(tasks.id, id)).limit(1);
+      const completedTask = rows2[0];
+      if (completedTask?.repeatRule) {
+        const nextDueDate = completedTask.dueDate
+          ? getNextDueDate(completedTask.dueDate, completedTask.repeatRule)
+          : null;
+        const newTask = {
+          id: uuid(),
+          userId: completedTask.userId,
+          projectId: completedTask.projectId,
+          title: completedTask.title,
+          description: completedTask.description,
+          status: "todo" as const,
+          priority: completedTask.priority,
+          dueDate: nextDueDate,
+          tags: completedTask.tags,
+          repeatRule: completedTask.repeatRule,
+          repeatAfterComplete: completedTask.repeatAfterComplete,
+          label: completedTask.label,
+          emoji: completedTask.emoji,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        await db.insert(tasks).values(newTask);
+      }
+    }
 
     const rows = await db.select().from(tasks).where(eq(tasks.id, id)).limit(1);
     return NextResponse.json(rows[0]);

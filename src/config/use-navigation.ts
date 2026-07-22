@@ -17,6 +17,7 @@ import {
   StickyNote,
   BookOpen,
   Dumbbell,
+  Smile,
 } from "lucide-react";
 
 export interface NavItem {
@@ -72,6 +73,7 @@ export function useNavigation() {
       title: t("group_health"),
       items: [
         { label: t("nav_fitness"), href: "/fitness", icon: Dumbbell },
+        { label: "Настроение", href: "/mood", icon: Smile },
       ],
     },
     {

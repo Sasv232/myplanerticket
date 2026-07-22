@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Task, TaskStatus } from "@/types/task";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, GripVertical } from "lucide-react";
+import { Calendar, ArrowRight } from "lucide-react";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 
@@ -21,11 +21,17 @@ const priorityVariant: Record<string, "destructive" | "warning" | "default" | "s
   low: "secondary",
 };
 
+const NEXT_STATUS: Record<TaskStatus, TaskStatus> = {
+  todo: "in_progress",
+  in_progress: "done",
+  done: "todo",
+};
+
 export function BoardPageMobile() {
   const [tasks, setTasks] = useState<Task[]>([]);
 
   const fetchTasks = useCallback(async () => {
-    const res = await fetch("/api/tasks");
+    const res = await fetch("/api/tasks?t=" + Date.now());
     const data = await res.json();
     setTasks(
       data.map((t: Task & { tags: string; repeat_rule: string | null }) => ({
@@ -38,9 +44,12 @@ export function BoardPageMobile() {
 
   useEffect(() => {
     fetchTasks();
+    const interval = setInterval(fetchTasks, 15000);
+    return () => clearInterval(interval);
   }, [fetchTasks]);
 
   const handleStatusChange = async (taskId: string, newStatus: TaskStatus) => {
+    setTasks((prev) => prev.map((t) => t.id === taskId ? { ...t, status: newStatus } : t));
     await fetch(`/api/tasks/${taskId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -49,57 +58,30 @@ export function BoardPageMobile() {
     fetchTasks();
   };
 
-  const handleDragStart = (e: React.DragEvent, taskId: string) => {
-    e.dataTransfer.setData("taskId", taskId);
-  };
-
-  const handleDrop = (e: React.DragEvent, status: TaskStatus) => {
-    e.preventDefault();
-    const taskId = e.dataTransfer.getData("taskId");
-    if (taskId) {
-      handleStatusChange(taskId, status);
-    }
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-  };
-
   return (
-    <div className="space-y-4">
-      <div className="mobile-page-header">
-        <h1 className="text-2xl font-bold tracking-tight">Доска</h1>
-        <p className="text-sm text-[var(--secondary)]">Перетаскивайте задачи</p>
+    <div className="mobile-main">
+      <div className="sticky top-0 z-30 bg-[var(--background)] border-b border-[var(--border)] px-4 py-3">
+        <h1 className="text-lg font-bold">Доска</h1>
+        <p className="text-[11px] text-[var(--secondary)]">Перетаскивайте или нажмите кнопку</p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4">
+      <div className="p-4 space-y-4">
         {columns.map((col) => {
           const columnTasks = tasks.filter((t) => t.status === col.status);
           return (
-            <div
-              key={col.status}
-              className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3"
-              onDrop={(e) => handleDrop(e, col.status)}
-              onDragOver={handleDragOver}
-            >
-              <div className="mb-3 flex items-center gap-2 px-1">
+            <div key={col.status}>
+              <div className="flex items-center gap-2 mb-2 px-1">
                 <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: col.color }} />
                 <h3 className="text-sm font-semibold">{col.title}</h3>
-                <span className="ml-auto rounded-full bg-[var(--card)] px-2 py-0.5 text-xs text-[var(--secondary)]">
+                <span className="ml-auto rounded-full bg-[var(--surface)] px-2 py-0.5 text-xs text-[var(--secondary)]">
                   {columnTasks.length}
                 </span>
               </div>
               <div className="space-y-2">
                 {columnTasks.map((task) => (
-                  <Card
-                    key={task.id}
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, task.id)}
-                    className="cursor-grab active:cursor-grabbing hover:border-[var(--accent)]/30"
-                  >
+                  <Card key={task.id} className="hover:border-[var(--accent)]/30">
                     <CardContent className="p-3">
                       <div className="flex items-start gap-2">
-                        <GripVertical className="mt-0.5 h-3.5 w-3.5 text-[var(--muted)]" />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium truncate">{task.title}</p>
                           {task.description && (
@@ -119,13 +101,20 @@ export function BoardPageMobile() {
                             )}
                           </div>
                         </div>
+                        <button
+                          onClick={() => handleStatusChange(task.id, NEXT_STATUS[task.status])}
+                          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--surface)] active:scale-95 transition-transform"
+                          title={`Переместить в: ${columns.find(c => c.status === NEXT_STATUS[task.status])?.title}`}
+                        >
+                          <ArrowRight className="h-4 w-4 text-[var(--accent)]" />
+                        </button>
                       </div>
                     </CardContent>
                   </Card>
                 ))}
                 {columnTasks.length === 0 && (
                   <div className="rounded-lg border border-dashed border-[var(--border)] p-6 text-center text-xs text-[var(--muted)]">
-                    Перетащите задачу
+                    Нет задач
                   </div>
                 )}
               </div>

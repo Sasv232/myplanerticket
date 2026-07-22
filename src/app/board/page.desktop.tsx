@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Task, TaskStatus } from "@/types/task";
 import { Header } from "@/components/layout/header";
 import { Card, CardContent } from "@/components/ui/card";
@@ -27,9 +27,11 @@ const priorityVariant: Record<
 
 export function BoardPageDesktop() {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [dragOverCol, setDragOverCol] = useState<string | null>(null);
+  const [draggingId, setDraggingId] = useState<string | null>(null);
 
   const fetchTasks = useCallback(async () => {
-    const res = await fetch("/api/tasks");
+    const res = await fetch("/api/tasks?t=" + Date.now());
     const data = await res.json();
     setTasks(
       data.map(
@@ -44,12 +46,11 @@ export function BoardPageDesktop() {
 
   useEffect(() => {
     fetchTasks();
+    const interval = setInterval(fetchTasks, 15000);
+    return () => clearInterval(interval);
   }, [fetchTasks]);
 
-  const handleStatusChange = async (
-    taskId: string,
-    newStatus: TaskStatus
-  ) => {
+  const handleStatusChange = async (taskId: string, newStatus: TaskStatus) => {
     await fetch(`/api/tasks/${taskId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -60,18 +61,29 @@ export function BoardPageDesktop() {
 
   const handleDragStart = (e: React.DragEvent, taskId: string) => {
     e.dataTransfer.setData("taskId", taskId);
+    e.dataTransfer.effectAllowed = "move";
+    setDraggingId(taskId);
+  };
+
+  const handleDragEnd = () => {
+    setDraggingId(null);
+    setDragOverCol(null);
   };
 
   const handleDrop = (e: React.DragEvent, status: TaskStatus) => {
     e.preventDefault();
     const taskId = e.dataTransfer.getData("taskId");
+    setDragOverCol(null);
+    setDraggingId(null);
     if (taskId) {
       handleStatusChange(taskId, status);
     }
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
+  const handleDragOver = (e: React.DragEvent, status: string) => {
     e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setDragOverCol(status);
   };
 
   return (
@@ -89,9 +101,14 @@ export function BoardPageDesktop() {
             return (
               <div
                 key={col.status}
-                className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3"
+                className={`rounded-xl border-2 p-3 transition-all duration-200 ${
+                  dragOverCol === col.status
+                    ? "border-[var(--accent)] bg-[var(--accent)]/5 scale-[1.01]"
+                    : "border-[var(--border)] bg-[var(--surface)]"
+                }`}
                 onDrop={(e) => handleDrop(e, col.status)}
-                onDragOver={handleDragOver}
+                onDragOver={(e) => handleDragOver(e, col.status)}
+                onDragLeave={() => setDragOverCol(null)}
               >
                 <div className="mb-3 flex items-center gap-2 px-1">
                   <div
@@ -103,13 +120,16 @@ export function BoardPageDesktop() {
                     {columnTasks.length}
                   </span>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2 min-h-[60px]">
                   {columnTasks.map((task) => (
                     <Card
                       key={task.id}
                       draggable
                       onDragStart={(e) => handleDragStart(e, task.id)}
-                      className="cursor-grab active:cursor-grabbing hover:border-[var(--accent)]/30"
+                      onDragEnd={handleDragEnd}
+                      className={`cursor-grab active:cursor-grabbing hover:border-[var(--accent)]/30 transition-all duration-150 ${
+                        draggingId === task.id ? "opacity-50 scale-95" : ""
+                      }`}
                     >
                       <CardContent className="p-3">
                         <div className="flex items-start gap-2">
@@ -147,7 +167,11 @@ export function BoardPageDesktop() {
                     </Card>
                   ))}
                   {columnTasks.length === 0 && (
-                    <div className="rounded-lg border border-dashed border-[var(--border)] p-6 text-center text-xs text-[var(--muted)]">
+                    <div className={`rounded-lg border border-dashed p-6 text-center text-xs text-[var(--muted)] transition-colors ${
+                      dragOverCol === col.status
+                        ? "border-[var(--accent)] bg-[var(--accent)]/5"
+                        : "border-[var(--border)]"
+                    }`}>
                       Перетащите задачу сюда
                     </div>
                   )}

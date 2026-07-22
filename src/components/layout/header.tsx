@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode } from "react";
+import { NotificationBell } from "@/components/notifications/notification-bell";
 
 interface HeaderProps {
   title: string;
@@ -17,7 +18,10 @@ export function Header({ title, description, actions }: HeaderProps) {
           <p className="mt-1.5 text-body text-[var(--secondary)]">{description}</p>
         )}
       </div>
-      {actions && <div className="flex items-center gap-2">{actions}</div>}
+      <div className="flex items-center gap-2">
+        <NotificationBell />
+        {actions && <div className="flex items-center gap-2">{actions}</div>}
+      </div>
     </div>
   );
 }

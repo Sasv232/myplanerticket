@@ -14,6 +14,7 @@ import {
   Database,
   Download,
   Upload,
+  Bell,
 } from "lucide-react";
 import { useTheme } from "@/components/layout/theme-provider";
 import { useLang } from "@/lib/i18n/context";
@@ -57,6 +58,7 @@ export function SettingsPageDesktop() {
   const [secondaryColor, setSecondaryColor] = useState("#6b7280");
   const [settings, setSettings] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(true);
+  const [notifPermission, setNotifPermission] = useState<NotificationPermission>("default");
 
   const fetchSettings = useCallback(async () => {
     setLoading(true);
@@ -75,6 +77,9 @@ export function SettingsPageDesktop() {
     setPrimaryColor(savedPrimary);
     setSecondaryColor(savedSecondary);
     applyColors(savedPrimary, savedSecondary);
+    if (typeof window !== "undefined" && "Notification" in window) {
+      setNotifPermission(Notification.permission);
+    }
   }, [fetchSettings]);
 
   const applyColors = (primary: string, secondary: string) => {
@@ -280,6 +285,37 @@ export function SettingsPageDesktop() {
               >
                 🇬🇧 English
               </button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Bell className="h-4 w-4" /> Уведомления
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Браузерные уведомления</p>
+                <p className="text-[11px] text-[var(--secondary)]">Получайте напоминания о задачах</p>
+              </div>
+              {notifPermission === "granted" ? (
+                <Badge variant="success">Включены</Badge>
+              ) : notifPermission === "denied" ? (
+                <Badge variant="destructive">Заблокированы</Badge>
+              ) : (
+                <Button
+                  size="sm"
+                  onClick={async () => {
+                    const result = await Notification.requestPermission();
+                    setNotifPermission(result);
+                  }}
+                >
+                  Включить
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>

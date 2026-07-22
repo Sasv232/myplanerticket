@@ -249,3 +249,22 @@ export const projectActivity = pgTable("project_activity", {
   details: text("details"),
   createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
 });
+
+export const moodEntries = pgTable("mood_entries", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
+  mood: text("mood").notNull(),
+  note: text("note"),
+  date: text("date").notNull(),
+  createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
+});
+
+export const userMentions = pgTable("user_mentions", {
+  id: text("id").primaryKey(),
+  commentId: text("comment_id").references(() => comments.id, { onDelete: "cascade" }),
+  mentionedUserId: text("mentioned_user_id").references(() => users.id, { onDelete: "cascade" }),
+  fromUserId: text("from_user_id").references(() => users.id, { onDelete: "cascade" }),
+  taskId: text("task_id"),
+  read: boolean("read").default(false),
+  createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
+});

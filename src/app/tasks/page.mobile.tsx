@@ -5,6 +5,7 @@ import { Task, TaskStatus, TaskPriority } from "@/types/task";
 import { Badge } from "@/components/ui/badge";
 import { TaskForm } from "@/components/tasks/task-form";
 import { TaskDetail } from "@/components/tasks/task-detail";
+import { SwipeableTaskCard } from "@/components/ui/swipeable-card";
 import {
   Plus,
   Search,
@@ -170,44 +171,52 @@ export function TasksPageMobile() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, x: -50 }}
                   transition={{ delay: i * 0.03 }}
-                  onClick={() => setDetailTask(task)}
-                  className="mobile-task-card p-3.5 flex items-start gap-3 active:scale-[0.98] transition-transform"
                 >
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleStatus(task.id, task.status === "done" ? "todo" : "done");
-                    }}
-                    className={`mt-0.5 h-6 w-6 shrink-0 rounded-lg border-2 flex items-center justify-center transition-all ${
-                      task.status === "done"
-                        ? "bg-[var(--success)] border-[var(--success)] text-white"
-                        : "border-[var(--border)]"
-                    }`}
+                  <SwipeableTaskCard
+                    onComplete={() => toggleStatus(task.id, task.status === "done" ? "todo" : "done")}
+                    onDelete={() => handleDelete(task.id)}
                   >
-                    {task.status === "done" && <Check className="h-3.5 w-3.5" />}
-                  </button>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5 mb-1">
-                      {task.emoji && <span className="text-sm">{task.emoji}</span>}
-                      <p className={`text-[14px] font-semibold truncate ${task.status === "done" ? "line-through opacity-50" : ""}`}>
-                        {task.title}
-                      </p>
+                    <div
+                      onClick={() => setDetailTask(task)}
+                      className="mobile-task-card p-3.5 flex items-start gap-3 active:scale-[0.98] transition-transform"
+                    >
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleStatus(task.id, task.status === "done" ? "todo" : "done");
+                        }}
+                        className={`mt-0.5 h-6 w-6 shrink-0 rounded-lg border-2 flex items-center justify-center transition-all ${
+                          task.status === "done"
+                            ? "bg-[var(--success)] border-[var(--success)] text-white"
+                            : "border-[var(--border)]"
+                        }`}
+                      >
+                        {task.status === "done" && <Check className="h-3.5 w-3.5" />}
+                      </button>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 mb-1">
+                          {task.emoji && <span className="text-sm">{task.emoji}</span>}
+                          <p className={`text-[14px] font-semibold truncate ${task.status === "done" ? "line-through opacity-50" : ""}`}>
+                            {task.title}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge variant={PRIORITY_BADGE[task.priority]?.variant || "medium"} className="text-[9px]">
+                            {PRIORITY_BADGE[task.priority]?.label || task.priority}
+                          </Badge>
+                          {task.dueDate && (
+                            <span className="flex items-center gap-0.5 text-[10px] text-[var(--secondary)]">
+                              <Calendar className="h-2.5 w-2.5" />
+                              {new Date(task.dueDate).toLocaleDateString("ru-RU", { day: "numeric", month: "short" })}
+                            </span>
+                          )}
+                          {task.repeatRule && (
+                            <Repeat className="h-2.5 w-2.5 text-[var(--muted)]" />
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Badge variant={PRIORITY_BADGE[task.priority]?.variant || "medium"} className="text-[9px]">
-                        {PRIORITY_BADGE[task.priority]?.label || task.priority}
-                      </Badge>
-                      {task.dueDate && (
-                        <span className="flex items-center gap-0.5 text-[10px] text-[var(--secondary)]">
-                          <Calendar className="h-2.5 w-2.5" />
-                          {new Date(task.dueDate).toLocaleDateString("ru-RU", { day: "numeric", month: "short" })}
-                        </span>
-                      )}
-                      {task.repeatRule && (
-                        <Repeat className="h-2.5 w-2.5 text-[var(--muted)]" />
-                      )}
-                    </div>
-                  </div>
+                  </SwipeableTaskCard>
                 </motion.div>
               ))}
             </AnimatePresence>

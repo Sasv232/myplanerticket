@@ -61,6 +61,7 @@ export function TaskForm({ open, onClose, onSubmit, initialData }: TaskFormProps
   const [dueDate, setDueDate] = useState(initialData?.dueDate?.split("T")[0] || "");
   const [tagsInput, setTagsInput] = useState(initialData?.tags.join(", ") || "");
   const [repeatRule, setRepeatRule] = useState(initialData?.repeatRule || "");
+  const [repeatAfterComplete, setRepeatAfterComplete] = useState(initialData?.repeatAfterComplete ?? false);
   const [label, setLabel] = useState(initialData?.label || "");
   const [projectId, setProjectId] = useState(initialData?.projectId || "");
   const [emoji, setEmoji] = useState(initialData?.emoji || "");
@@ -114,6 +115,7 @@ export function TaskForm({ open, onClose, onSubmit, initialData }: TaskFormProps
       dueDate: dueDate || undefined,
       tags: tagsInput.split(",").map((t) => t.trim()).filter(Boolean),
       repeatRule: repeatRule || undefined,
+      repeatAfterComplete: repeatAfterComplete,
       label: label || undefined,
       projectId: projectId || undefined,
       emoji: emoji || undefined,
@@ -125,6 +127,7 @@ export function TaskForm({ open, onClose, onSubmit, initialData }: TaskFormProps
     setDueDate("");
     setTagsInput("");
     setRepeatRule("");
+    setRepeatAfterComplete(false);
     setLabel("");
     setProjectId("");
     setEmoji("");
@@ -257,6 +260,17 @@ export function TaskForm({ open, onClose, onSubmit, initialData }: TaskFormProps
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
                   ))}
                 </select>
+                {repeatRule && (
+                  <label className="flex items-center gap-2 mt-2 text-[12px] text-[var(--secondary)] cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={repeatAfterComplete}
+                      onChange={(e) => setRepeatAfterComplete(e.target.checked)}
+                      className="h-3.5 w-3.5 rounded accent-[var(--accent)]"
+                    />
+                    Автоматически создавать следующую
+                  </label>
+                )}
               </div>
               <div>
                 <label className="form-label flex items-center gap-1.5">

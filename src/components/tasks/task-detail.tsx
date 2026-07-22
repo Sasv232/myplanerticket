@@ -288,20 +288,26 @@ export function TaskDetail({ task, open, onClose }: TaskDetailProps) {
                 <p className="text-center text-sm text-[var(--secondary)] py-4">Нет комментариев</p>
               ) : (
                 comments.map((c) => (
-                  <div key={c.id} className="rounded-lg border border-[var(--border)] p-3">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <p className="text-xs font-medium">{c.userName || "Аноним"}</p>
-                        <p className="mt-1 text-sm">{c.content}</p>
-                        <p className="mt-1 text-[10px] text-[var(--secondary)]">
-                          {new Date(c.createdAt).toLocaleString("ru-RU")}
-                        </p>
+                    <div key={c.id} className="rounded-lg border border-[var(--border)] p-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium">{c.userName || "Аноним"}</p>
+                          <p className="mt-1 text-sm">{c.content.split(/(@\w+)/g).map((part, i) =>
+                            part.startsWith("@") ? (
+                              <span key={i} className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-[var(--accent)]/10 text-[var(--accent)] text-xs font-semibold">{part}</span>
+                            ) : (
+                              <span key={i}>{part}</span>
+                            )
+                          )}</p>
+                          <p className="mt-1 text-[10px] text-[var(--secondary)]">
+                            {new Date(c.createdAt).toLocaleString("ru-RU")}
+                          </p>
+                        </div>
+                        <button onClick={() => deleteComment(c.id)} className="text-[var(--error)] hover:opacity-70">
+                          <Trash2 className="h-3 w-3" />
+                        </button>
                       </div>
-                      <button onClick={() => deleteComment(c.id)} className="text-[var(--error)] hover:opacity-70">
-                        <Trash2 className="h-3 w-3" />
-                      </button>
                     </div>
-                  </div>
                 ))
               )}
             </div>
