@@ -31,7 +31,7 @@ export function useAuth() {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [password, setPassword] = useState<string | null>(null);
+  
   const [loading, setLoading] = useState(true);
 
   const checkAuth = useCallback(async () => {
@@ -64,7 +64,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await res.json();
       if (!res.ok) return data.error;
       setUser(data.user);
-      setPassword(pw);
       return null;
     } catch {
       return "Ошибка сети";
@@ -81,7 +80,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await res.json();
       if (!res.ok) return data.error;
       setUser(data.user);
-      setPassword(pw);
       return null;
     } catch {
       return "Ошибка сети";
@@ -91,11 +89,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logoutFn = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
     setUser(null);
-    setPassword(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, password, login: loginFn, register: registerFn, logout: logoutFn }}>
+    <AuthContext.Provider value={{ user, loading, login: loginFn, register: registerFn, logout: logoutFn }}>
       {children}
     </AuthContext.Provider>
   );
