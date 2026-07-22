@@ -37,7 +37,8 @@ export async function POST(request: NextRequest) {
     });
     }
     return response;
-  } catch {
-    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
+  } catch (e: any) {
+    console.error("Register error:", e?.message, e?.stack);
+    return NextResponse.json({ error: "Ошибка сервера", detail: e?.message }, { status: 500 });
   }
 }
