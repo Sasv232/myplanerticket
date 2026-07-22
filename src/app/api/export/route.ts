@@ -1,14 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { tasks, comments, attachments } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
+import { getUserFromToken } from "@/lib/auth";
 
 export async function GET(request: NextRequest) {
   try {
-    const allTasks = await db.select().from(tasks);
+    const token = request.cookies.get("session_token")?.value;
+    if (!token) return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+    const user = await getUserFromToken(token);
+    if (!user) return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+
+    const userTasks = await db.select().from(tasks).where(eq(tasks.userId, user.id));
 
     const tasksWithExtras = await Promise.all(
-      allTasks.map(async (task) => {
+      userTasks.map(async (task) => {
         const taskComments = await db
           .select()
           .from(comments)
@@ -41,6 +47,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const token = request.cookies.get("session_token")?.value;
+    if (!token) return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+    const user = await getUserFromToken(token);
+    if (!user) return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+
     const body = await request.json();
     const tasksData = body.tasks || [];
 
@@ -49,6 +60,7 @@ export async function POST(request: NextRequest) {
       const { comments: taskComments, attachments: taskAttachments, ...taskData } = task;
       await db.insert(tasks).values({
         id: taskData.id,
+        userId: user.id,
         title: taskData.title,
         description: taskData.description || null,
         status: taskData.status || "todo",
@@ -65,7 +77,7 @@ export async function POST(request: NextRequest) {
           await db.insert(comments).values({
             id: c.id,
             taskId: c.taskId,
-            userId: c.userId || null,
+            userId: user.id,
             content: c.content,
             createdAt: c.createdAt,
           }).onConflictDoNothing();

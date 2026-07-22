@@ -7,6 +7,11 @@ import { getUserFromToken } from "@/lib/auth";
 
 export async function GET(request: NextRequest) {
   try {
+    const token = request.cookies.get("session_token")?.value;
+    if (!token) return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+    const user = await getUserFromToken(token);
+    if (!user) return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+
     const taskId = request.nextUrl.searchParams.get("taskId");
     if (!taskId) return NextResponse.json({ error: "taskId required" }, { status: 400 });
 
@@ -33,11 +38,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const token = request.cookies.get("session_token")?.value;
-    let currentUserId: string | null = null;
-    if (token) {
-      const user = await getUserFromToken(token);
-      currentUserId = user?.id || null;
-    }
+    if (!token) return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+    const user = await getUserFromToken(token);
+    if (!user) return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
 
     const body = await request.json();
     const id = uuid();
@@ -45,14 +48,13 @@ export async function POST(request: NextRequest) {
     const newComment = {
       id,
       taskId: body.taskId,
-      userId: body.userId || currentUserId,
+      userId: user.id,
       content: body.content,
       createdAt: new Date().toISOString(),
     };
 
     await db.insert(comments).values(newComment);
 
-    // Detect @mentions
     const mentionRegex = /@(\w+)/g;
     let match;
     const mentionedNames: string[] = [];
@@ -66,12 +68,12 @@ export async function POST(request: NextRequest) {
         const found = allUsers.find(
           (u) => u.name && u.name.toLowerCase() === name.toLowerCase()
         );
-        if (found && found.id !== currentUserId) {
+        if (found && found.id !== user.id) {
           await db.insert(userMentions).values({
             id: uuid(),
             commentId: id,
             mentionedUserId: found.id,
-            fromUserId: currentUserId,
+            fromUserId: user.id,
             taskId: body.taskId,
             createdAt: new Date().toISOString(),
           });
@@ -87,8 +89,17 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    const token = request.cookies.get("session_token")?.value;
+    if (!token) return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+    const user = await getUserFromToken(token);
+    if (!user) return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+
     const id = request.nextUrl.searchParams.get("id");
     if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
+
+    const existing = await db.select().from(comments).where(and(eq(comments.id, id), eq(comments.userId, user.id))).limit(1);
+    if (!existing[0] && user.role !== "admin") return NextResponse.json({ error: "Not found" }, { status: 404 });
+
     await db.delete(comments).where(eq(comments.id, id));
     return NextResponse.json({ ok: true });
   } catch {
@@ -96,7 +107,6 @@ export async function DELETE(request: NextRequest) {
   }
 }
 
-// GET mentions for current user
 export async function PATCH(request: NextRequest) {
   try {
     const token = request.cookies.get("session_token")?.value;

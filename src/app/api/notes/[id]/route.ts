@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { notes } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { getUserFromToken } from "@/lib/auth";
 
 export async function PUT(
@@ -15,6 +15,10 @@ export async function PUT(
     if (!user) return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
 
     const { id } = await params;
+
+    const existing = await db.select().from(notes).where(and(eq(notes.id, id), eq(notes.userId, user.id))).limit(1);
+    if (!existing[0]) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
     const body = await request.json();
     const now = new Date().toISOString();
 
@@ -24,7 +28,7 @@ export async function PUT(
     if (body.color !== undefined) updates.color = body.color;
     if (body.pinned !== undefined) updates.pinned = body.pinned;
 
-    await db.update(notes).set(updates).where(eq(notes.id, id));
+    await db.update(notes).set(updates).where(and(eq(notes.id, id), eq(notes.userId, user.id)));
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
@@ -42,7 +46,10 @@ export async function DELETE(
     if (!user) return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
 
     const { id } = await params;
-    await db.delete(notes).where(eq(notes.id, id));
+    const existing = await db.select().from(notes).where(and(eq(notes.id, id), eq(notes.userId, user.id))).limit(1);
+    if (!existing[0]) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+    await db.delete(notes).where(and(eq(notes.id, id), eq(notes.userId, user.id)));
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });

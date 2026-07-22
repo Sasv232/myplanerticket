@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { tasks } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { v4 as uuid } from "uuid";
 import { addDays, addWeeks, addMonths, addYears, format } from "date-fns";
+import { getUserFromToken } from "@/lib/auth";
 
 function getNextDueDate(currentDueDate: string, repeatRule: string): string {
   const date = new Date(currentDueDate);
@@ -28,12 +29,17 @@ function getNextDueDate(currentDueDate: string, repeatRule: string): string {
 }
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const token = request.cookies.get("session_token")?.value;
+    if (!token) return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+    const user = await getUserFromToken(token);
+    if (!user) return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+
     const { id } = await params;
-    const rows = await db.select().from(tasks).where(eq(tasks.id, id)).limit(1);
+    const rows = await db.select().from(tasks).where(and(eq(tasks.id, id), eq(tasks.userId, user.id))).limit(1);
     if (!rows[0]) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
@@ -48,7 +54,16 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const token = request.cookies.get("session_token")?.value;
+    if (!token) return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+    const user = await getUserFromToken(token);
+    if (!user) return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+
     const { id } = await params;
+
+    const existing = await db.select().from(tasks).where(and(eq(tasks.id, id), eq(tasks.userId, user.id))).limit(1);
+    if (!existing[0]) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
     const body = await request.json();
 
     const updates: Record<string, unknown> = {
@@ -67,11 +82,10 @@ export async function PUT(
     if (body.emoji !== undefined) updates.emoji = body.emoji || null;
     if (body.completedAt !== undefined) updates.completedAt = body.completedAt || null;
 
-    await db.update(tasks).set(updates).where(eq(tasks.id, id));
+    await db.update(tasks).set(updates).where(and(eq(tasks.id, id), eq(tasks.userId, user.id)));
 
-    // Auto-create next recurring task when status changes to "done"
     if (body.status === "done") {
-      const rows2 = await db.select().from(tasks).where(eq(tasks.id, id)).limit(1);
+      const rows2 = await db.select().from(tasks).where(and(eq(tasks.id, id), eq(tasks.userId, user.id))).limit(1);
       const completedTask = rows2[0];
       if (completedTask?.repeatRule) {
         const nextDueDate = completedTask.dueDate
@@ -98,7 +112,7 @@ export async function PUT(
       }
     }
 
-    const rows = await db.select().from(tasks).where(eq(tasks.id, id)).limit(1);
+    const rows = await db.select().from(tasks).where(and(eq(tasks.id, id), eq(tasks.userId, user.id))).limit(1);
     return NextResponse.json(rows[0]);
   } catch {
     return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
@@ -106,12 +120,20 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const token = request.cookies.get("session_token")?.value;
+    if (!token) return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+    const user = await getUserFromToken(token);
+    if (!user) return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+
     const { id } = await params;
-    await db.delete(tasks).where(eq(tasks.id, id));
+    const existing = await db.select().from(tasks).where(and(eq(tasks.id, id), eq(tasks.userId, user.id))).limit(1);
+    if (!existing[0]) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+    await db.delete(tasks).where(and(eq(tasks.id, id), eq(tasks.userId, user.id)));
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });

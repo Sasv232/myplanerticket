@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { journalEntries } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { getUserFromToken } from "@/lib/auth";
 
 export async function PUT(
@@ -15,6 +15,10 @@ export async function PUT(
     if (!user) return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
 
     const { id } = await params;
+
+    const existing = await db.select().from(journalEntries).where(and(eq(journalEntries.id, id), eq(journalEntries.userId, user.id))).limit(1);
+    if (!existing[0]) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
     const body = await request.json();
     const now = new Date().toISOString();
 
@@ -24,7 +28,7 @@ export async function PUT(
     if (body.mood !== undefined) updates.mood = body.mood;
     if (body.pinned !== undefined) updates.pinned = body.pinned;
 
-    await db.update(journalEntries).set(updates).where(eq(journalEntries.id, id));
+    await db.update(journalEntries).set(updates).where(and(eq(journalEntries.id, id), eq(journalEntries.userId, user.id)));
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
@@ -42,7 +46,10 @@ export async function DELETE(
     if (!user) return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
 
     const { id } = await params;
-    await db.delete(journalEntries).where(eq(journalEntries.id, id));
+    const existing = await db.select().from(journalEntries).where(and(eq(journalEntries.id, id), eq(journalEntries.userId, user.id))).limit(1);
+    if (!existing[0]) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+    await db.delete(journalEntries).where(and(eq(journalEntries.id, id), eq(journalEntries.userId, user.id)));
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });

@@ -12,7 +12,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const SESSION_DAYS = 30;
 
 export async function hashPassword(password: string): Promise<string> {
-  return bcrypt.hash(password, 10);
+  return bcrypt.hash(password, 12);
 }
 
 export async function verifyPassword(password: string, hash: string): Promise<boolean> {

@@ -33,10 +33,16 @@ function getNextDueDate(currentDueDate: string, repeatRule: string): string {
 
 export async function POST(request: NextRequest) {
   try {
+    const token = request.cookies.get("session_token")?.value;
+    if (!token) return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+    const { getUserFromToken } = await import("@/lib/auth");
+    const user = await getUserFromToken(token);
+    if (!user) return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+
     const { taskId } = await request.json();
     if (!taskId) return NextResponse.json({ error: "taskId required" }, { status: 400 });
 
-    const rows = await db.select().from(tasks).where(eq(tasks.id, taskId)).limit(1);
+    const rows = await db.select().from(tasks).where(and(eq(tasks.id, taskId), eq(tasks.userId, user.id))).limit(1);
     if (!rows[0]) return NextResponse.json({ error: "Task not found" }, { status: 404 });
 
     const task = rows[0];

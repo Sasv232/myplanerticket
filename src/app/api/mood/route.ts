@@ -64,9 +64,18 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    const token = request.cookies.get("session_token")?.value;
+    if (!token) return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+    const user = await getUserFromToken(token);
+    if (!user) return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+
     const id = request.nextUrl.searchParams.get("id");
     if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
-    await db.delete(moodEntries).where(eq(moodEntries.id, id));
+
+    const existing = await db.select().from(moodEntries).where(and(eq(moodEntries.id, id), eq(moodEntries.userId, user.id))).limit(1);
+    if (!existing[0]) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+    await db.delete(moodEntries).where(and(eq(moodEntries.id, id), eq(moodEntries.userId, user.id)));
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
