@@ -28,8 +28,8 @@ export async function PUT(
       .where(and(eq(projects.id, id), eq(projects.userId, user.id)));
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }
 
@@ -51,7 +51,7 @@ export async function DELETE(
       .where(and(eq(projects.id, id), eq(projects.userId, user.id)));
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }

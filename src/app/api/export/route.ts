@@ -34,8 +34,8 @@ export async function GET(request: NextRequest) {
       exportedAt: new Date().toISOString(),
       tasks: tasksWithExtras,
     });
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }
 
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ ok: true, imported });
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }

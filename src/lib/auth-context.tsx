@@ -31,6 +31,7 @@ export function useAuth() {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [password, setPassword] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const checkAuth = useCallback(async () => {
@@ -53,32 +54,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     checkAuth();
   }, [checkAuth]);
 
-  const loginFn = async (name: string, password: string): Promise<string | null> => {
+  const loginFn = async (name: string, pw: string): Promise<string | null> => {
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, password }),
+        body: JSON.stringify({ name, password: pw }),
       });
       const data = await res.json();
       if (!res.ok) return data.error;
       setUser(data.user);
+      setPassword(pw);
       return null;
     } catch {
       return "Ошибка сети";
     }
   };
 
-  const registerFn = async (name: string, password: string, email?: string): Promise<string | null> => {
+  const registerFn = async (name: string, pw: string, email?: string): Promise<string | null> => {
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, password, email }),
+        body: JSON.stringify({ name, password: pw, email }),
       });
       const data = await res.json();
       if (!res.ok) return data.error;
       setUser(data.user);
+      setPassword(pw);
       return null;
     } catch {
       return "Ошибка сети";
@@ -88,10 +91,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logoutFn = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
     setUser(null);
+    setPassword(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login: loginFn, register: registerFn, logout: logoutFn }}>
+    <AuthContext.Provider value={{ user, loading, password, login: loginFn, register: registerFn, logout: logoutFn }}>
       {children}
     </AuthContext.Provider>
   );

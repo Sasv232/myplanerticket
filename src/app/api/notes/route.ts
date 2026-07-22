@@ -14,8 +14,8 @@ export async function GET(request: NextRequest) {
 
     const allNotes = await db.select().from(notes).where(eq(notes.userId, user.id));
     return NextResponse.json(allNotes);
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }
 
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
 
     await db.insert(notes).values(newNote);
     return NextResponse.json(newNote, { status: 201 });
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }

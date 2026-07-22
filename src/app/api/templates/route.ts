@@ -8,8 +8,8 @@ export async function GET() {
   try {
     const all = await db.select().from(templates);
     return NextResponse.json(all);
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }
 
@@ -26,8 +26,8 @@ export async function POST(request: NextRequest) {
     };
     await db.insert(templates).values(template);
     return NextResponse.json(template, { status: 201 });
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }
 
@@ -37,7 +37,7 @@ export async function DELETE(request: NextRequest) {
     if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
     await db.delete(templates).where(eq(templates.id, id));
     return NextResponse.json({ ok: true });
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }

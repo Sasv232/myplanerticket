@@ -18,6 +18,7 @@ export const translations = {
     nav_journal: "Дневник",
     nav_fitness: "Фитнес",
     nav_synth: "Синтезатор",
+    nav_messenger: "Мессенджер",
 
     // Groups
     group_main: "Главная",
@@ -286,6 +287,7 @@ export const translations = {
     nav_journal: "Journal",
     nav_fitness: "Fitness",
     nav_synth: "Synthesizer",
+    nav_messenger: "Messenger",
 
     // Groups
     group_main: "Main",

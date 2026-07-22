@@ -30,8 +30,8 @@ export async function GET(request: NextRequest) {
 
     const rows = await query;
     return NextResponse.json(rows);
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }
 
@@ -57,8 +57,8 @@ export async function POST(request: NextRequest) {
 
     await db.insert(moodEntries).values(newEntry);
     return NextResponse.json(newEntry, { status: 201 });
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }
 
@@ -68,7 +68,7 @@ export async function DELETE(request: NextRequest) {
     if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
     await db.delete(moodEntries).where(eq(moodEntries.id, id));
     return NextResponse.json({ ok: true });
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }

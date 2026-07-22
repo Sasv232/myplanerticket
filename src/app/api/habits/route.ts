@@ -38,8 +38,8 @@ export async function GET(request: NextRequest) {
     }));
 
     return NextResponse.json(habitsWithLogs);
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }
 
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
 
     await db.insert(habits).values(newHabit);
     return NextResponse.json({ ...newHabit, logs: [] }, { status: 201 });
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }

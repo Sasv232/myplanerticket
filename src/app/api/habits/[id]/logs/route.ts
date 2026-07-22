@@ -28,7 +28,7 @@ export async function GET(
       );
 
     return NextResponse.json(logs);
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }

@@ -38,8 +38,8 @@ export async function GET(
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
     return NextResponse.json(rows[0]);
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }
 
@@ -100,8 +100,8 @@ export async function PUT(
 
     const rows = await db.select().from(tasks).where(eq(tasks.id, id)).limit(1);
     return NextResponse.json(rows[0]);
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }
 
@@ -113,7 +113,7 @@ export async function DELETE(
     const { id } = await params;
     await db.delete(tasks).where(eq(tasks.id, id));
     return NextResponse.json({ ok: true });
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }

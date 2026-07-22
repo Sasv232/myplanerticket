@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { register } from "@/lib/auth";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown";
+    
+    if (!checkRateLimit(`register:${ip}`, 5, 300000)) {
+      return NextResponse.json({ error: "Слишком много регистраций. Подождите 5 минут." }, { status: 429 });
+    }
+
     const body = await request.json();
     const { name, password, email } = body;
 
@@ -30,7 +37,7 @@ export async function POST(request: NextRequest) {
     });
     }
     return response;
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }

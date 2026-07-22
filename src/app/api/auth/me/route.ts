@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({ user });
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }

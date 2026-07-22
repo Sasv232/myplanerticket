@@ -31,8 +31,8 @@ export async function PUT(
       .where(and(eq(habits.id, id), eq(habits.userId, user.id)));
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }
 
@@ -54,8 +54,8 @@ export async function DELETE(
       .where(and(eq(habits.id, id), eq(habits.userId, user.id)));
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }
 
@@ -100,7 +100,7 @@ export async function POST(
 
     await db.insert(habitLogs).values(newLog);
     return NextResponse.json(newLog, { status: 201 });
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }

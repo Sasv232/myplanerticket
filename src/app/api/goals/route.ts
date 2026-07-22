@@ -19,8 +19,8 @@ export async function GET(request: NextRequest) {
       .where(eq(goals.userId, user.id));
 
     return NextResponse.json(userGoals);
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }
 
@@ -49,8 +49,8 @@ export async function POST(request: NextRequest) {
 
     await db.insert(goals).values(newGoal);
     return NextResponse.json(newGoal, { status: 201 });
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }
 
@@ -93,7 +93,7 @@ export async function PUT(request: NextRequest) {
       .where(and(eq(goals.id, body.id), eq(goals.userId, user.id)));
 
     return NextResponse.json({ success: true, currentCount: newCount });
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }

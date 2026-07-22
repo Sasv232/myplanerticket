@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { login } from "@/lib/auth";
+import { checkRateLimit, getRateLimitHeaders } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown";
+    
+    if (!checkRateLimit(`login:${ip}`, 10, 60000)) {
+      return NextResponse.json({ error: "Слишком много попыток. Подождите минуту." }, { status: 429 });
+    }
+
     const body = await request.json();
     const { name, password } = body;
 
@@ -26,7 +33,7 @@ export async function POST(request: NextRequest) {
     });
     }
     return response;
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }

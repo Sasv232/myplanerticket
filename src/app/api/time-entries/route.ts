@@ -13,8 +13,8 @@ export async function GET(request: NextRequest) {
     const total = rows.reduce((acc, r) => acc + r.duration, 0);
 
     return NextResponse.json({ entries: rows, totalMinutes: total });
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }
 
@@ -34,8 +34,8 @@ export async function POST(request: NextRequest) {
 
     await db.insert(timeEntries).values(entry);
     return NextResponse.json(entry, { status: 201 });
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }
 
@@ -45,7 +45,7 @@ export async function DELETE(request: NextRequest) {
     if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
     await db.delete(timeEntries).where(eq(timeEntries.id, id));
     return NextResponse.json({ ok: true });
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }

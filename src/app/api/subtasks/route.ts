@@ -25,8 +25,8 @@ export async function GET(request: NextRequest) {
       .where(eq(subtasks.taskId, taskId));
 
     return NextResponse.json(taskSubtasks);
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }
 
@@ -53,8 +53,8 @@ export async function POST(request: NextRequest) {
 
     await db.insert(subtasks).values(newSubtask);
     return NextResponse.json(newSubtask, { status: 201 });
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }
 
@@ -77,8 +77,8 @@ export async function PUT(request: NextRequest) {
       .where(eq(subtasks.id, body.id));
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }
 
@@ -98,7 +98,7 @@ export async function DELETE(request: NextRequest) {
 
     await db.delete(subtasks).where(eq(subtasks.id, id));
     return NextResponse.json({ success: true });
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }

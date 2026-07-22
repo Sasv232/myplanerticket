@@ -28,8 +28,8 @@ export async function GET(request: NextRequest) {
       .limit(20);
 
     return NextResponse.json(rows);
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }
 
@@ -48,7 +48,7 @@ export async function PUT(request: NextRequest) {
     }
 
     return NextResponse.json({ ok: true });
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }

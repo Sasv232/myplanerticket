@@ -64,8 +64,8 @@ export async function POST(request: NextRequest) {
 
     await db.insert(tasks).values(newTask);
     return NextResponse.json({ ok: true, task: newTask });
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }
 
@@ -109,7 +109,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({ created: created.length });
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }

@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
 
     await db.update(tasks).set(updates).where(inArray(tasks.id, ids));
     return NextResponse.json({ ok: true, updated: ids.length });
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }

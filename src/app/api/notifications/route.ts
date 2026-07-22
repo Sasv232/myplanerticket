@@ -10,7 +10,7 @@ export async function GET() {
       .from(notifications)
       .orderBy(desc(notifications.createdAt));
     return NextResponse.json(allNotifications);
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }

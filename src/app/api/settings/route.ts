@@ -14,8 +14,8 @@ export async function GET(request: NextRequest) {
       databaseConnected: true,
       parsersAvailable: ["rzd"],
     });
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }
 
@@ -29,7 +29,7 @@ export async function PUT(request: NextRequest) {
       ok: true,
       message: "Настройки SMTP задаются через переменные окружения Vercel (SMTP_USER, SMTP_PASS, NOTIFICATION_EMAIL)",
     });
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }

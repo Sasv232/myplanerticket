@@ -25,8 +25,8 @@ export async function GET(request: NextRequest) {
       .orderBy(desc(comments.createdAt));
 
     return NextResponse.json(rows);
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }
 
@@ -80,8 +80,8 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(newComment, { status: 201 });
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }
 
@@ -91,8 +91,8 @@ export async function DELETE(request: NextRequest) {
     if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
     await db.delete(comments).where(eq(comments.id, id));
     return NextResponse.json({ ok: true });
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }
 
@@ -121,7 +121,7 @@ export async function PATCH(request: NextRequest) {
       .limit(20);
 
     return NextResponse.json(rows);
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }

@@ -268,3 +268,47 @@ export const userMentions = pgTable("user_mentions", {
   read: boolean("read").default(false),
   createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
 });
+
+export const conversations = pgTable("conversations", {
+  id: text("id").primaryKey(),
+  type: text("type", { enum: ["dm", "group"] }).notNull().default("dm"),
+  name: text("name"),
+  emoji: text("emoji").default("💬"),
+  createdBy: text("created_by").notNull().references(() => users.id),
+  createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
+});
+
+export const conversationMembers = pgTable("conversation_members", {
+  id: text("id").primaryKey(),
+  conversationId: text("conversation_id").notNull().references(() => conversations.id, { onDelete: "cascade" }),
+  userId: text("user_id").notNull().references(() => users.id),
+  role: text("role", { enum: ["owner", "admin", "member"] }).notNull().default("member"),
+  lastReadAt: text("last_read_at").$defaultFn(() => new Date().toISOString()),
+  joinedAt: text("joined_at").notNull().$defaultFn(() => new Date().toISOString()),
+});
+
+export const messages = pgTable("messages", {
+  id: text("id").primaryKey(),
+  conversationId: text("conversation_id").notNull().references(() => conversations.id, { onDelete: "cascade" }),
+  userId: text("user_id").notNull().references(() => users.id),
+  content: text("content").notNull(),
+  type: text("type", { enum: ["text", "image", "file", "system"] }).notNull().default("text"),
+  replyTo: text("reply_to"),
+  edited: boolean("edited").default(false),
+  createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
+});
+
+export const messageReactions = pgTable("message_reactions", {
+  id: text("id").primaryKey(),
+  messageId: text("message_id").notNull().references(() => messages.id, { onDelete: "cascade" }),
+  userId: text("user_id").notNull().references(() => users.id),
+  emoji: text("emoji").notNull(),
+  createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
+});
+
+export const typingIndicators = pgTable("typing_indicators", {
+  id: text("id").primaryKey(),
+  conversationId: text("conversation_id").notNull().references(() => conversations.id, { onDelete: "cascade" }),
+  userId: text("user_id").notNull().references(() => users.id),
+  expiresAt: text("expires_at").notNull(),
+});

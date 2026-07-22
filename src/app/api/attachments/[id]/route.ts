@@ -2,12 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { attachments } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import { getUserFromToken } from "@/lib/auth";
 
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const token = _request.cookies.get("session_token")?.value;
+    if (!token) return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+    const user = await getUserFromToken(token);
+    if (!user) return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+
     const { id } = await params;
     const rows = await db
       .select()
@@ -26,7 +32,7 @@ export async function GET(
         "Content-Disposition": `attachment; filename="${encodeURIComponent(att.fileName)}"`,
       },
     });
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }

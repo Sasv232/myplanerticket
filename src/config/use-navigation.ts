@@ -18,6 +18,7 @@ import {
   BookOpen,
   Dumbbell,
   Smile,
+  MessageCircle,
 } from "lucide-react";
 
 export interface NavItem {
@@ -58,6 +59,7 @@ export function useNavigation() {
     {
       title: t("group_system"),
       items: [
+        { label: t("nav_messenger"), href: "/messenger", icon: MessageCircle },
         { label: t("nav_notifications"), href: "/notifications", icon: Bell },
         { label: t("nav_settings"), href: "/settings", icon: Settings },
       ],

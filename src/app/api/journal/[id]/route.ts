@@ -26,8 +26,8 @@ export async function PUT(
 
     await db.update(journalEntries).set(updates).where(eq(journalEntries.id, id));
     return NextResponse.json({ ok: true });
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }
 
@@ -44,7 +44,7 @@ export async function DELETE(
     const { id } = await params;
     await db.delete(journalEntries).where(eq(journalEntries.id, id));
     return NextResponse.json({ ok: true });
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }
