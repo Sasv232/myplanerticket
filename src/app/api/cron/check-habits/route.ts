@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
 
       const totalDone = todayLogs.reduce((sum, log) => sum + log.count, 0);
 
-      if (totalDone < habit.targetCount) {
+      if (totalDone < habit.targetCount && habit.userId) {
         await sendPushToUser(habit.userId, {
           title: "Напоминание о привычке",
           body: `Не забудьте: ${habit.emoji || "✅"} ${habit.name}`,
