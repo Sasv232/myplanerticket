@@ -1,0 +1,40 @@
+{
+  "name": "myplanerticket",
+  "version": "1.0.0",
+  "description": "MyPlanerTicket Desktop",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win portable",
+    "build-installer": "electron-builder --win nsis"
+  },
+  "build": {
+    "appId": "com.myplanerticket.desktop",
+    "productName": "MyPlanerTicket",
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "icon.ico",
+      "signAndEditExecutable": false
+    },
+    "portable": {
+      "artifactName": "MyPlanerTicket.exe"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "icon.ico"
+    ]
+  },
+  "devDependencies": {
+    "electron": "^35.0.0",
+    "electron-builder": "^26.0.0",
+    "png-to-ico": "^3.0.2"
+  }
+}

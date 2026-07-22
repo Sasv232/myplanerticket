@@ -53,3 +53,8 @@ supabase-schema.sql
 next-env.d.ts
 
 .vercel
+
+# electron desktop app
+desktop-app/dist/
+desktop-app/node_modules/
+desktop-app/*.exe
