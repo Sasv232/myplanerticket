@@ -1,256 +1,285 @@
 ﻿"use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Palette, RefreshCw, CheckCircle, AlertCircle, Mail, Database, Download, Upload } from "lucide-react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useAuth } from "@/lib/auth-context";
+import { useMobileSidebar } from "@/components/layout/mobile-sidebar-context";
+import { Camera, ChevronRight, LogOut, Moon, Sun, Download, Upload, Shield, User, Mail, Phone, Palette } from "lucide-react";
 import { useTheme } from "@/components/layout/theme-provider";
 
-const PRIMARY_COLORS = [
-  { name: "Синий", value: "#3b82f6", class: "blue" },
-  { name: "Индиго", value: "#6366f1", class: "indigo" },
-  { name: "Фиолетовый", value: "#8b5cf6", class: "violet" },
-  { name: "Розовый", value: "#ec4899", class: "pink" },
-  { name: "Красный", value: "#ef4444", class: "red" },
-  { name: "Оранжевый", value: "#f97316", class: "orange" },
-  { name: "Янтарный", value: "#f59e0b", class: "amber" },
-  { name: "Зелёный", value: "#22c55e", class: "green" },
-  { name: "Изумрудный", value: "#10b981", class: "emerald" },
-  { name: "Бирюзовый", value: "#06b6d4", class: "cyan" },
+const COLORS = [
+  "#3b82f6", "#6366f1", "#8b5cf6", "#ec4899", "#ef4444",
+  "#f97316", "#f59e0b", "#22c55e", "#10b981", "#06b6d4",
 ];
 
-const SECONDARY_COLORS = [
-  { name: "Серый", value: "#6b7280", class: "gray" },
-  { name: "Серый-600", value: "#4b5563", class: "gray600" },
-  { name: "Серый-700", value: "#374151", class: "gray700" },
-  { name: "Серый-800", value: "#1f2937", class: "gray800" },
-  { name: "Серый-900", value: "#111827", class: "gray900" },
-  { name: "Коричневый", value: "#78716c", class: "stone" },
-  { name: "Цинковый", value: "#71717a", class: "zinc" },
-  { name: "Нейтральный", value: "#737373", class: "neutral" },
-  { name: "Сланцевый", value: "#64748b", class: "slate" },
-  { name: "Тёмно-синий", value: "#475569", class: "darkSlate" },
-];
-
-interface Settings {
-  smtpConfigured: boolean;
-  databaseConnected: boolean;
+interface Profile {
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  avatar: string | null;
+  role: string;
+  createdAt: string;
 }
 
 export function SettingsPageMobile() {
-  const { theme } = useTheme();
+  const { user, logout } = useAuth();
+  const { setOpen } = useMobileSidebar();
+  const { theme, setTheme } = useTheme();
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [primaryColor, setPrimaryColor] = useState("#3b82f6");
-  const [secondaryColor, setSecondaryColor] = useState("#6b7280");
-  const [settings, setSettings] = useState<Settings | null>(null);
-  const [loading, setLoading] = useState(true);
+  const fileRef = useRef<HTMLInputElement>(null);
 
-  const fetchSettings = useCallback(async () => {
-    setLoading(true);
+  const fetchProfile = useCallback(async () => {
     try {
-      const res = await fetch("/api/settings");
-      if (res.ok) setSettings(await res.json());
+      const res = await fetch("/api/profile");
+      if (res.ok) {
+        const data = await res.json();
+        setProfile(data);
+        setName(data.name || "");
+        setEmail(data.email || "");
+        setPhone(data.phone || "");
+      }
     } catch {}
-    setLoading(false);
   }, []);
 
   useEffect(() => {
-    fetchSettings();
-    const savedPrimary = localStorage.getItem("primaryColor") || "#3b82f6";
-    const savedSecondary = localStorage.getItem("secondaryColor") || "#6b7280";
-    setPrimaryColor(savedPrimary);
-    setSecondaryColor(savedSecondary);
-    applyColors(savedPrimary, savedSecondary);
-  }, [fetchSettings]);
+    fetchProfile();
+    const saved = localStorage.getItem("primaryColor") || "#3b82f6";
+    setPrimaryColor(saved);
+  }, [fetchProfile]);
 
-  const applyColors = (primary: string, secondary: string) => {
-    document.documentElement.style.setProperty("--accent", primary);
-    document.documentElement.style.setProperty("--secondary", secondary);
+  const handleSave = async () => {
+    await fetch("/api/profile", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, phone }),
+    });
+    fetchProfile();
+    setEditing(false);
   };
 
-  const handlePrimaryChange = (color: string) => {
-    setPrimaryColor(color);
-    localStorage.setItem("primaryColor", color);
-    applyColors(color, secondaryColor);
-  };
-
-  const handleSecondaryChange = (color: string) => {
-    setSecondaryColor(color);
-    localStorage.setItem("secondaryColor", color);
-    applyColors(primaryColor, color);
-  };
-
-  const handleExport = async () => {
-    const res = await fetch("/api/export");
-    const data = await res.json();
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `myplanericket-export-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const text = await file.text();
-    const data = JSON.parse(text);
-    const res = await fetch("/api/export", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    const result = await res.json();
-    if (result.ok) {
-      alert(`Импортировано задач: ${result.imported}`);
-      window.location.reload();
-    }
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64 = reader.result as string;
+      await fetch("/api/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ avatar: base64 }),
+      });
+      fetchProfile();
+    };
+    reader.readAsDataURL(file);
   };
 
+  const handleColorChange = (color: string) => {
+    setPrimaryColor(color);
+    localStorage.setItem("primaryColor", color);
+    document.documentElement.style.setProperty("--accent", color);
+  };
+
+  const initials = profile?.name?.slice(0, 1).toUpperCase() || "?";
+
   return (
-    <div className="space-y-4">
-      <div className="mobile-page-header">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold tracking-tight">Настройки</h1>
-          <Button variant="outline" size="sm" onClick={fetchSettings}>
-            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-          </Button>
+    <div className="mobile-main">
+      {/* Header */}
+      <div className="sticky top-0 z-30 bg-[var(--background)]/80 backdrop-blur-xl border-b border-[var(--border)]/50 px-5 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setOpen(true)}
+            className="h-10 w-10 rounded-2xl bg-[var(--surface)] flex items-center justify-center active:scale-95 transition-all duration-150"
+          >
+            {user?.avatar ? (
+              <img src={user.avatar} alt="" className="h-7 w-7 rounded-xl object-cover" />
+            ) : (
+              <span className="text-sm font-bold text-[var(--accent)]">{initials}</span>
+            )}
+          </button>
+          <h1 className="text-2xl font-bold tracking-tight">Профиль</h1>
         </div>
       </div>
 
-      <Card className="mobile-widget-card">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Palette className="h-4 w-4" />
-            Цвета темы
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <p className="mb-2 text-sm font-medium">Основной цвет</p>
-            <div className="grid grid-cols-5 gap-2">
-              {PRIMARY_COLORS.map((c) => (
-                <button
-                  key={c.value}
-                  onClick={() => handlePrimaryChange(c.value)}
-                  className={`flex flex-col items-center gap-1 rounded-xl border-2 p-2 transition-all ${
-                    primaryColor === c.value
-                      ? "border-[var(--foreground)] scale-105"
-                      : "border-transparent hover:border-[var(--border)]"
-                  }`}
-                >
-                  <div className="h-8 w-8 rounded-full shadow-inner" style={{ backgroundColor: c.value }} />
-                  <span className="text-[10px] text-[var(--secondary)]">{c.name}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <p className="mb-2 text-sm font-medium">Дополнительный цвет</p>
-            <div className="grid grid-cols-5 gap-2">
-              {SECONDARY_COLORS.map((c) => (
-                <button
-                  key={c.value}
-                  onClick={() => handleSecondaryChange(c.value)}
-                  className={`flex flex-col items-center gap-1 rounded-xl border-2 p-2 transition-all ${
-                    secondaryColor === c.value
-                      ? "border-[var(--foreground)] scale-105"
-                      : "border-transparent hover:border-[var(--border)]"
-                  }`}
-                >
-                  <div className="h-8 w-8 rounded-full shadow-inner" style={{ backgroundColor: c.value }} />
-                  <span className="text-[10px] text-[var(--secondary)]">{c.name}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="mobile-widget-card">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Mail className="h-4 w-4" />
-            Email уведомления
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {settings?.smtpConfigured ? (
-            <div className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-green-500" />
-              <span className="text-sm">Настроено</span>
-              <Badge variant="success">Активно</Badge>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <AlertCircle className="h-4 w-4 text-yellow-500" />
-                <span className="text-sm">Не настроено</span>
-                <Badge variant="warning">Ожидает</Badge>
-              </div>
-              <div className="rounded-xl bg-[var(--surface)] p-3 text-xs text-[var(--secondary)] space-y-1">
-                <p>Задайте переменные окружения в Vercel:</p>
-                <code className="block rounded-lg bg-[var(--card)] p-2 mt-1 text-[10px]">
-                  SMTP_USER=your@gmail.com<br/>
-                  SMTP_PASS=xxxx-xxxx-xxxx-xxxx<br/>
-                  NOTIFICATION_EMAIL=your@gmail.com
-                </code>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card className="mobile-widget-card">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Database className="h-4 w-4" />
-            База данных
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-2">
-            {settings?.databaseConnected ? (
-              <>
-                <CheckCircle className="h-4 w-4 text-green-500" />
-                <span className="text-sm">Supabase PostgreSQL</span>
-                <Badge variant="success">Онлайн</Badge>
-              </>
+      <div className="p-5 space-y-6">
+        {/* Avatar + Name — centered profile card */}
+        <div className="flex flex-col items-center py-4">
+          <div className="relative mb-4">
+            {profile?.avatar ? (
+              <img src={profile.avatar} alt="" className="h-24 w-24 rounded-full object-cover ring-4 ring-[var(--accent)]/15" />
             ) : (
-              <>
-                <AlertCircle className="h-4 w-4 text-red-500" />
-                <span className="text-sm">Не подключена</span>
-              </>
+              <div className="flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-[var(--accent)] to-[var(--accent)]/60 text-3xl font-bold text-white ring-4 ring-[var(--accent)]/15">
+                {initials}
+              </div>
             )}
+            <button
+              onClick={() => fileRef.current?.click()}
+              className="absolute bottom-0 right-0 flex h-9 w-9 items-center justify-center rounded-full bg-[var(--card)] shadow-lg ring-1 ring-[var(--border)] active:scale-95 transition-all"
+            >
+              <Camera className="h-4 w-4 text-[var(--accent)]" />
+            </button>
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
           </div>
-        </CardContent>
-      </Card>
+          <h2 className="text-xl font-bold">{profile?.name}</h2>
+          <p className="text-sm text-[var(--secondary)] mt-0.5">
+            {profile?.role === "admin" ? "Администратор" : "Пользователь"}
+          </p>
+        </div>
 
-      <Card className="mobile-widget-card">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Download className="h-4 w-4" />
-            Экспорт / Импорт
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="flex gap-3">
-          <Button variant="outline" size="sm" onClick={handleExport} className="flex-1">
-            <Download className="h-4 w-4" />
-            Экспорт
-          </Button>
-          <label className="flex-1">
-            <input type="file" accept=".json" className="hidden" onChange={handleImport} />
-            <Button variant="outline" size="sm" asChild className="w-full">
-              <span>
-                <Upload className="h-4 w-4" />
-                Импорт
-              </span>
-            </Button>
-          </label>
-        </CardContent>
-      </Card>
+        {/* Account section */}
+        <div>
+          <h3 className="mobile-section-header px-1 mb-2">Аккаунт</h3>
+          <div className="mobile-section">
+            <div className="mobile-section-row">
+              <User className="h-5 w-5 text-[var(--secondary)] shrink-0" />
+              {editing ? (
+                <input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="flex-1 bg-transparent text-[15px] outline-none"
+                  placeholder="Имя"
+                />
+              ) : (
+                <span className="flex-1 text-[15px]">{profile?.name}</span>
+              )}
+            </div>
+
+            <div className="mobile-section-row">
+              <Mail className="h-5 w-5 text-[var(--secondary)] shrink-0" />
+              {editing ? (
+                <input
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="flex-1 bg-transparent text-[15px] outline-none"
+                  placeholder="email@example.com"
+                  type="email"
+                />
+              ) : (
+                <span className="flex-1 text-[15px] text-[var(--secondary)]">{profile?.email || "Не указана"}</span>
+              )}
+            </div>
+
+            <div className="mobile-section-row">
+              <Phone className="h-5 w-5 text-[var(--secondary)] shrink-0" />
+              {editing ? (
+                <input
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="flex-1 bg-transparent text-[15px] outline-none"
+                  placeholder="+7 (999) 123-45-67"
+                  type="tel"
+                />
+              ) : (
+                <span className="flex-1 text-[15px] text-[var(--secondary)]">{profile?.phone || "Не указан"}</span>
+              )}
+            </div>
+
+            <button
+              onClick={() => editing ? handleSave() : setEditing(true)}
+              className="mobile-section-row w-full text-left"
+            >
+              <div className="flex-1 text-[15px] font-medium text-[var(--accent)]">
+                {editing ? "Сохранить" : "Изменить"}
+              </div>
+            </button>
+          </div>
+        </div>
+
+        {/* Preferences section */}
+        <div>
+          <h3 className="mobile-section-header px-1 mb-2">Настройки</h3>
+          <div className="mobile-section">
+            <button
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              className="mobile-section-row w-full text-left"
+            >
+              {theme === "dark" ? (
+                <Moon className="h-5 w-5 text-[var(--secondary)]" />
+              ) : (
+                <Sun className="h-5 w-5 text-[var(--secondary)]" />
+              )}
+              <span className="flex-1 text-[15px]">Тёмная тема</span>
+              <div className={`h-7 w-12 rounded-full transition-colors duration-200 ${theme === "dark" ? "bg-[var(--accent)]" : "bg-[var(--border)]"}`}>
+                <div className={`h-5 w-5 rounded-full bg-white shadow transition-transform duration-200 mt-1 ${theme === "dark" ? "translate-x-5.5 ml-1" : "translate-x-1"}`} />
+              </div>
+            </button>
+
+            <div className="mobile-section-row">
+              <Palette className="h-5 w-5 text-[var(--secondary)] shrink-0" />
+              <span className="text-[15px]">Цвет акцента</span>
+            </div>
+            <div className="px-5 pb-4 flex gap-3 flex-wrap">
+              {COLORS.map((c) => (
+                <button
+                  key={c}
+                  onClick={() => handleColorChange(c)}
+                  className={`h-9 w-9 rounded-full transition-all active:scale-90 ${primaryColor === c ? "ring-2 ring-offset-2 ring-[var(--foreground)] scale-110" : ""}`}
+                  style={{ backgroundColor: c }}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Support section */}
+        <div>
+          <h3 className="mobile-section-header px-1 mb-2">Данные</h3>
+          <div className="mobile-section">
+            <button
+              onClick={async () => {
+                const res = await fetch("/api/export");
+                const data = await res.json();
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `backup-${new Date().toISOString().slice(0, 10)}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+              }}
+              className="mobile-section-row w-full text-left"
+            >
+              <Download className="h-5 w-5 text-[var(--secondary)]" />
+              <span className="flex-1 text-[15px]">Экспорт данных</span>
+              <ChevronRight className="h-5 w-5 text-[var(--muted)]" />
+            </button>
+
+            <label className="mobile-section-row w-full text-left cursor-pointer">
+              <input type="file" accept=".json" className="hidden" onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                const text = await file.text();
+                const data = JSON.parse(text);
+                const res = await fetch("/api/export", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(data),
+                });
+                const result = await res.json();
+                if (result.ok) window.location.reload();
+              }} />
+              <Upload className="h-5 w-5 text-[var(--secondary)]" />
+              <span className="flex-1 text-[15px]">Импорт данных</span>
+              <ChevronRight className="h-5 w-5 text-[var(--muted)]" />
+            </label>
+          </div>
+        </div>
+
+        {/* Logout */}
+        <button
+          onClick={logout}
+          className="flex w-full items-center justify-center gap-3 rounded-2xl bg-[var(--error)]/10 py-4 text-[15px] font-medium text-[var(--error)] active:scale-[0.98] transition-all"
+        >
+          <LogOut className="h-5 w-5" />
+          Выйти из аккаунта
+        </button>
+
+        <p className="text-center text-xs text-[var(--secondary)] pb-4">v0.3.0</p>
+      </div>
     </div>
   );
 }

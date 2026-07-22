@@ -111,7 +111,7 @@ export async function getUserFromToken(token: string) {
   if (sessionRows.length === 0) return null;
 
   const userRows = await db
-    .select({ id: users.id, name: users.name, email: users.email, role: users.role })
+    .select({ id: users.id, name: users.name, email: users.email, phone: users.phone, avatar: users.avatar, role: users.role })
     .from(users)
     .where(eq(users.id, sessionRows[0].userId))
     .limit(1);

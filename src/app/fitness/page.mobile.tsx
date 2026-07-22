@@ -89,112 +89,147 @@ export function FitnessPageMobile() {
   const bmi = pHeight && latestWeight ? (Number(latestWeight) / ((Number(pHeight) / 100) ** 2)).toFixed(1) : null;
 
   return (
-    <div className="p-4 space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold">🏋️ {t("fitness_title")}</h1>
-        <button onClick={() => setShowProfile(!showProfile)} className="p-2 rounded-xl hover:bg-[var(--surface)]"><Heart className="h-5 w-5" /></button>
+    <div className="mobile-main">
+      {/* Header */}
+      <div className="sticky top-0 z-30 bg-[var(--background)]/80 backdrop-blur-xl border-b border-[var(--border)]/50 px-5 py-4 flex items-center justify-between">
+        <h1 className="text-2xl font-bold tracking-tight">🏋️ {t("fitness_title")}</h1>
+        <button onClick={() => setShowProfile(!showProfile)} className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--surface)] active:scale-95 transition-all">
+          <Heart className="h-5 w-5 text-[var(--secondary)]" />
+        </button>
       </div>
 
-      {showProfile && (
-        <div className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 space-y-3">
-          <h3 className="font-semibold text-sm">{t("fitness_health")}</h3>
-          <input type="number" placeholder={t("fitness_height")} value={pHeight} onChange={e => setPHeight(e.target.value)} className="w-full h-10 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-sm" />
-          <input type="number" placeholder={t("fitness_cal_goal")} value={pCalGoal} onChange={e => setPCalGoal(e.target.value)} className="w-full h-10 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-sm" />
-          <input type="number" placeholder={t("fitness_water_goal")} value={pWaterGoal} onChange={e => setPWaterGoal(e.target.value)} className="w-full h-10 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-sm" />
-          <button onClick={saveProfile} className="w-full h-10 rounded-xl bg-[var(--accent)] text-white text-sm">{t("fitness_save")}</button>
-        </div>
-      )}
-
-      <div className="flex items-center justify-center gap-3">
-        <button onClick={prevDay} className="p-2 rounded-xl hover:bg-[var(--surface)]"><ChevronLeft className="h-5 w-5" /></button>
-        <span className="font-semibold text-sm">{new Date(date).toLocaleDateString("ru-RU", { day: "numeric", month: "short" })}</span>
-        <button onClick={nextDay} className="p-2 rounded-xl hover:bg-[var(--surface)]"><ChevronRight className="h-5 w-5" /></button>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
-        <div className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-3">
-          <p className="text-[10px] text-[var(--muted)]">🔥 {t("fitness_calories")}</p>
-          <p className="text-lg font-bold">{Math.round(totalCal)}<span className="text-[10px] text-[var(--muted)]">/{profile.dailyCalorieGoal || "—"}</span></p>
-          <div className="mt-1 h-1.5 bg-[var(--surface)] rounded-full overflow-hidden"><div className="h-full bg-orange-500 rounded-full" style={{ width: `${Math.min(100, (totalCal / (profile.dailyCalorieGoal || 2000)) * 100)}%` }} /></div>
-        </div>
-        <div className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-3">
-          <p className="text-[10px] text-[var(--muted)]">💧 {t("fitness_water")}</p>
-          <p className="text-lg font-bold">{Math.round(totalWater)}<span className="text-[10px] text-[var(--muted)]">/{profile.dailyWaterGoal || "—"} мл</span></p>
-          <div className="mt-1 h-1.5 bg-[var(--surface)] rounded-full overflow-hidden"><div className="h-full bg-blue-500 rounded-full" style={{ width: `${Math.min(100, (totalWater / (profile.dailyWaterGoal || 2000)) * 100)}%` }} /></div>
-        </div>
-        <div className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-3">
-          <p className="text-[10px] text-[var(--muted)]">⚖️ {t("fitness_weight_title")}</p>
-          <p className="text-lg font-bold">{latestWeight ? `${latestWeight}кг` : "—"}</p>
-          {bmi && <p className="text-[10px] text-[var(--muted)]">ИМТ: {bmi}</p>}
-        </div>
-        <div className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-3">
-          <p className="text-[10px] text-[var(--muted)]">📊 {t("fitness_bju")}</p>
-          <div className="flex gap-2 text-xs mt-1">
-            <span className="text-red-500">{Math.round(totalProtein)}Б</span>
-            <span className="text-yellow-500">{Math.round(totalCarbs)}В</span>
-            <span className="text-green-500">{Math.round(totalFat)}Ж</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="font-semibold text-sm flex items-center gap-1"><Apple className="h-4 w-4 text-green-500" /> {t("fitness_nutrition")}</h3>
-          <button onClick={() => setShowFoodForm(!showFoodForm)} className="p-1.5 rounded-lg hover:bg-[var(--surface)]"><Plus className="h-4 w-4" /></button>
-        </div>
-        {showFoodForm && (
-          <div className="bg-[var(--surface)] rounded-lg p-3 mb-3 space-y-2">
-            <input placeholder={t("fitness_food_name")} value={foodName} onChange={e => setFoodName(e.target.value)} className="w-full h-9 rounded-lg border border-[var(--border)] bg-[var(--card)] px-2 text-xs" />
-            <div className="grid grid-cols-2 gap-2">
-              <input type="number" placeholder="ккал" value={foodCal} onChange={e => setFoodCal(e.target.value)} className="h-9 rounded-lg border border-[var(--border)] bg-[var(--card)] px-2 text-xs" />
-              <select value={foodMeal} onChange={e => setFoodMeal(e.target.value)} className="h-9 rounded-lg border border-[var(--border)] bg-[var(--card)] px-2 text-xs">
-                {MEAL_TYPES.map(m => <option key={m.value} value={m.value}>{m.emoji} {m.label}</option>)}
-              </select>
-            </div>
-            <button onClick={addFood} className="w-full h-9 rounded-lg bg-[var(--accent)] text-white text-xs">{t("fitness_add")}</button>
+      <div className="p-5 space-y-5">
+        {/* Health profile form */}
+        {showProfile && (
+          <div className="mobile-section p-5 space-y-4">
+            <h3 className="text-base font-semibold">{t("fitness_health")}</h3>
+            <input type="number" placeholder={t("fitness_height")} value={pHeight} onChange={e => setPHeight(e.target.value)} className="mobile-input" />
+            <input type="number" placeholder={t("fitness_cal_goal")} value={pCalGoal} onChange={e => setPCalGoal(e.target.value)} className="mobile-input" />
+            <input type="number" placeholder={t("fitness_water_goal")} value={pWaterGoal} onChange={e => setPWaterGoal(e.target.value)} className="mobile-input" />
+            <button onClick={saveProfile} className="mobile-btn mobile-btn-primary w-full">{t("fitness_save")}</button>
           </div>
         )}
-        {foods.map(f => (
-          <div key={f.id} className="flex items-center justify-between py-1.5 text-xs">
-            <span>{MEAL_TYPES.find(m => m.value === f.mealType)?.emoji} {f.name}</span>
-            <div className="flex items-center gap-2">
-              <span className="text-[var(--muted)]">{f.calories}ккал</span>
-              <button onClick={() => deleteFood(f.id)} className="text-red-400"><Trash2 className="h-3 w-3" /></button>
+
+        {/* Date navigation */}
+        <div className="flex items-center justify-center gap-4">
+          <button onClick={prevDay} className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--surface)] active:scale-95 transition-all">
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <span className="text-base font-semibold">{new Date(date).toLocaleDateString("ru-RU", { day: "numeric", month: "short" })}</span>
+          <button onClick={nextDay} className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--surface)] active:scale-95 transition-all">
+            <ChevronRight className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Stats grid */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="mobile-section p-5">
+            <p className="text-xs text-[var(--muted)] mb-1">🔥 {t("fitness_calories")}</p>
+            <p className="text-2xl font-bold">{Math.round(totalCal)}<span className="text-xs text-[var(--muted)]">/{profile.dailyCalorieGoal || "—"}</span></p>
+            <div className="mt-2 h-2 bg-[var(--surface)] rounded-full overflow-hidden">
+              <div className="h-full bg-orange-500 rounded-full transition-all" style={{ width: `${Math.min(100, (totalCal / (profile.dailyCalorieGoal || 2000)) * 100)}%` }} />
             </div>
           </div>
-        ))}
-        {foods.length === 0 && <p className="text-xs text-[var(--muted)] text-center py-3">{t("fitness_empty")}</p>}
-      </div>
-
-      <div className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4">
-        <h3 className="font-semibold text-sm flex items-center gap-1 mb-3"><Droplets className="h-4 w-4 text-blue-500" /> {t("fitness_water")}</h3>
-        <div className="grid grid-cols-4 gap-2 mb-3">
-          {[150, 250, 350, 500].map(amount => (
-            <button key={amount} onClick={() => addWater(amount)} className="h-9 rounded-lg bg-blue-500/10 text-blue-600 text-xs font-medium">+{amount}</button>
-          ))}
-        </div>
-        {waters.map(w => (
-          <div key={w.id} className="flex items-center justify-between py-1 text-xs">
-            <span>💧 {w.amount} мл</span>
-            <button onClick={() => deleteWater(w.id)} className="text-red-400"><Trash2 className="h-3 w-3" /></button>
+          <div className="mobile-section p-5">
+            <p className="text-xs text-[var(--muted)] mb-1">💧 {t("fitness_water")}</p>
+            <p className="text-2xl font-bold">{Math.round(totalWater)}<span className="text-xs text-[var(--muted)]">/{profile.dailyWaterGoal || "—"} мл</span></p>
+            <div className="mt-2 h-2 bg-[var(--surface)] rounded-full overflow-hidden">
+              <div className="h-full bg-blue-500 rounded-full transition-all" style={{ width: `${Math.min(100, (totalWater / (profile.dailyWaterGoal || 2000)) * 100)}%` }} />
+            </div>
           </div>
-        ))}
-      </div>
-
-      <div className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="font-semibold text-sm flex items-center gap-1"><Scale className="h-4 w-4 text-purple-500" /> {t("fitness_weight_title")}</h3>
-          <button onClick={() => setShowWeightForm(!showWeightForm)} className="p-1.5 rounded-lg hover:bg-[var(--surface)]"><Plus className="h-4 w-4" /></button>
-        </div>
-        {showWeightForm && (
-          <div className="flex gap-2 mb-3">
-            <input type="number" step="0.1" placeholder="кг" value={weightValue} onChange={e => setWeightValue(e.target.value)} className="flex-1 h-9 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2 text-xs" />
-            <button onClick={addWeight} className="px-3 h-9 rounded-lg bg-[var(--accent)] text-white text-xs">ОК</button>
+          <div className="mobile-section p-5">
+            <p className="text-xs text-[var(--muted)] mb-1">⚖️ {t("fitness_weight_title")}</p>
+            <p className="text-2xl font-bold">{latestWeight ? `${latestWeight}кг` : "—"}</p>
+            {bmi && <p className="text-xs text-[var(--muted)] mt-1">ИМТ: {bmi}</p>}
           </div>
-        )}
-        {weights.slice(0, 7).map(w => (
-          <div key={w.id} className="py-1 text-xs">⚖️ {w.weight} кг</div>
-        ))}
+          <div className="mobile-section p-5">
+            <p className="text-xs text-[var(--muted)] mb-1">📊 {t("fitness_bju")}</p>
+            <div className="flex gap-3 text-sm mt-2">
+              <span className="text-red-500 font-semibold">{Math.round(totalProtein)}Б</span>
+              <span className="text-yellow-500 font-semibold">{Math.round(totalCarbs)}В</span>
+              <span className="text-green-500 font-semibold">{Math.round(totalFat)}Ж</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Nutrition */}
+        <div className="mobile-section p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-base font-semibold flex items-center gap-2"><Apple className="h-5 w-5 text-green-500" /> {t("fitness_nutrition")}</h3>
+            <button onClick={() => setShowFoodForm(!showFoodForm)} className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--surface)] active:scale-95 transition-all">
+              <Plus className="h-4 w-4" />
+            </button>
+          </div>
+          {showFoodForm && (
+            <div className="bg-[var(--surface)] rounded-2xl p-4 mb-4 space-y-3">
+              <input placeholder={t("fitness_food_name")} value={foodName} onChange={e => setFoodName(e.target.value)} className="mobile-input h-11 text-sm" />
+              <div className="grid grid-cols-2 gap-3">
+                <input type="number" placeholder="ккал" value={foodCal} onChange={e => setFoodCal(e.target.value)} className="mobile-input h-11 text-sm" />
+                <select value={foodMeal} onChange={e => setFoodMeal(e.target.value)} className="mobile-input h-11 text-sm">
+                  {MEAL_TYPES.map(m => <option key={m.value} value={m.value}>{m.emoji} {m.label}</option>)}
+                </select>
+              </div>
+              <button onClick={addFood} className="mobile-btn mobile-btn-primary w-full h-11 text-sm">{t("fitness_add")}</button>
+            </div>
+          )}
+          <div className="space-y-3">
+            {foods.map(f => (
+              <div key={f.id} className="flex items-center justify-between py-2">
+                <span className="text-sm">{MEAL_TYPES.find(m => m.value === f.mealType)?.emoji} {f.name}</span>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-[var(--muted)]">{f.calories}ккал</span>
+                  <button onClick={() => deleteFood(f.id)} className="text-red-400 active:scale-90 transition-all">
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            ))}
+            {foods.length === 0 && <p className="text-sm text-[var(--muted)] text-center py-4">{t("fitness_empty")}</p>}
+          </div>
+        </div>
+
+        {/* Water */}
+        <div className="mobile-section p-5">
+          <h3 className="text-base font-semibold flex items-center gap-2 mb-4"><Droplets className="h-5 w-5 text-blue-500" /> {t("fitness_water")}</h3>
+          <div className="grid grid-cols-4 gap-3 mb-4">
+            {[150, 250, 350, 500].map(amount => (
+              <button key={amount} onClick={() => addWater(amount)} className="h-11 rounded-2xl bg-blue-500/10 text-blue-600 text-sm font-semibold active:scale-95 transition-all">
+                +{amount}
+              </button>
+            ))}
+          </div>
+          <div className="space-y-2">
+            {waters.map(w => (
+              <div key={w.id} className="flex items-center justify-between py-2 text-sm">
+                <span>💧 {w.amount} мл</span>
+                <button onClick={() => deleteWater(w.id)} className="text-red-400 active:scale-90 transition-all">
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Weight */}
+        <div className="mobile-section p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-base font-semibold flex items-center gap-2"><Scale className="h-5 w-5 text-purple-500" /> {t("fitness_weight_title")}</h3>
+            <button onClick={() => setShowWeightForm(!showWeightForm)} className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--surface)] active:scale-95 transition-all">
+              <Plus className="h-4 w-4" />
+            </button>
+          </div>
+          {showWeightForm && (
+            <div className="flex gap-3 mb-4">
+              <input type="number" step="0.1" placeholder="кг" value={weightValue} onChange={e => setWeightValue(e.target.value)} className="mobile-input h-11 text-sm flex-1" />
+              <button onClick={addWeight} className="mobile-btn mobile-btn-primary h-11 px-6 text-sm">ОК</button>
+            </div>
+          )}
+          <div className="space-y-2">
+            {weights.slice(0, 7).map(w => (
+              <div key={w.id} className="py-2 text-sm">⚖️ {w.weight} кг</div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Users, Shield, User, RefreshCw, Mail } from "lucide-react";
+import { useMobileSidebar } from "@/components/layout/mobile-sidebar-context";
 
 interface AdminUser {
   id: string;
@@ -18,6 +18,7 @@ export function AdminPageMobile() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const { setOpen } = useMobileSidebar();
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -36,9 +37,7 @@ export function AdminPageMobile() {
     setLoading(false);
   };
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
+  useEffect(() => { fetchUsers(); }, []);
 
   const stats = {
     total: users.length,
@@ -48,95 +47,96 @@ export function AdminPageMobile() {
   };
 
   return (
-    <div className="space-y-5">
-      <div className="mobile-page-header">
-        <div className="flex items-center justify-between">
+    <div className="mobile-main">
+      {/* Header */}
+      <div className="sticky top-0 z-30 bg-[var(--background)]/80 backdrop-blur-xl border-b border-[var(--border)]/50 px-5 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setOpen(true)}
+            className="h-10 w-10 rounded-2xl bg-[var(--surface)] flex items-center justify-center active:scale-95 transition-all duration-150"
+          >
+            <span className="text-sm font-bold text-[var(--accent)]">M</span>
+          </button>
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Админ-панель</h1>
             <p className="text-sm text-[var(--secondary)]">{stats.total} пользователей</p>
           </div>
-          <button onClick={fetchUsers} className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--surface)]">
-            <RefreshCw className={`h-5 w-5 ${loading ? "animate-spin" : ""}`} />
-          </button>
         </div>
+        <button onClick={fetchUsers} className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--surface)] active:scale-95 transition-all duration-150">
+          <RefreshCw className={`h-5 w-5 ${loading ? "animate-spin" : ""}`} />
+        </button>
       </div>
 
-      {error && (
-        <Card className="mobile-widget-card border-red-500/30">
-          <CardContent className="p-4 text-sm text-red-500">{error}</CardContent>
-        </Card>
-      )}
+      <div className="p-5 space-y-5">
+        {error && (
+          <div className="mobile-section border-[var(--error)]/30 p-4">
+            <p className="text-sm text-[var(--error)]">{error}</p>
+          </div>
+        )}
 
-      <div className="grid grid-cols-2 gap-3">
-        <Card className="mobile-stat-card">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/10">
-                <Users className="h-5 w-5 text-[var(--accent)]" />
+        {/* Stats */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="mobile-section p-5">
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--accent)]/10">
+                <Users className="h-6 w-6 text-[var(--accent)]" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats.total}</p>
                 <p className="text-xs text-[var(--secondary)]">Всего</p>
               </div>
             </div>
-          </CardContent>
-        </Card>
-        <Card className="mobile-stat-card">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--error)]/10">
-                <Shield className="h-5 w-5 text-[var(--error)]" />
+          </div>
+          <div className="mobile-section p-5">
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--error)]/10">
+                <Shield className="h-6 w-6 text-[var(--error)]" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats.admins}</p>
                 <p className="text-xs text-[var(--secondary)]">Админы</p>
               </div>
             </div>
-          </CardContent>
-        </Card>
-        <Card className="mobile-stat-card">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--success)]/10">
-                <User className="h-5 w-5 text-[var(--success)]" />
+          </div>
+          <div className="mobile-section p-5">
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--success)]/10">
+                <User className="h-6 w-6 text-[var(--success)]" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats.users}</p>
                 <p className="text-xs text-[var(--secondary)]">Юзеры</p>
               </div>
             </div>
-          </CardContent>
-        </Card>
-        <Card className="mobile-stat-card">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--warning)]/10">
-                <span className="text-lg">📋</span>
+          </div>
+          <div className="mobile-section p-5">
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--warning)]/10">
+                <span className="text-xl">📋</span>
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats.totalTasks}</p>
                 <p className="text-xs text-[var(--secondary)]">Задач</p>
               </div>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </div>
 
-      <div>
-        <h2 className="text-base font-semibold mb-3">Пользователи</h2>
-        <div className="space-y-2">
-          {users.map((u) => (
-            <Card key={u.id} className="mobile-task-card">
-              <CardContent className="p-4">
+        {/* Users list */}
+        <div>
+          <h2 className="text-lg font-semibold mb-3">Пользователи</h2>
+          <div className="space-y-3">
+            {users.map((u) => (
+              <div key={u.id} className="mobile-section p-5">
                 <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--accent)]/20 text-sm font-bold text-[var(--accent)]">
+                  <div className="flex items-center gap-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--accent)]/15 text-sm font-bold text-[var(--accent)]">
                       {u.name[0].toUpperCase()}
                     </div>
                     <div>
-                      <p className="text-sm font-medium">{u.name}</p>
-                      <div className="flex items-center gap-1 text-xs text-[var(--secondary)]">
-                        <Mail className="h-3 w-3" />
+                      <p className="text-base font-semibold">{u.name}</p>
+                      <div className="flex items-center gap-1.5 text-sm text-[var(--secondary)] mt-0.5">
+                        <Mail className="h-3.5 w-3.5" />
                         {u.email || "нет email"}
                       </div>
                     </div>
@@ -149,9 +149,9 @@ export function AdminPageMobile() {
                   <span>{u.taskCount} задач</span>
                   <span>{new Date(u.createdAt).toLocaleDateString("ru-RU")}</span>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

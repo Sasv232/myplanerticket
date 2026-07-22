@@ -4,6 +4,8 @@ export const users = pgTable("users", {
   id: text("id").primaryKey(),
   name: text("name").notNull().unique(),
   email: text("email"),
+  phone: text("phone"),
+  avatar: text("avatar"),
   passwordHash: text("password_hash").notNull(),
   role: text("role").notNull().default("user"),
   createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),

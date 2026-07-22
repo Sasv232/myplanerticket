@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { MessageSquare, Search, Plus, Users } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ru } from "date-fns/locale";
@@ -8,6 +8,7 @@ import { ru } from "date-fns/locale";
 interface Member {
   userId: string;
   userName: string;
+  userAvatar?: string | null;
   role: string;
 }
 
@@ -36,6 +37,18 @@ interface ConversationListProps {
   onCreateNew: () => void;
 }
 
+function Avatar({ name, avatar, size = "md" }: { name: string; avatar?: string | null; size?: "sm" | "md" }) {
+  const s = size === "sm" ? "h-10 w-10 text-xs" : "h-12 w-12 text-sm";
+  if (avatar) {
+    return <img src={avatar} alt="" className={`${s} rounded-full object-cover shrink-0`} />;
+  }
+  return (
+    <div className={`${s} flex items-center justify-center rounded-full bg-gradient-to-br from-[var(--accent)] to-[var(--accent)]/60 font-bold text-white shrink-0`}>
+      {name[0]?.toUpperCase() || "?"}
+    </div>
+  );
+}
+
 export function ConversationList({
   conversations,
   activeId,
@@ -57,49 +70,39 @@ export function ConversationList({
     return other?.userName || "Без имени";
   };
 
-  const getConvEmoji = (conv: Conversation) => {
-    if (conv.emoji) return conv.emoji;
-    if (conv.type === "group") return "👥";
-    return getConvName(conv)[0]?.toUpperCase() || "💬";
+  const getOtherMember = (conv: Conversation) => {
+    return conv.members.find((m) => m.userId !== currentUserId);
   };
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-3">
-        <h2 className="text-base font-bold">Чаты</h2>
-        <button
-          onClick={onCreateNew}
-          className="rounded-lg p-1.5 hover:bg-[var(--surface)] transition-colors"
-        >
-          <Plus className="h-5 w-5 text-[var(--secondary)]" />
-        </button>
-      </div>
-
-      <div className="px-3 py-2">
+      {/* Search */}
+      <div className="px-5 py-3">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--muted)]" />
+          <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[var(--muted)]" />
           <input
             type="text"
             placeholder="Поиск чатов..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30"
+            className="mobile-input pl-12"
           />
         </div>
       </div>
 
+      {/* List */}
       <div className="flex-1 overflow-y-auto">
         {filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <MessageSquare className="h-12 w-12 text-[var(--muted)] mb-3" />
-            <p className="text-sm font-medium text-[var(--secondary)]">Нет чатов</p>
-            <p className="text-xs text-[var(--muted)] mt-1">Создайте новый чат</p>
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <MessageSquare className="h-14 w-14 text-[var(--muted)] mb-4" />
+            <p className="text-base font-semibold text-[var(--secondary)]">Нет чатов</p>
+            <p className="text-sm text-[var(--muted)] mt-1">Создайте новый чат</p>
           </div>
         ) : (
           filtered.map((conv) => {
             const isActive = conv.id === activeId;
             const convName = getConvName(conv);
-            const convEmoji = getConvEmoji(conv);
+            const other = getOtherMember(conv);
             const lastMsg = conv.lastMessage;
             const lastTime = lastMsg
               ? formatDistanceToNow(new Date(lastMsg.createdAt), { addSuffix: true, locale: ru })
@@ -109,28 +112,30 @@ export function ConversationList({
               <button
                 key={conv.id}
                 onClick={() => onSelect(conv.id)}
-                className={`w-full flex items-center gap-3 px-3 py-3 transition-all ${
-                  isActive
-                    ? "bg-[var(--accent)]/10"
-                    : "hover:bg-[var(--surface)]"
+                className={`w-full flex items-center gap-4 px-5 py-4 transition-all active:scale-[0.98] ${
+                  isActive ? "bg-[var(--accent)]/8" : "active:bg-[var(--surface)]"
                 }`}
               >
-                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--accent)]/15 text-base shrink-0">
-                  {convEmoji}
-                </div>
+                {conv.type === "group" ? (
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--accent)]/10 text-xl shrink-0">
+                    {conv.emoji || "👥"}
+                  </div>
+                ) : (
+                  <Avatar name={convName} avatar={other?.userAvatar} />
+                )}
 
                 <div className="flex-1 min-w-0 text-left">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold truncate">{convName}</span>
+                    <span className="text-[15px] font-semibold truncate">{convName}</span>
                     {lastTime && (
-                      <span className="text-[10px] text-[var(--muted)] shrink-0 ml-2">{lastTime}</span>
+                      <span className="text-[11px] text-[var(--muted)] shrink-0 ml-3">{lastTime}</span>
                     )}
                   </div>
-                  <div className="flex items-center gap-1 mt-0.5">
+                  <div className="flex items-center gap-1.5 mt-1">
                     {conv.type === "group" && (
-                      <Users className="h-3 w-3 text-[var(--muted)] shrink-0" />
+                      <Users className="h-3.5 w-3.5 text-[var(--muted)] shrink-0" />
                     )}
-                    <p className="text-xs text-[var(--muted)] truncate">
+                    <p className="text-sm text-[var(--muted)] truncate">
                       {lastMsg
                         ? `${lastMsg.userId === currentUserId ? "Вы: " : ""}${lastMsg.content}`
                         : "Нет сообщений"}
@@ -139,7 +144,7 @@ export function ConversationList({
                 </div>
 
                 {conv.unreadCount > 0 && (
-                  <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--accent)] px-1.5 text-[10px] font-bold text-white shrink-0">
+                  <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-[var(--accent)] px-2 text-[11px] font-bold text-white shrink-0">
                     {conv.unreadCount > 99 ? "99+" : conv.unreadCount}
                   </span>
                 )}

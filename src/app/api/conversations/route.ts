@@ -27,6 +27,7 @@ export async function GET(request: NextRequest) {
         conversationId: conversationMembers.conversationId,
         userId: conversationMembers.userId,
         userName: users.name,
+        userAvatar: users.avatar,
         role: conversationMembers.role,
       })
       .from(conversationMembers)

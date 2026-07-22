@@ -13,6 +13,7 @@ interface ScheduleConfig {
 interface ThemeContextType {
   theme: Theme;
   toggle: () => void;
+  setTheme: (theme: Theme) => void;
   schedule: ScheduleConfig;
   setSchedule: (config: ScheduleConfig) => void;
 }
@@ -20,6 +21,7 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType>({
   theme: "dark",
   toggle: () => {},
+  setTheme: () => {},
   schedule: { enabled: false, darkHour: 21, lightHour: 7 },
   setSchedule: () => {},
 });
@@ -99,7 +101,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <ThemeContext.Provider value={{ theme, toggle, schedule, setSchedule }}>
+    <ThemeContext.Provider value={{ theme, toggle, setTheme, schedule, setSchedule }}>
       {children}
     </ThemeContext.Provider>
   );

@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useNavigation } from "@/config/use-navigation";
 import { useEffect } from "react";
-import { Train, Sun, Moon, LogOut, Shield, X } from "lucide-react";
+import { X, LogOut, Shield } from "lucide-react";
 import { useTheme } from "./theme-provider";
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n/context";
@@ -48,7 +48,7 @@ export function MobileSidebar({ open, onClose }: MobileSidebarProps) {
       {/* Overlay */}
       <div
         className={cn(
-          "fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm transition-opacity duration-300 lg:hidden",
+          "fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm transition-opacity duration-300 lg:hidden",
           open ? "opacity-100" : "opacity-0 pointer-events-none"
         )}
         onClick={onClose}
@@ -57,47 +57,47 @@ export function MobileSidebar({ open, onClose }: MobileSidebarProps) {
       {/* Sidebar panel */}
       <aside
         className={cn(
-          "fixed left-0 top-0 z-[70] h-full w-72 bg-[var(--sidebar)] border-r border-[var(--border)] flex flex-col transition-transform duration-300 ease-in-out lg:hidden",
+          "fixed left-0 top-0 z-[70] h-full w-[300px] bg-[var(--background)] flex flex-col transition-transform duration-300 ease-out lg:hidden",
           open ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        {/* Header */}
-        <div className="flex h-16 items-center gap-2.5 border-b border-[var(--border)] px-5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[var(--accent)]/10">
-            <Train className="h-4.5 w-4.5 text-[var(--accent)]" />
-          </div>
-          <span className="text-lg font-bold tracking-tight">MyPlanerTicket</span>
+        {/* Close button */}
+        <div className="flex justify-end p-5">
           <button
             onClick={onClose}
-            className="ml-auto flex h-8 w-8 items-center justify-center rounded-xl hover:bg-[var(--surface)] transition-all duration-150"
+            className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--surface)] active:scale-95 transition-all duration-150"
           >
-            <X className="h-4 w-4 text-[var(--secondary)]" />
+            <X className="h-5 w-5 text-[var(--secondary)]" />
           </button>
         </div>
 
-        {/* User info */}
+        {/* User profile card */}
         {user && (
-          <div className="px-5 py-4 border-b border-[var(--border)]">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-sm font-bold text-[var(--accent)]">
-                {user.name[0].toUpperCase()}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold truncate">{user.name}</p>
-                <p className="text-[11px] text-[var(--secondary)] truncate">{user.role === "admin" ? t("common_admin") : t("common_user")}</p>
-              </div>
+          <div className="px-6 pb-8">
+            <div className="flex flex-col items-center">
+              {user.avatar ? (
+                <img src={user.avatar} alt="" className="h-20 w-20 rounded-full object-cover ring-4 ring-[var(--accent)]/15 mb-4" />
+              ) : (
+                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-[var(--accent)] to-[var(--accent)]/60 text-2xl font-bold text-white ring-4 ring-[var(--accent)]/15 mb-4">
+                  {user.name[0].toUpperCase()}
+                </div>
+              )}
+              <h2 className="text-lg font-bold text-center">{user.name}</h2>
+              <p className="text-sm text-[var(--secondary)] mt-0.5">
+                {user.role === "admin" ? t("common_admin") : t("common_user")}
+              </p>
             </div>
           </div>
         )}
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto px-3 py-4">
-          {navigation.map((group) => (
-            <div key={group.title} className="mb-5">
-              <p className="mb-2 px-3 text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
+        <nav className="flex-1 overflow-y-auto px-4">
+          {navigation.map((group, gi) => (
+            <div key={group.title} className={gi > 0 ? "mt-6" : ""}>
+              <p className="mb-2 px-2 text-[11px] font-bold uppercase tracking-wider text-[var(--muted)]">
                 {group.title}
               </p>
-              <ul className="space-y-0.5">
+              <ul className="space-y-1">
                 {group.items.map((item) => {
                   const Icon = item.icon;
                   const isActive =
@@ -109,9 +109,9 @@ export function MobileSidebar({ open, onClose }: MobileSidebarProps) {
                       <button
                         onClick={() => handleNav(item.href)}
                         className={cn(
-                          "w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-medium transition-all duration-150 text-left",
+                          "w-full flex items-center gap-4 rounded-2xl px-4 py-3 text-[15px] font-medium transition-all duration-150 text-left min-h-[48px]",
                           isActive
-                            ? "bg-[var(--accent)]/10 text-[var(--accent)] shadow-[inset_3px_0_0_0_var(--accent)]"
+                            ? "bg-[var(--accent)]/10 text-[var(--accent)]"
                             : "text-[var(--secondary)] active:bg-[var(--surface)]"
                         )}
                       >
@@ -125,18 +125,18 @@ export function MobileSidebar({ open, onClose }: MobileSidebarProps) {
             </div>
           ))}
           {user?.role === "admin" && (
-            <div className="mb-5">
-              <p className="mb-2 px-3 text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
+            <div className="mt-6">
+              <p className="mb-2 px-2 text-[11px] font-bold uppercase tracking-wider text-[var(--muted)]">
                 Управление
               </p>
-              <ul className="space-y-0.5">
+              <ul className="space-y-1">
                 <li>
                   <button
                     onClick={() => handleNav("/admin")}
                     className={cn(
-                      "w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-medium transition-all duration-150 text-left",
+                      "w-full flex items-center gap-4 rounded-2xl px-4 py-3 text-[15px] font-medium transition-all duration-150 text-left min-h-[48px]",
                       pathname === "/admin"
-                        ? "bg-[var(--accent)]/10 text-[var(--accent)] shadow-[inset_3px_0_0_0_var(--accent)]"
+                        ? "bg-[var(--accent)]/10 text-[var(--accent)]"
                         : "text-[var(--secondary)] active:bg-[var(--surface)]"
                     )}
                   >
@@ -150,25 +150,25 @@ export function MobileSidebar({ open, onClose }: MobileSidebarProps) {
         </nav>
 
         {/* Footer */}
-        <div className="border-t border-[var(--border)] p-4 space-y-3">
+        <div className="border-t border-[var(--border)] p-4 space-y-1">
           <button
             onClick={toggle}
-            className="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-medium text-[var(--secondary)] active:bg-[var(--surface)] transition-all"
+            className="w-full flex items-center gap-4 rounded-2xl px-4 py-3 text-[15px] font-medium text-[var(--secondary)] active:bg-[var(--surface)] transition-all min-h-[48px]"
           >
-            {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            {theme === "dark" ? "☀️" : "🌙"}
             {theme === "dark" ? t("common_theme_light") : t("common_theme_dark")}
           </button>
           {user && (
             <button
               onClick={handleLogout}
-              className="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-medium text-[var(--error)] active:bg-[var(--error)]/10 transition-all"
+              className="w-full flex items-center gap-4 rounded-2xl px-4 py-3 text-[15px] font-medium text-[var(--error)] active:bg-[var(--error)]/10 transition-all min-h-[48px]"
             >
               <LogOut className="h-5 w-5" />
               {t("common_logout")}
             </button>
           )}
-          <p className="text-[10px] text-[var(--muted)] text-center font-medium">
-            v0.2.0 — {t("common_version")}
+          <p className="text-[11px] text-[var(--muted)] text-center font-medium pt-2">
+            v0.3.0
           </p>
         </div>
       </aside>

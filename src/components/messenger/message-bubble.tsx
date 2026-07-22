@@ -25,36 +25,36 @@ export function MessageBubble({ message, isOwn, showAuthor, onDelete }: MessageB
   });
 
   return (
-    <div className={`group flex flex-col ${isOwn ? "items-end" : "items-start"} px-4`}>
+    <div className={`group flex flex-col ${isOwn ? "items-end" : "items-start"} px-5`}>
       {showAuthor && !isOwn && (
-        <span className="mb-1 ml-1 text-[11px] font-semibold text-[var(--accent)]">
+        <span className="mb-1 ml-1 text-xs font-semibold text-[var(--accent)]">
           {message.userName}
         </span>
       )}
 
-      <div className="relative max-w-[75%]">
+      <div className="relative max-w-[80%]">
         <div
-          className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
+          className={`px-4 py-3 text-[15px] leading-relaxed ${
             isOwn
-              ? "bg-[var(--accent)] text-white rounded-br-md"
-              : "bg-[var(--surface)] text-[var(--foreground)] rounded-bl-md border border-[var(--border)]"
+              ? "mobile-bubble-own"
+              : "mobile-bubble-other"
           }`}
           onDoubleClick={() => onDelete && setMenuOpen(true)}
         >
           {message.content}
         </div>
 
-        <div className={`flex items-center gap-1 mt-0.5 ${isOwn ? "justify-end" : "justify-start"}`}>
-          <span className="text-[10px] text-[var(--muted)]">{time}</span>
+        <div className={`flex items-center gap-1 mt-1 ${isOwn ? "justify-end" : "justify-start"}`}>
+          <span className="text-[11px] text-[var(--muted)]">{time}</span>
         </div>
 
         {menuOpen && isOwn && onDelete && (
           <>
             <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
-            <div className="absolute right-0 top-full mt-1 z-50 rounded-lg border border-[var(--border)] bg-[var(--background)] shadow-lg py-1">
+            <div className="absolute right-0 top-full mt-1 z-50 rounded-xl border border-[var(--border)] bg-[var(--card)] shadow-xl py-1 min-w-[120px]">
               <button
                 onClick={() => { onDelete(message.id); setMenuOpen(false); }}
-                className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-red-500 hover:bg-red-50 dark:hover:bg-red-950"
+                className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-[var(--error)] hover:bg-[var(--error)]/5"
               >
                 Удалить
               </button>

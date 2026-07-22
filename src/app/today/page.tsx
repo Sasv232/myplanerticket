@@ -483,15 +483,15 @@ export default function TodayPage() {
       {/* ═══════════════════════ MOBILE ═══════════════════════ */}
       <div className="md:hidden">
         {/* Sticky header */}
-        <div className="sticky top-0 z-30 bg-[var(--background)]/80 backdrop-blur-lg border-b border-[var(--border)]">
-          <div className="flex items-center justify-between px-4 py-3">
-            <div className="flex items-center gap-2">
-              <button onClick={() => setOpen(true)} className="h-9 w-9 rounded-xl bg-[var(--accent)]/15 flex items-center justify-center active:scale-95 transition-transform">
+        <div className="sticky top-0 z-30 bg-[var(--background)]/80 backdrop-blur-xl border-b border-[var(--border)]/50">
+          <div className="flex items-center justify-between px-5 py-4">
+            <div className="flex items-center gap-3">
+              <button onClick={() => setOpen(true)} className="h-10 w-10 rounded-2xl bg-[var(--surface)] flex items-center justify-center active:scale-95 transition-all duration-150">
                 <span className="text-sm font-bold text-[var(--accent)]">M</span>
               </button>
               <div>
-                <h1 className="text-lg font-bold">Сегодня</h1>
-                <p className="text-xs text-[var(--muted)]">
+                <h1 className="text-2xl font-bold tracking-tight">Сегодня</h1>
+                <p className="text-sm text-[var(--secondary)]">
                   {format(today, "d MMMM, EEEE", { locale: ru })}
                 </p>
               </div>
@@ -499,30 +499,30 @@ export default function TodayPage() {
           </div>
         </div>
 
-        <div className="p-4 space-y-4 pb-24">
+        <div className="p-5 space-y-5 pb-24">
           {/* Stats row - 3 cards */}
-          <div className="grid grid-cols-3 gap-2">
-            <div className="rounded-xl border border-[var(--accent)]/20 bg-[var(--accent)]/5 p-3 text-center">
-              <div className="text-xl font-bold text-[var(--accent)]">
+          <div className="grid grid-cols-3 gap-3">
+            <div className="mobile-section p-4 text-center">
+              <div className="text-2xl font-bold text-[var(--accent)]">
                 {stats.today}
               </div>
-              <div className="text-[10px] text-[var(--muted)] uppercase tracking-wide mt-0.5">
+              <div className="text-[11px] text-[var(--muted)] uppercase tracking-wide mt-1 font-medium">
                 Сегодня
               </div>
             </div>
-            <div className="rounded-xl border border-[var(--error)]/20 bg-[var(--error)]/5 p-3 text-center">
-              <div className="text-xl font-bold text-[var(--error)]">
+            <div className="mobile-section p-4 text-center">
+              <div className="text-2xl font-bold text-[var(--error)]">
                 {stats.overdue}
               </div>
-              <div className="text-[10px] text-[var(--muted)] uppercase tracking-wide mt-0.5">
+              <div className="text-[11px] text-[var(--muted)] uppercase tracking-wide mt-1 font-medium">
                 Просрочено
               </div>
             </div>
-            <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3 text-center">
-              <div className="text-xl font-bold text-[var(--secondary)]">
+            <div className="mobile-section p-4 text-center">
+              <div className="text-2xl font-bold text-[var(--secondary)]">
                 {stats.noDate}
               </div>
-              <div className="text-[10px] text-[var(--muted)] uppercase tracking-wide mt-0.5">
+              <div className="text-[11px] text-[var(--muted)] uppercase tracking-wide mt-1 font-medium">
                 Без даты
               </div>
             </div>
@@ -530,31 +530,31 @@ export default function TodayPage() {
 
           {/* Quick-add */}
           <div className="relative">
-            <Sparkles className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--muted)]" />
+            <Sparkles className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[var(--muted)]" />
             <Input
               value={quickInput}
               onChange={(e) => setQuickInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleQuickAdd()}
               placeholder="Добавить задачу…"
-              className="pl-9 h-10 text-sm"
+              className="mobile-input pl-12"
               disabled={adding}
             />
             {adding && (
-              <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-[var(--muted)]" />
+              <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 animate-spin text-[var(--muted)]" />
             )}
           </div>
 
           {/* Today */}
           {todayTasks.length > 0 && (
             <section>
-              <h2 className="mb-2 flex items-center gap-2 text-xs font-semibold text-[var(--accent)]">
-                <span className="h-2 w-2 rounded-full bg-[var(--accent)]" />
+              <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-[var(--accent)] px-1">
+                <span className="h-2.5 w-2.5 rounded-full bg-[var(--accent)]" />
                 Сегодня
                 <span className="text-[var(--muted)] font-normal">
                   {todayTasks.length}
                 </span>
               </h2>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <AnimatePresence initial={false}>
                   {todayTasks.map((task) => (
                     <motion.div
@@ -577,14 +577,14 @@ export default function TodayPage() {
           {/* Overdue */}
           {overdueTasks.length > 0 && (
             <section>
-              <h2 className="mb-2 flex items-center gap-2 text-xs font-semibold text-[var(--error)]">
-                <span className="h-2 w-2 rounded-full bg-[var(--error)]" />
+              <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-[var(--error)] px-1">
+                <span className="h-2.5 w-2.5 rounded-full bg-[var(--error)]" />
                 Просрочено
                 <span className="text-[var(--muted)] font-normal">
                   {overdueTasks.length}
                 </span>
               </h2>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <AnimatePresence initial={false}>
                   {overdueTasks.map((task) => (
                     <motion.div
@@ -593,7 +593,7 @@ export default function TodayPage() {
                       animate={{ opacity: 1, height: "auto" }}
                       exit={{ opacity: 0, height: 0 }}
                     >
-                      <div className="rounded-xl border border-[var(--error)]/20 bg-[var(--error)]/5">
+                      <div className="rounded-2xl bg-[var(--error)]/5 ring-1 ring-[var(--error)]/15">
                         <MobileTaskRow
                           task={task}
                           onStatusChange={handleStatusChange}
@@ -609,14 +609,14 @@ export default function TodayPage() {
           {/* No date */}
           {noDateTasks.length > 0 && (
             <section>
-              <h2 className="mb-2 flex items-center gap-2 text-xs font-semibold text-[var(--muted)]">
-                <span className="h-2 w-2 rounded-full bg-[var(--muted)]" />
+              <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-[var(--muted)] px-1">
+                <span className="h-2.5 w-2.5 rounded-full bg-[var(--muted)]" />
                 Без даты
                 <span className="text-[var(--muted)] font-normal">
                   {noDateTasks.length}
                 </span>
               </h2>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <AnimatePresence initial={false}>
                   {noDateTasks.map((task) => (
                     <motion.div
@@ -637,12 +637,12 @@ export default function TodayPage() {
           )}
 
           {isEmpty && (
-            <div className="rounded-xl border border-dashed border-[var(--border)] p-10 text-center">
-              <Inbox className="mx-auto mb-2 h-6 w-6 text-[var(--muted)]" />
-              <p className="text-xs font-medium text-[var(--secondary)]">
+            <div className="rounded-2xl border-2 border-dashed border-[var(--border)] p-12 text-center">
+              <Inbox className="mx-auto mb-3 h-8 w-8 text-[var(--muted)]" />
+              <p className="text-base font-medium text-[var(--secondary)]">
                 Нет задач на сегодня
               </p>
-              <p className="text-[10px] text-[var(--muted)] mt-1">
+              <p className="text-sm text-[var(--muted)] mt-1">
                 Нажмите + чтобы добавить первую
               </p>
             </div>
@@ -669,7 +669,7 @@ export default function TodayPage() {
             input?.focus();
             input?.scrollIntoView({ behavior: "smooth", block: "center" });
           }}
-          className="fixed bottom-20 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--accent)] text-white shadow-lg shadow-[var(--accent)]/25 active:scale-95 transition-transform"
+          className="fixed bottom-24 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--accent)] text-white shadow-lg shadow-[var(--accent)]/25 active:scale-95 transition-transform"
         >
           <Plus className="h-6 w-6" />
         </button>
@@ -695,7 +695,7 @@ function MobileTaskRow({
   };
 
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] p-3">
+    <div className="mobile-section p-4 flex items-center gap-4">
       <button
         onClick={() =>
           onStatusChange(
@@ -703,19 +703,15 @@ function MobileTaskRow({
             isDone ? "todo" : "done"
           )
         }
-        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border-2 transition-all duration-150 ${
-          isDone
-            ? "bg-[var(--success)] border-[var(--success)] text-white"
-            : "border-[var(--border)]"
-        }`}
+        className={`mobile-checkbox ${isDone ? "mobile-checkbox-checked" : ""}`}
       >
-        {isDone && <Check className="h-3.5 w-3.5" />}
+        {isDone && <Check className="h-4 w-4" strokeWidth={3} />}
       </button>
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-1.5">
-          {task.emoji && <span className="text-sm">{task.emoji}</span>}
+        <div className="flex items-center gap-2">
+          {task.emoji && <span className="text-base">{task.emoji}</span>}
           <span
-            className={`text-sm font-medium truncate ${
+            className={`text-[15px] font-medium truncate ${
               isDone ? "line-through opacity-60" : ""
             }`}
           >
@@ -725,7 +721,7 @@ function MobileTaskRow({
       </div>
       <Badge
         variant={priorityVariant[task.priority] as any}
-        className="text-[9px] shrink-0"
+        className="text-[10px] px-2.5 py-0.5 shrink-0"
       >
         {task.priority}
       </Badge>
@@ -756,79 +752,75 @@ function MobilePlanner({
   if (plannerTasks.length === 0) return null;
 
   return (
-    <Card>
-      <CardContent className="p-3">
+    <div className="mobile-section">
+      <div className="p-4">
         <button
           onClick={() => setOpen(!open)}
-          className="flex w-full items-center justify-between text-sm font-semibold"
+          className="flex w-full items-center justify-between text-base font-semibold"
         >
-          <span className="flex items-center gap-1.5">
-            <ListChecks className="h-3.5 w-3.5" />
+          <span className="flex items-center gap-2">
+            <ListChecks className="h-4 w-4" />
             Планировщик дня
           </span>
           {open ? (
-            <ChevronUp className="h-4 w-4 text-[var(--secondary)]" />
+            <ChevronUp className="h-5 w-5 text-[var(--secondary)]" />
           ) : (
-            <ChevronDown className="h-4 w-4 text-[var(--secondary)]" />
+            <ChevronDown className="h-5 w-5 text-[var(--secondary)]" />
           )}
         </button>
-        {open && (
-          <div className="mt-3 space-y-1.5">
-            {plannerTasks.map((task, idx) => (
-              <div
-                key={task.id}
-                draggable
-                onDragStart={(e) => onDragStart(e, idx)}
-                onDrop={(e) => onDrop(e, idx)}
-                onDragOver={onDragOver}
-                className={`flex items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--card)] p-2 text-sm transition-all ${
-                  dragIdx === idx
-                    ? "opacity-50 border-[var(--accent)]"
-                    : ""
-                } cursor-grab active:cursor-grabbing`}
+      </div>
+      {open && (
+        <div className="px-4 pb-4 space-y-2">
+          {plannerTasks.map((task, idx) => (
+            <div
+              key={task.id}
+              draggable
+              onDragStart={(e) => onDragStart(e, idx)}
+              onDrop={(e) => onDrop(e, idx)}
+              onDragOver={onDragOver}
+              className={`flex items-center gap-3 rounded-xl bg-[var(--surface)] p-3 text-sm transition-all ${
+                dragIdx === idx
+                  ? "opacity-50 ring-1 ring-[var(--accent)]"
+                  : ""
+              } cursor-grab active:cursor-grabbing`}
+            >
+              <GripVertical className="h-4 w-4 text-[var(--muted)] shrink-0" />
+              <button
+                onClick={() =>
+                  onStatusChange(
+                    task.id,
+                    task.status === "done" ? "todo" : "done"
+                  )
+                }
+                className={`mobile-checkbox !h-6 !w-6 !rounded-lg ${task.status === "done" ? "mobile-checkbox-checked" : ""}`}
               >
-                <GripVertical className="h-3 w-3 text-[var(--muted)] shrink-0" />
-                <button
-                  onClick={() =>
-                    onStatusChange(
-                      task.id,
-                      task.status === "done" ? "todo" : "done"
-                    )
-                  }
-                  className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border-2 transition-all ${
-                    task.status === "done"
-                      ? "bg-[var(--success)] border-[var(--success)] text-white"
-                      : "border-[var(--border)]"
-                  }`}
-                >
-                  {task.status === "done" && (
-                    <span className="text-[8px]">✓</span>
-                  )}
-                </button>
-                <span
-                  className={`flex-1 truncate text-xs ${
-                    task.status === "done" ? "line-through opacity-60" : ""
-                  }`}
-                >
-                  {task.title}
-                </span>
-                <Badge
-                  variant={
-                    priorityVariant[task.priority] as
-                      | "destructive"
-                      | "warning"
-                      | "default"
-                      | "secondary"
-                  }
-                  className="text-[9px] shrink-0"
-                >
-                  {task.priority}
-                </Badge>
-              </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+                {task.status === "done" && (
+                  <span className="text-[8px]">✓</span>
+                )}
+              </button>
+              <span
+                className={`flex-1 truncate text-sm ${
+                  task.status === "done" ? "line-through opacity-60" : ""
+                }`}
+              >
+                {task.title}
+              </span>
+              <Badge
+                variant={
+                  priorityVariant[task.priority] as
+                    | "destructive"
+                    | "warning"
+                    | "default"
+                    | "secondary"
+                }
+                className="text-[9px] shrink-0"
+              >
+                {task.priority}
+              </Badge>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

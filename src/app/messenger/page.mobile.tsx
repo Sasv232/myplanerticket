@@ -9,7 +9,7 @@ import { MessageInput } from "@/components/messenger/message-input";
 import { TypingIndicator } from "@/components/messenger/typing-indicator";
 import { CreateChatModal } from "@/components/messenger/create-chat-modal";
 import { useMobileSidebar } from "@/components/layout/mobile-sidebar-context";
-import { Menu } from "lucide-react";
+import { useLang } from "@/lib/i18n/context";
 
 interface Message {
   id: string;
@@ -46,6 +46,7 @@ interface TypingUser {
 export function MessengerMobile() {
   const { user } = useAuth();
   const { setOpen } = useMobileSidebar();
+  const { t } = useLang();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConvId, setActiveConvId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -213,14 +214,31 @@ export function MessengerMobile() {
       />
 
       {showChatList ? (
-        <div className="min-h-screen bg-[var(--background)]">
-          <div className="sticky top-0 z-30 flex items-center gap-3 border-b border-[var(--border)] bg-[var(--background)] px-4 py-3">
-            <button onClick={() => setOpen(true)} className="rounded-lg p-1.5 hover:bg-[var(--surface)]">
-              <Menu className="h-5 w-5" />
+        <div className="mobile-main">
+          {/* Header */}
+          <div className="sticky top-0 z-30 bg-[var(--background)]/80 backdrop-blur-xl border-b border-[var(--border)]/50 px-5 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setOpen(true)}
+                className="h-10 w-10 rounded-2xl bg-[var(--surface)] flex items-center justify-center active:scale-95 transition-all duration-150"
+              >
+                {user?.avatar ? (
+                  <img src={user.avatar} alt="" className="h-7 w-7 rounded-xl object-cover" />
+                ) : (
+                  <span className="text-sm font-bold text-[var(--accent)]">M</span>
+                )}
+              </button>
+              <h1 className="text-2xl font-bold tracking-tight">Чаты</h1>
+            </div>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--accent)]/10 active:scale-95 transition-all duration-150"
+            >
+              <span className="text-[var(--accent)] text-lg">+</span>
             </button>
-            <h1 className="text-lg font-bold">Мессенджер</h1>
           </div>
-          <div className="h-[calc(100vh-120px)]">
+
+          <div className="h-[calc(100vh-140px)]">
             <ConversationList
               conversations={conversations}
               activeId={activeConvId}
@@ -239,7 +257,7 @@ export function MessengerMobile() {
             onDelete={handleDelete}
           />
 
-          <div className="flex-1 overflow-y-auto py-4 space-y-2">
+          <div className="flex-1 overflow-y-auto py-5 space-y-2">
             {messages.map((msg, i) => {
               const isOwn = msg.userId === user?.id;
               const showAuthor = i === 0 || messages[i - 1].userId !== msg.userId;

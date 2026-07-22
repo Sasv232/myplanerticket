@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import { Send, Smile, Paperclip } from "lucide-react";
+import { Send, Smile } from "lucide-react";
 import { EmojiPicker } from "./emoji-picker";
 
 interface MessageInputProps {
@@ -38,12 +38,12 @@ export function MessageInput({ onSend, onTyping, disabled }: MessageInputProps) 
   };
 
   return (
-    <div className="border-t border-[var(--border)] bg-[var(--background)] px-4 py-3">
-      <div className="flex items-end gap-2">
+    <div className="mobile-chat-input-bar">
+      <div className="flex items-end gap-3">
         <div className="relative">
           <button
             onClick={() => setShowEmoji(!showEmoji)}
-            className="rounded-lg p-2 hover:bg-[var(--surface)] transition-colors"
+            className="flex h-11 w-11 items-center justify-center rounded-2xl active:scale-95 transition-all duration-150"
           >
             <Smile className="h-5 w-5 text-[var(--secondary)]" />
           </button>
@@ -63,14 +63,13 @@ export function MessageInput({ onSend, onTyping, disabled }: MessageInputProps) 
           placeholder="Напишите сообщение..."
           disabled={disabled}
           rows={1}
-          className="flex-1 resize-none rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-all max-h-32"
-          style={{ minHeight: "40px" }}
+          className="flex-1 resize-none rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5 text-[15px] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20 focus:border-[var(--accent)] transition-all max-h-32 min-h-[44px]"
         />
 
         <button
           onClick={handleSend}
           disabled={!text.trim() || disabled}
-          className="rounded-xl bg-[var(--accent)] p-2.5 text-white transition-all hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed"
+          className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--accent)] text-white transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
         >
           <Send className="h-5 w-5" />
         </button>

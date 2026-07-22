@@ -32,23 +32,33 @@ export function DashboardPageMobile() {
   return (
     <div className="mobile-main">
       {/* Header */}
-      <div className="sticky top-0 z-30 bg-[var(--background)] border-b border-[var(--border)] px-4 py-3 flex items-center justify-between">
+      <div className="sticky top-0 z-30 bg-[var(--background)]/80 backdrop-blur-xl border-b border-[var(--border)]/50 px-5 py-4 flex items-center justify-between">
         <div className="min-w-0 flex-1">
-          <p className="text-lg font-bold truncate">{greeting}, {user?.name?.split(" ")[0] || ""}!</p>
-          <p className="text-[11px] text-[var(--secondary)] capitalize">{dateStr}</p>
+          <p className="text-2xl font-bold tracking-tight">{greeting}, {user?.name?.split(" ")[0] || ""}!</p>
+          <p className="text-sm text-[var(--secondary)] mt-0.5 capitalize">{dateStr}</p>
         </div>
-        <div className="flex items-center gap-2 shrink-0 ml-3">
-          <button onClick={() => setEditorOpen(true)} className="h-9 w-9 rounded-xl bg-[var(--surface)] flex items-center justify-center active:scale-95 transition-transform">
-            <Settings className="h-4 w-4 text-[var(--secondary)]" />
+        <div className="flex items-center gap-3 shrink-0 ml-4">
+          <button
+            onClick={() => setEditorOpen(true)}
+            className="h-10 w-10 rounded-2xl bg-[var(--surface)] flex items-center justify-center active:scale-95 transition-all duration-150"
+          >
+            <Settings className="h-5 w-5 text-[var(--secondary)]" />
           </button>
-          <button onClick={() => setOpen(true)} className="h-9 w-9 rounded-xl bg-[var(--accent)]/15 flex items-center justify-center active:scale-95 transition-transform">
-            <span className="text-sm font-bold text-[var(--accent)]">{user?.name?.[0]?.toUpperCase() || "?"}</span>
+          <button
+            onClick={() => setOpen(true)}
+            className="h-10 w-10 rounded-2xl bg-[var(--surface)] flex items-center justify-center active:scale-95 transition-all duration-150"
+          >
+            {user?.avatar ? (
+              <img src={user.avatar} alt="" className="h-7 w-7 rounded-xl object-cover" />
+            ) : (
+              <span className="text-sm font-bold text-[var(--accent)]">{user?.name?.[0]?.toUpperCase() || "?"}</span>
+            )}
           </button>
         </div>
       </div>
 
       {/* Widgets */}
-      <div className="p-4">
+      <div className="p-5 space-y-5">
         {loaded && <WidgetRendererMobile config={widgetConfig} />}
       </div>
 

@@ -3,7 +3,6 @@
 import { usePathname } from "next/navigation";
 import { Sidebar } from "./sidebar";
 import { MobileNav } from "./mobile-nav";
-import { MobileHeader } from "./mobile-header";
 import { MobileSidebar } from "./mobile-sidebar";
 import { MobileSidebarProvider, useMobileSidebar } from "./mobile-sidebar-context";
 import { PageTransition } from "@/components/ui/page-transition";
@@ -23,11 +22,8 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-screen">
       <Sidebar />
       <MobileSidebar open={open} onClose={() => setOpen(false)} />
-      <main className="flex-1 desktop-main mobile-main">
-        <MobileHeader />
-        <div className="mobile-content">
-          <PageTransition>{children}</PageTransition>
-        </div>
+      <main className="flex-1 desktop-main">
+        <PageTransition>{children}</PageTransition>
       </main>
       <MobileNav />
     </div>

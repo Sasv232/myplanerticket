@@ -24,19 +24,19 @@ export function ChatHeader({ conversation, currentUserId, onBack, onDelete, onMa
   const displayEmoji = conversation.emoji || "💬";
 
   return (
-    <div className="flex items-center gap-3 border-b border-[var(--border)] px-4 py-3 bg-[var(--background)]">
+    <div className="sticky top-0 z-30 flex items-center gap-3 px-5 py-3 bg-[var(--background)]/80 backdrop-blur-xl border-b border-[var(--border)]/50" style={{ paddingTop: "calc(12px + env(safe-area-inset-top, 0px))" }}>
       {onBack && (
-        <button onClick={onBack} className="rounded-lg p-1.5 hover:bg-[var(--surface)] md:hidden">
+        <button onClick={onBack} className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--surface)] active:scale-95 transition-all duration-150 md:hidden">
           <ArrowLeft className="h-5 w-5" />
         </button>
       )}
 
-      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--accent)]/15 text-lg">
+      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--accent)]/10 text-lg shrink-0">
         {displayEmoji}
       </div>
 
       <div className="flex-1 min-w-0">
-        <h3 className="text-sm font-bold truncate">{displayName}</h3>
+        <h3 className="text-base font-semibold truncate">{displayName}</h3>
         {conversation.type === "group" && conversation.members && (
           <p className="text-xs text-[var(--muted)] truncate">
             {conversation.members.length} участников
@@ -47,7 +47,7 @@ export function ChatHeader({ conversation, currentUserId, onBack, onDelete, onMa
       <div className="relative">
         <button
           onClick={() => setMenuOpen(!menuOpen)}
-          className="rounded-lg p-1.5 hover:bg-[var(--surface)]"
+          className="flex h-10 w-10 items-center justify-center rounded-2xl active:scale-95 transition-all duration-150"
         >
           <MoreVertical className="h-5 w-5 text-[var(--secondary)]" />
         </button>
@@ -55,20 +55,20 @@ export function ChatHeader({ conversation, currentUserId, onBack, onDelete, onMa
         {menuOpen && (
           <>
             <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
-            <div className="absolute right-0 top-full mt-1 w-48 rounded-xl border border-[var(--border)] bg-[var(--background)] shadow-xl z-50 py-1">
+            <div className="absolute right-0 top-full mt-2 w-52 rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-xl z-50 py-2 overflow-hidden">
               {conversation.type === "group" && onManageMembers && (
                 <button
                   onClick={() => { onManageMembers(); setMenuOpen(false); }}
-                  className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-[var(--surface)]"
+                  className="flex w-full items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-[var(--surface)] transition-colors"
                 >
-                  <Users className="h-4 w-4" />
+                  <Users className="h-4 w-4 text-[var(--secondary)]" />
                   Участники
                 </button>
               )}
               {onDelete && (
                 <button
                   onClick={() => { onDelete(); setMenuOpen(false); }}
-                  className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-950"
+                  className="flex w-full items-center gap-3 px-4 py-3 text-sm font-medium text-[var(--error)] hover:bg-[var(--error)]/5 transition-colors"
                 >
                   <Trash2 className="h-4 w-4" />
                   Удалить чат

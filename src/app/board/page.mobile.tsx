@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Task, TaskStatus } from "@/types/task";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, ArrowRight } from "lucide-react";
 import { format } from "date-fns";
@@ -60,60 +59,59 @@ export function BoardPageMobile() {
 
   return (
     <div className="mobile-main">
-      <div className="sticky top-0 z-30 bg-[var(--background)] border-b border-[var(--border)] px-4 py-3">
-        <h1 className="text-lg font-bold">Доска</h1>
-        <p className="text-[11px] text-[var(--secondary)]">Перетаскивайте или нажмите кнопку</p>
+      {/* Header */}
+      <div className="sticky top-0 z-30 bg-[var(--background)]/80 backdrop-blur-xl border-b border-[var(--border)]/50 px-5 py-4">
+        <h1 className="text-2xl font-bold tracking-tight">Доска</h1>
+        <p className="text-sm text-[var(--secondary)] mt-0.5">Перетаскивайте или нажмите кнопку</p>
       </div>
 
-      <div className="p-4 space-y-4">
+      <div className="p-5 space-y-6">
         {columns.map((col) => {
           const columnTasks = tasks.filter((t) => t.status === col.status);
           return (
             <div key={col.status}>
-              <div className="flex items-center gap-2 mb-2 px-1">
-                <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: col.color }} />
-                <h3 className="text-sm font-semibold">{col.title}</h3>
-                <span className="ml-auto rounded-full bg-[var(--surface)] px-2 py-0.5 text-xs text-[var(--secondary)]">
+              <div className="flex items-center gap-3 mb-3 px-1">
+                <div className="h-3 w-3 rounded-full" style={{ backgroundColor: col.color }} />
+                <h3 className="text-base font-semibold">{col.title}</h3>
+                <span className="ml-auto rounded-full bg-[var(--surface)] px-3 py-1 text-xs font-medium text-[var(--secondary)]">
                   {columnTasks.length}
                 </span>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {columnTasks.map((task) => (
-                  <Card key={task.id} className="hover:border-[var(--accent)]/30">
-                    <CardContent className="p-3">
-                      <div className="flex items-start gap-2">
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{task.title}</p>
-                          {task.description && (
-                            <p className="mt-1 text-xs text-[var(--secondary)] line-clamp-2">
-                              {task.description}
-                            </p>
+                  <div key={task.id} className="mobile-task-card p-5">
+                    <div className="flex items-start gap-4">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-base font-semibold truncate">{task.title}</p>
+                        {task.description && (
+                          <p className="mt-1.5 text-sm text-[var(--secondary)] line-clamp-2">
+                            {task.description}
+                          </p>
+                        )}
+                        <div className="mt-3 flex items-center gap-2.5">
+                          <Badge variant={priorityVariant[task.priority]} className="text-[10px] px-2.5 py-0.5">
+                            {task.priority}
+                          </Badge>
+                          {task.dueDate && (
+                            <span className="flex items-center gap-1 text-xs text-[var(--secondary)]">
+                              <Calendar className="h-3 w-3" />
+                              {format(new Date(task.dueDate), "d MMM", { locale: ru })}
+                            </span>
                           )}
-                          <div className="mt-2 flex items-center gap-2">
-                            <Badge variant={priorityVariant[task.priority]} className="text-[10px]">
-                              {task.priority}
-                            </Badge>
-                            {task.dueDate && (
-                              <span className="flex items-center gap-1 text-[10px] text-[var(--secondary)]">
-                                <Calendar className="h-2.5 w-2.5" />
-                                {format(new Date(task.dueDate), "d MMM", { locale: ru })}
-                              </span>
-                            )}
-                          </div>
                         </div>
-                        <button
-                          onClick={() => handleStatusChange(task.id, NEXT_STATUS[task.status])}
-                          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--surface)] active:scale-95 transition-transform"
-                          title={`Переместить в: ${columns.find(c => c.status === NEXT_STATUS[task.status])?.title}`}
-                        >
-                          <ArrowRight className="h-4 w-4 text-[var(--accent)]" />
-                        </button>
                       </div>
-                    </CardContent>
-                  </Card>
+                      <button
+                        onClick={() => handleStatusChange(task.id, NEXT_STATUS[task.status])}
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--surface)] active:scale-95 transition-all duration-150"
+                        title={`Переместить в: ${columns.find(c => c.status === NEXT_STATUS[task.status])?.title}`}
+                      >
+                        <ArrowRight className="h-5 w-5 text-[var(--accent)]" />
+                      </button>
+                    </div>
+                  </div>
                 ))}
                 {columnTasks.length === 0 && (
-                  <div className="rounded-lg border border-dashed border-[var(--border)] p-6 text-center text-xs text-[var(--muted)]">
+                  <div className="rounded-2xl border-2 border-dashed border-[var(--border)] p-8 text-center text-sm text-[var(--muted)]">
                     Нет задач
                   </div>
                 )}
