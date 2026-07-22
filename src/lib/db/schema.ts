@@ -314,3 +314,26 @@ export const typingIndicators = pgTable("typing_indicators", {
   userId: text("user_id").notNull().references(() => users.id),
   expiresAt: text("expires_at").notNull(),
 });
+
+export const pushSubscriptions = pgTable("push_subscriptions", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  endpoint: text("endpoint").notNull(),
+  p256dh: text("p256dh").notNull(),
+  auth: text("auth").notNull(),
+  userAgent: text("user_agent"),
+  createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
+});
+
+export const notificationPreferences = pgTable("notification_preferences", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }).unique(),
+  messenger: boolean("messenger").notNull().default(true),
+  deadlines: boolean("deadlines").notNull().default(true),
+  habits: boolean("habits").notNull().default(true),
+  serverErrors: boolean("server_errors").notNull().default(true),
+  maintenance: boolean("maintenance").notNull().default(true),
+  reminderTime: text("reminder_time").notNull().default("20:00"),
+  createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
+  updatedAt: text("updated_at").notNull().$defaultFn(() => new Date().toISOString()),
+});

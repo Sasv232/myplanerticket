@@ -22,6 +22,7 @@ import {
 import { useTheme } from "@/components/layout/theme-provider";
 import { useLang } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth-context";
+import { subscribeToPush, unsubscribeFromPush, isPushSubscribed } from "@/lib/push-client";
 import { Globe } from "lucide-react";
 
 const PRIMARY_COLORS = [
@@ -80,6 +81,35 @@ export function SettingsPageDesktop() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
+  const [notifPrefs, setNotifPrefs] = useState({ messenger: true, deadlines: true, habits: true, serverErrors: true, maintenance: true, reminderTime: "20:00" });
+  const [pushEnabled, setPushEnabled] = useState(false);
+
+  const fetchNotifPrefs = useCallback(async () => {
+    try {
+      const res = await fetch("/api/push/preferences");
+      if (res.ok) setNotifPrefs(await res.json());
+    } catch {}
+  }, []);
+
+  const updateNotifPref = async (key: string, value: boolean | string) => {
+    const updated = { ...notifPrefs, [key]: value };
+    setNotifPrefs(updated);
+    await fetch("/api/push/preferences", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updated),
+    });
+  };
+
+  const handleTogglePush = async () => {
+    if (pushEnabled) {
+      await unsubscribeFromPush();
+      setPushEnabled(false);
+    } else {
+      const ok = await subscribeToPush();
+      setPushEnabled(ok);
+    }
+  };
 
   const fetchProfile = useCallback(async () => {
     try {
@@ -134,6 +164,8 @@ export function SettingsPageDesktop() {
   useEffect(() => {
     fetchSettings();
     fetchProfile();
+    fetchNotifPrefs();
+    isPushSubscribed().then(setPushEnabled);
     const savedPrimary = localStorage.getItem("primaryColor") || "#3b82f6";
     const savedSecondary =
       localStorage.getItem("secondaryColor") || "#6b7280";
@@ -143,7 +175,7 @@ export function SettingsPageDesktop() {
     if (typeof window !== "undefined" && "Notification" in window) {
       setNotifPermission(Notification.permission);
     }
-  }, [fetchSettings, fetchProfile]);
+  }, [fetchSettings, fetchProfile, fetchNotifPrefs]);
 
   const applyColors = (primary: string, secondary: string) => {
     document.documentElement.style.setProperty("--accent", primary);
@@ -438,27 +470,63 @@ export function SettingsPageDesktop() {
               <Bell className="h-4 w-4" /> Уведомления
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium">Браузерные уведомления</p>
-                <p className="text-[11px] text-[var(--secondary)]">Получайте напоминания о задачах</p>
+                <p className="text-sm font-medium">Push-уведомления</p>
+                <p className="text-[11px] text-[var(--secondary)]">Системные уведомления в браузере</p>
               </div>
-              {notifPermission === "granted" ? (
-                <Badge variant="success">Включены</Badge>
-              ) : notifPermission === "denied" ? (
-                <Badge variant="destructive">Заблокированы</Badge>
-              ) : (
-                <Button
-                  size="sm"
-                  onClick={async () => {
-                    const result = await Notification.requestPermission();
-                    setNotifPermission(result);
-                  }}
-                >
-                  Включить
-                </Button>
-              )}
+              <button
+                onClick={handleTogglePush}
+                className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
+                style={{ backgroundColor: pushEnabled ? "var(--accent)" : "var(--border)" }}
+              >
+                <span
+                  className="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+                  style={{ transform: pushEnabled ? "translateX(22px)" : "translateX(2px)" }}
+                />
+              </button>
+            </div>
+
+            <div className="border-t border-[var(--border)] pt-3 space-y-3">
+              <p className="text-xs font-medium text-[var(--secondary)] uppercase tracking-wider">Типы уведомлений</p>
+              {[
+                { key: "messenger", label: "Сообщения в чате", desc: "Новые сообщения от пользователей" },
+                { key: "deadlines", label: "Дедлайны задач", desc: "Напоминания о сроках" },
+                { key: "habits", label: "Привычки", desc: "Ежедневные напоминания" },
+                { key: "serverErrors", label: "Ошибки сервера", desc: "Когда API недоступен" },
+                { key: "maintenance", label: "Технические работы", desc: "Плановые отключения" },
+              ].map(({ key, label, desc }) => (
+                <div key={key} className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium">{label}</p>
+                    <p className="text-[11px] text-[var(--secondary)]">{desc}</p>
+                  </div>
+                  <button
+                    onClick={() => updateNotifPref(key, !(notifPrefs as any)[key])}
+                    className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
+                    style={{ backgroundColor: (notifPrefs as any)[key] ? "var(--accent)" : "var(--border)" }}
+                  >
+                    <span
+                      className="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+                      style={{ transform: (notifPrefs as any)[key] ? "translateX(22px)" : "translateX(2px)" }}
+                    />
+                  </button>
+                </div>
+              ))}
+
+              <div className="flex items-center justify-between pt-2 border-t border-[var(--border)]">
+                <div>
+                  <p className="text-sm font-medium">Время напоминаний</p>
+                  <p className="text-[11px] text-[var(--secondary)]">Когда присылать ежедневные напоминания</p>
+                </div>
+                <input
+                  type="time"
+                  value={notifPrefs.reminderTime}
+                  onChange={(e) => updateNotifPref("reminderTime", e.target.value)}
+                  className="rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-1.5 text-sm"
+                />
+              </div>
             </div>
           </CardContent>
         </Card>

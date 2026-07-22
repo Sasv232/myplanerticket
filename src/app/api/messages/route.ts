@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { messages, conversationMembers, users } from "@/lib/db/schema";
-import { eq, and, desc } from "drizzle-orm";
+import { messages, conversationMembers, users, conversations } from "@/lib/db/schema";
+import { eq, and, desc, ne } from "drizzle-orm";
 import { v4 as uuid } from "uuid";
 import { getUserFromToken } from "@/lib/auth";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { sendPushToUser } from "@/lib/push";
 
 export async function GET(request: NextRequest) {
   try {
@@ -107,6 +108,28 @@ export async function POST(request: NextRequest) {
     };
 
     await db.insert(messages).values(newMsg);
+
+    const otherMembers = await db
+      .select({ userId: conversationMembers.userId })
+      .from(conversationMembers)
+      .where(
+        and(
+          eq(conversationMembers.conversationId, conversationId),
+          ne(conversationMembers.userId, user.id)
+        )
+      );
+
+    const conv = await db.select().from(conversations).where(eq(conversations.id, conversationId)).limit(1);
+    const convName = conv[0]?.name || user.name;
+
+    for (const member of otherMembers) {
+      sendPushToUser(member.userId, {
+        title: convName,
+        body: content.length > 100 ? content.slice(0, 100) + "..." : content,
+        url: "/messenger",
+        tag: "messenger",
+      });
+    }
 
     return NextResponse.json({
       ...newMsg,

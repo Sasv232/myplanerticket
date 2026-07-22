@@ -7,6 +7,7 @@ import { AuthGuard } from "@/components/auth-guard";
 import { AppShell } from "@/components/layout/app-shell";
 import { UpdatePrompt } from "@/components/layout/update-prompt";
 import { GlobalSearch } from "@/components/search/global-search";
+import { NotificationPermissionPrompt } from "@/components/notifications/notification-permission-prompt";
 import { LangProvider } from "@/lib/i18n/context";
 
 const geistSans = Geist({
@@ -90,6 +91,7 @@ export default function RootLayout({
                 <AppShell>{children}</AppShell>
               </AuthGuard>
               <UpdatePrompt />
+              <NotificationPermissionPrompt />
               <GlobalSearch />
             </AuthProvider>
           </LangProvider>

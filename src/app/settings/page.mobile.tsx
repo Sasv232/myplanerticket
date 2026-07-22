@@ -4,8 +4,9 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { useMobileSidebar } from "@/components/layout/mobile-sidebar-context";
-import { Camera, ChevronRight, LogOut, Moon, Sun, Download, Upload, Shield, User, Mail, Phone, Palette, Home } from "lucide-react";
+import { Camera, ChevronRight, LogOut, Moon, Sun, Download, Upload, Shield, User, Mail, Phone, Palette, Home, Bell } from "lucide-react";
 import { useTheme } from "@/components/layout/theme-provider";
+import { subscribeToPush, unsubscribeFromPush, isPushSubscribed } from "@/lib/push-client";
 
 const COLORS = [
   "#3b82f6", "#6366f1", "#8b5cf6", "#ec4899", "#ef4444",
@@ -33,6 +34,35 @@ export function SettingsPageMobile() {
   const [phone, setPhone] = useState("");
   const [primaryColor, setPrimaryColor] = useState("#3b82f6");
   const fileRef = useRef<HTMLInputElement>(null);
+  const [notifPrefs, setNotifPrefs] = useState({ messenger: true, deadlines: true, habits: true, serverErrors: true, maintenance: true, reminderTime: "20:00" });
+  const [pushEnabled, setPushEnabled] = useState(false);
+
+  const fetchNotifPrefs = useCallback(async () => {
+    try {
+      const res = await fetch("/api/push/preferences");
+      if (res.ok) setNotifPrefs(await res.json());
+    } catch {}
+  }, []);
+
+  const updateNotifPref = async (key: string, value: boolean | string) => {
+    const updated = { ...notifPrefs, [key]: value };
+    setNotifPrefs(updated);
+    await fetch("/api/push/preferences", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updated),
+    });
+  };
+
+  const handleTogglePush = async () => {
+    if (pushEnabled) {
+      await unsubscribeFromPush();
+      setPushEnabled(false);
+    } else {
+      const ok = await subscribeToPush();
+      setPushEnabled(ok);
+    }
+  };
 
   const fetchProfile = useCallback(async () => {
     try {
@@ -49,9 +79,11 @@ export function SettingsPageMobile() {
 
   useEffect(() => {
     fetchProfile();
+    fetchNotifPrefs();
+    isPushSubscribed().then(setPushEnabled);
     const saved = localStorage.getItem("primaryColor") || "#3b82f6";
     setPrimaryColor(saved);
-  }, [fetchProfile]);
+  }, [fetchProfile, fetchNotifPrefs]);
 
   const handleSave = async () => {
     await fetch("/api/profile", {
@@ -225,6 +257,49 @@ export function SettingsPageMobile() {
                   style={{ backgroundColor: c }}
                 />
               ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Notifications section */}
+        <div>
+          <h3 className="mobile-section-header px-1 mb-2">Уведомления</h3>
+          <div className="mobile-section">
+            <button onClick={handleTogglePush} className="mobile-section-row w-full text-left">
+              <Bell className="h-5 w-5 text-[var(--secondary)]" />
+              <span className="flex-1 text-[15px]">Push-уведомления</span>
+              <div className={`h-7 w-12 rounded-full transition-colors duration-200 ${pushEnabled ? "bg-[var(--accent)]" : "bg-[var(--border)]"}`}>
+                <div className={`h-5 w-5 rounded-full bg-white shadow transition-transform duration-200 mt-1 ${pushEnabled ? "translate-x-5.5 ml-1" : "translate-x-1"}`} />
+              </div>
+            </button>
+
+            {[
+              { key: "messenger", label: "Сообщения в чате" },
+              { key: "deadlines", label: "Дедлайны задач" },
+              { key: "habits", label: "Напоминания о привычках" },
+              { key: "serverErrors", label: "Ошибки сервера" },
+              { key: "maintenance", label: "Технические работы" },
+            ].map(({ key, label }) => (
+              <button
+                key={key}
+                onClick={() => updateNotifPref(key, !(notifPrefs as any)[key])}
+                className="mobile-section-row w-full text-left"
+              >
+                <span className="flex-1 text-[15px] pl-8">{label}</span>
+                <div className={`h-7 w-12 rounded-full transition-colors duration-200 ${(notifPrefs as any)[key] ? "bg-[var(--accent)]" : "bg-[var(--border)]"}`}>
+                  <div className={`h-5 w-5 rounded-full bg-white shadow transition-transform duration-200 mt-1 ${(notifPrefs as any)[key] ? "translate-x-5.5 ml-1" : "translate-x-1"}`} />
+                </div>
+              </button>
+            ))}
+
+            <div className="mobile-section-row">
+              <span className="flex-1 text-[15px] pl-8">Время напоминаний</span>
+              <input
+                type="time"
+                value={notifPrefs.reminderTime}
+                onChange={(e) => updateNotifPref("reminderTime", e.target.value)}
+                className="bg-transparent text-[15px] text-[var(--accent)] outline-none"
+              />
             </div>
           </div>
         </div>
