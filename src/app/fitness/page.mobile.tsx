@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Droplets, Apple, Scale, Heart, Plus, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import Link from "next/link";
+import { Droplets, Apple, Scale, Heart, Plus, Trash2, ChevronLeft, ChevronRight, Home, Menu } from "lucide-react";
 import { useLang } from "@/lib/i18n/context";
+import { useMobileSidebar } from "@/components/layout/mobile-sidebar-context";
 
 interface FoodEntry { id: string; name: string; calories: number; protein: number; carbs: number; fat: number; mealType: string; date: string; }
 interface WaterEntry { id: string; amount: number; date: string; }
@@ -13,6 +15,7 @@ function getToday() { return new Date().toISOString().split("T")[0]; }
 
 export function FitnessPageMobile() {
   const { t } = useLang();
+  const { setOpen } = useMobileSidebar();
 
   const MEAL_TYPES = [
     { value: "breakfast", label: t("fitness_breakfast"), emoji: "🌅" },
@@ -91,10 +94,18 @@ export function FitnessPageMobile() {
   return (
     <div className="mobile-main">
       {/* Header */}
-      <div className="sticky top-0 z-30 bg-[var(--background)]/80 backdrop-blur-xl border-b border-[var(--border)]/50 px-5 py-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">🏋️ {t("fitness_title")}</h1>
-        <button onClick={() => setShowProfile(!showProfile)} className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--surface)] active:scale-95 transition-all">
-          <Heart className="h-5 w-5 text-[var(--secondary)]" />
+      <div className="sticky top-0 z-30 bg-[var(--background)]/80 backdrop-blur-xl border-b border-[var(--border)]/50 px-4 py-3 flex items-center gap-3">
+        <button onClick={() => setOpen(true)} className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--surface)] active:scale-95 transition-all shrink-0">
+          <Menu className="h-4 w-4" />
+        </button>
+        <Link href="/" className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--surface)] active:scale-95 transition-all shrink-0">
+          <Home className="h-4 w-4" />
+        </Link>
+        <div className="flex-1 min-w-0">
+          <h1 className="text-lg font-bold tracking-tight truncate">🏋️ {t("fitness_title")}</h1>
+        </div>
+        <button onClick={() => setShowProfile(!showProfile)} className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--surface)] active:scale-95 transition-all shrink-0">
+          <Heart className="h-4 w-4 text-[var(--secondary)]" />
         </button>
       </div>
 

@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { Task, TaskStatus, TaskPriority } from "@/types/task";
 import { Badge } from "@/components/ui/badge";
 import { TaskForm } from "@/components/tasks/task-form";
@@ -13,6 +14,7 @@ import {
   Calendar,
   Repeat,
   X,
+  Home,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useMobileSidebar } from "@/components/layout/mobile-sidebar-context";
@@ -113,18 +115,21 @@ export function TasksPageMobile() {
       {/* Header */}
       <div className="sticky top-0 z-30 bg-[var(--background)]/80 backdrop-blur-xl border-b border-[var(--border)]/50 px-5 py-4">
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <button
               onClick={() => setOpen(true)}
-              className="h-10 w-10 rounded-2xl bg-[var(--surface)] flex items-center justify-center active:scale-95 transition-all duration-150"
+              className="h-9 w-9 rounded-xl bg-[var(--surface)] flex items-center justify-center active:scale-95 transition-all duration-150"
             >
               {user?.avatar ? (
-                <img src={user.avatar} alt="" className="h-7 w-7 rounded-xl object-cover" />
+                <img src={user.avatar} alt="" className="h-6 w-6 rounded-lg object-cover" />
               ) : (
-                <span className="text-sm font-bold text-[var(--accent)]">M</span>
+                <span className="text-xs font-bold text-[var(--accent)]">M</span>
               )}
             </button>
-            <h1 className="text-2xl font-bold tracking-tight">Задачи</h1>
+            <Link href="/" className="h-9 w-9 rounded-xl bg-[var(--surface)] flex items-center justify-center active:scale-95 transition-all duration-150">
+              <Home className="h-4 w-4" />
+            </Link>
+            <h1 className="text-lg font-bold tracking-tight">Задачи</h1>
           </div>
           <button
             onClick={() => setSearchOpen(!searchOpen)}

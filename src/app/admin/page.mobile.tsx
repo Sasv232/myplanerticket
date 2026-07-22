@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { Users, Shield, User, RefreshCw, Mail } from "lucide-react";
+import { Users, Shield, User, RefreshCw, Mail, Home } from "lucide-react";
 import { useMobileSidebar } from "@/components/layout/mobile-sidebar-context";
 
 interface AdminUser {
@@ -49,21 +50,22 @@ export function AdminPageMobile() {
   return (
     <div className="mobile-main">
       {/* Header */}
-      <div className="sticky top-0 z-30 bg-[var(--background)]/80 backdrop-blur-xl border-b border-[var(--border)]/50 px-5 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setOpen(true)}
-            className="h-10 w-10 rounded-2xl bg-[var(--surface)] flex items-center justify-center active:scale-95 transition-all duration-150"
-          >
-            <span className="text-sm font-bold text-[var(--accent)]">M</span>
-          </button>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Админ-панель</h1>
-            <p className="text-sm text-[var(--secondary)]">{stats.total} пользователей</p>
-          </div>
+      <div className="sticky top-0 z-30 bg-[var(--background)]/80 backdrop-blur-xl border-b border-[var(--border)]/50 px-4 py-3 flex items-center gap-3">
+        <button
+          onClick={() => setOpen(true)}
+          className="h-9 w-9 rounded-xl bg-[var(--surface)] flex items-center justify-center active:scale-95 transition-all duration-150 shrink-0"
+        >
+          <span className="text-xs font-bold text-[var(--accent)]">M</span>
+        </button>
+        <Link href="/" className="h-9 w-9 rounded-xl bg-[var(--surface)] flex items-center justify-center active:scale-95 transition-all duration-150 shrink-0">
+          <Home className="h-4 w-4" />
+        </Link>
+        <div className="flex-1 min-w-0">
+          <h1 className="text-lg font-bold tracking-tight truncate">Админ-панель</h1>
+          <p className="text-[11px] text-[var(--secondary)]">{stats.total} пользователей</p>
         </div>
-        <button onClick={fetchUsers} className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--surface)] active:scale-95 transition-all duration-150">
-          <RefreshCw className={`h-5 w-5 ${loading ? "animate-spin" : ""}`} />
+        <button onClick={fetchUsers} className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--surface)] active:scale-95 transition-all duration-150 shrink-0">
+          <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
         </button>
       </div>
 

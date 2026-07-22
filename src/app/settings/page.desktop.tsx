@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Header } from "@/components/layout/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,9 +15,13 @@ import {
   Download,
   Upload,
   Bell,
+  Camera,
+  User,
+  Phone,
 } from "lucide-react";
 import { useTheme } from "@/components/layout/theme-provider";
 import { useLang } from "@/lib/i18n/context";
+import { useAuth } from "@/lib/auth-context";
 import { Globe } from "lucide-react";
 
 const PRIMARY_COLORS = [
@@ -51,14 +55,72 @@ interface Settings {
   databaseConnected: boolean;
 }
 
+interface Profile {
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  avatar: string | null;
+  role: string;
+  createdAt: string;
+}
+
 export function SettingsPageDesktop() {
   const { theme, schedule, setSchedule } = useTheme();
   const { t, lang, setLang } = useLang();
+  const { user } = useAuth();
   const [primaryColor, setPrimaryColor] = useState("#3b82f6");
   const [secondaryColor, setSecondaryColor] = useState("#6b7280");
   const [settings, setSettings] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(true);
   const [notifPermission, setNotifPermission] = useState<NotificationPermission>("default");
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const fetchProfile = useCallback(async () => {
+    try {
+      const res = await fetch("/api/profile");
+      if (res.ok) {
+        const data = await res.json();
+        setProfile(data);
+        setName(data.name || "");
+        setEmail(data.email || "");
+        setPhone(data.phone || "");
+      }
+    } catch {}
+  }, []);
+
+  const handleSave = async () => {
+    await fetch("/api/profile", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, phone }),
+    });
+    setEditing(false);
+    fetchProfile();
+  };
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64 = reader.result as string;
+      await fetch("/api/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ avatar: base64 }),
+      });
+      fetchProfile();
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const initials = profile?.name?.slice(0, 1).toUpperCase() || "?";
 
   const fetchSettings = useCallback(async () => {
     setLoading(true);
@@ -71,6 +133,7 @@ export function SettingsPageDesktop() {
 
   useEffect(() => {
     fetchSettings();
+    fetchProfile();
     const savedPrimary = localStorage.getItem("primaryColor") || "#3b82f6";
     const savedSecondary =
       localStorage.getItem("secondaryColor") || "#6b7280";
@@ -80,7 +143,7 @@ export function SettingsPageDesktop() {
     if (typeof window !== "undefined" && "Notification" in window) {
       setNotifPermission(Notification.permission);
     }
-  }, [fetchSettings]);
+  }, [fetchSettings, fetchProfile]);
 
   const applyColors = (primary: string, secondary: string) => {
     document.documentElement.style.setProperty("--accent", primary);
@@ -145,6 +208,86 @@ export function SettingsPageDesktop() {
         }
       />
       <main className="p-6 space-y-4">
+        {/* Profile Card */}
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-6">
+              <div className="relative shrink-0">
+                {profile?.avatar ? (
+                  <img src={profile.avatar} alt="" className="h-20 w-20 rounded-full object-cover ring-4 ring-[var(--accent)]/15" />
+                ) : (
+                  <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-[var(--accent)] to-[var(--accent)]/60 text-2xl font-bold text-white ring-4 ring-[var(--accent)]/15">
+                    {initials}
+                  </div>
+                )}
+                <button
+                  onClick={() => fileRef.current?.click()}
+                  className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full bg-[var(--card)] shadow-lg ring-1 ring-[var(--border)] hover:ring-[var(--accent)]/50 transition-all"
+                >
+                  <Camera className="h-4 w-4 text-[var(--accent)]" />
+                </button>
+                <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-3 mb-3">
+                  {editing ? (
+                    <input
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="text-xl font-bold bg-transparent border-b border-[var(--border)] outline-none focus:border-[var(--accent)] transition-colors px-1 py-0.5"
+                      placeholder="Имя"
+                    />
+                  ) : (
+                    <h2 className="text-xl font-bold truncate">{profile?.name}</h2>
+                  )}
+                  <Badge variant={profile?.role === "admin" ? "default" : "secondary"}>
+                    {profile?.role === "admin" ? "Админ" : "Пользователь"}
+                  </Badge>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Mail className="h-4 w-4 text-[var(--muted)] shrink-0" />
+                    {editing ? (
+                      <input
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="flex-1 bg-transparent border-b border-[var(--border)] outline-none focus:border-[var(--accent)] transition-colors px-1 py-0.5 text-sm"
+                        placeholder="email@example.com"
+                        type="email"
+                      />
+                    ) : (
+                      <span className="text-[var(--secondary)] truncate">{profile?.email || "Не указана"}</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Phone className="h-4 w-4 text-[var(--muted)] shrink-0" />
+                    {editing ? (
+                      <input
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        className="flex-1 bg-transparent border-b border-[var(--border)] outline-none focus:border-[var(--accent)] transition-colors px-1 py-0.5 text-sm"
+                        placeholder="+7 (999) 123-45-67"
+                        type="tel"
+                      />
+                    ) : (
+                      <span className="text-[var(--secondary)] truncate">{profile?.phone || "Не указан"}</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className="shrink-0">
+                <Button
+                  variant={editing ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => editing ? handleSave() : setEditing(true)}
+                >
+                  {editing ? "Сохранить" : "Изменить"}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">

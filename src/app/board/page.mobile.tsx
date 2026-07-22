@@ -1,11 +1,14 @@
 ﻿"use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { Task, TaskStatus } from "@/types/task";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, ArrowRight } from "lucide-react";
+import { Calendar, ArrowRight, Home, Menu } from "lucide-react";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
+import { useMobileSidebar } from "@/components/layout/mobile-sidebar-context";
+import { useAuth } from "@/lib/auth-context";
 
 const columns: { status: TaskStatus; title: string; color: string }[] = [
   { status: "todo", title: "К выполнению", color: "var(--accent)" },
@@ -28,6 +31,8 @@ const NEXT_STATUS: Record<TaskStatus, TaskStatus> = {
 
 export function BoardPageMobile() {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const { setOpen } = useMobileSidebar();
+  const { user } = useAuth();
 
   const fetchTasks = useCallback(async () => {
     const res = await fetch("/api/tasks?t=" + Date.now());
@@ -60,9 +65,17 @@ export function BoardPageMobile() {
   return (
     <div className="mobile-main">
       {/* Header */}
-      <div className="sticky top-0 z-30 bg-[var(--background)]/80 backdrop-blur-xl border-b border-[var(--border)]/50 px-5 py-4">
-        <h1 className="text-2xl font-bold tracking-tight">Доска</h1>
-        <p className="text-sm text-[var(--secondary)] mt-0.5">Перетаскивайте или нажмите кнопку</p>
+      <div className="sticky top-0 z-30 bg-[var(--background)]/80 backdrop-blur-xl border-b border-[var(--border)]/50 px-4 py-3 flex items-center gap-3">
+        <button onClick={() => setOpen(true)} className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--surface)] active:scale-95 transition-all shrink-0">
+          <Menu className="h-4 w-4" />
+        </button>
+        <Link href="/" className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--surface)] active:scale-95 transition-all shrink-0">
+          <Home className="h-4 w-4" />
+        </Link>
+        <div className="flex-1 min-w-0">
+          <h1 className="text-lg font-bold tracking-tight truncate">Доска</h1>
+          <p className="text-[11px] text-[var(--secondary)] truncate">Перетаскивайте или нажмите кнопку</p>
+        </div>
       </div>
 
       <div className="p-5 space-y-6">

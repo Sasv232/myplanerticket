@@ -1,9 +1,10 @@
 ﻿"use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { useMobileSidebar } from "@/components/layout/mobile-sidebar-context";
-import { Camera, ChevronRight, LogOut, Moon, Sun, Download, Upload, Shield, User, Mail, Phone, Palette } from "lucide-react";
+import { Camera, ChevronRight, LogOut, Moon, Sun, Download, Upload, Shield, User, Mail, Phone, Palette, Home } from "lucide-react";
 import { useTheme } from "@/components/layout/theme-provider";
 
 const COLORS = [
@@ -89,19 +90,22 @@ export function SettingsPageMobile() {
   return (
     <div className="mobile-main">
       {/* Header */}
-      <div className="sticky top-0 z-30 bg-[var(--background)]/80 backdrop-blur-xl border-b border-[var(--border)]/50 px-5 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setOpen(true)}
-            className="h-10 w-10 rounded-2xl bg-[var(--surface)] flex items-center justify-center active:scale-95 transition-all duration-150"
-          >
-            {user?.avatar ? (
-              <img src={user.avatar} alt="" className="h-7 w-7 rounded-xl object-cover" />
-            ) : (
-              <span className="text-sm font-bold text-[var(--accent)]">{initials}</span>
-            )}
-          </button>
-          <h1 className="text-2xl font-bold tracking-tight">Профиль</h1>
+      <div className="sticky top-0 z-30 bg-[var(--background)]/80 backdrop-blur-xl border-b border-[var(--border)]/50 px-4 py-3 flex items-center gap-3">
+        <button
+          onClick={() => setOpen(true)}
+          className="h-9 w-9 rounded-xl bg-[var(--surface)] flex items-center justify-center active:scale-95 transition-all duration-150 shrink-0"
+        >
+          {user?.avatar ? (
+            <img src={user.avatar} alt="" className="h-6 w-6 rounded-lg object-cover" />
+          ) : (
+            <span className="text-xs font-bold text-[var(--accent)]">{initials}</span>
+          )}
+        </button>
+        <Link href="/" className="h-9 w-9 rounded-xl bg-[var(--surface)] flex items-center justify-center active:scale-95 transition-all duration-150 shrink-0">
+          <Home className="h-4 w-4" />
+        </Link>
+        <div className="flex-1 min-w-0">
+          <h1 className="text-lg font-bold tracking-tight truncate">Профиль</h1>
         </div>
       </div>
 

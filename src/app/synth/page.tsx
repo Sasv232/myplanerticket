@@ -5,13 +5,8 @@ import { Piano } from "@/components/synth/piano";
 import { MELODIES } from "@/components/synth/melodies";
 import { createMelodyPlayer, type WaveformType, getAnalyser } from "@/components/synth/audio-engine";
 import {
-  WHITE_NOTES,
-  BLACK_NOTES,
-  ALL_NOTES,
   DEFAULT_BINDINGS,
   loadBindings,
-  saveBindings,
-  getReverseBindings,
 } from "@/components/synth/keybindings";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,8 +18,6 @@ import {
   Mic,
   MicOff,
   RotateCcw,
-  Keyboard,
-  Save,
 } from "lucide-react";
 
 export default function SynthPage() {
@@ -36,8 +29,6 @@ export default function SynthPage() {
   const [recording, setRecording] = useState(false);
   const [recordedNotes, setRecordedNotes] = useState<{ note: string; time: number }[]>([]);
   const [bindings, setBindings] = useState<Record<string, string>>(DEFAULT_BINDINGS);
-  const [editingNote, setEditingNote] = useState<string | null>(null);
-  const [showBindings, setShowBindings] = useState(false);
   const playerRef = useRef<{ stop: () => void } | null>(null);
   const recordStartRef = useRef<number>(0);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -46,8 +37,6 @@ export default function SynthPage() {
   useEffect(() => {
     setBindings(loadBindings());
   }, []);
-
-  const reverseBindings = getReverseBindings(bindings);
 
   useEffect(() => {
     const canvasEl = canvasRef.current;
@@ -182,34 +171,6 @@ export default function SynthPage() {
     setRecording(false);
   };
 
-  const handleBindKey = useCallback((note: string, key: string) => {
-    setBindings((prev) => {
-      const next = { ...prev };
-      for (const [k, v] of Object.entries(next)) {
-        if (v === note) delete next[k];
-      }
-      next[key.toLowerCase()] = note;
-      return next;
-    });
-    setEditingNote(null);
-  }, []);
-
-  const handleSaveBindings = () => {
-    saveBindings(bindings);
-  };
-
-  const handleResetBindings = () => {
-    setBindings({ ...DEFAULT_BINDINGS });
-    saveBindings({ ...DEFAULT_BINDINGS });
-  };
-
-  const getKeyDisplay = (note: string): string => {
-    const key = reverseBindings[note];
-    if (!key) return "—";
-    if (key === "\\") return "\\";
-    return key.toUpperCase();
-  };
-
   return (
     <div className="space-y-6">
       <div className="mobile-page-header">
@@ -283,89 +244,6 @@ export default function SynthPage() {
           />
         </CardContent>
       </Card>
-
-      {/* Key Bindings Settings */}
-      <div>
-        <button
-          onClick={() => setShowBindings(!showBindings)}
-          className="flex items-center gap-2 text-lg font-bold hover:text-[var(--accent)] transition-colors"
-        >
-          <Keyboard className="h-5 w-5 text-[var(--accent)]" />
-          Настройка клавиш
-          <span className="text-xs text-[var(--muted)] font-normal">
-            {showBindings ? "▲ скрыть" : "▼ показать"}
-          </span>
-        </button>
-
-        {showBindings && (
-          <Card className="mt-3">
-            <CardContent className="p-4 space-y-4">
-              <p className="text-[11px] text-[var(--secondary)]">
-                Нажми на клавишу рядом с нотой, затем нажми клавишу на клавиатуре чтобы назначить
-              </p>
-
-              <div className="space-y-2">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">Белые клавиши</p>
-                <div className="grid grid-cols-7 gap-2">
-                  {WHITE_NOTES.map((note) => (
-                    <button
-                      key={note}
-                      onClick={() => setEditingNote(note)}
-                      className={`flex flex-col items-center gap-1 p-2 rounded-xl border transition-all duration-150 ${
-                        editingNote === note
-                          ? "border-[var(--accent)] bg-[var(--accent)]/10 ring-2 ring-[var(--accent)]/30"
-                          : "border-[var(--border)] bg-[var(--card)] hover:border-[var(--accent)]/30"
-                      }`}
-                    >
-                      <span className="text-[10px] font-bold text-[var(--secondary)]">{note}</span>
-                      <span className="text-lg font-bold" style={{ color: editingNote === note ? "var(--accent)" : "var(--foreground)" }}>
-                        {getKeyDisplay(note)}
-                      </span>
-                      {editingNote === note && (
-                        <span className="text-[8px] text-[var(--accent)] animate-pulse">Нажми клавишу...</span>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">Чёрные клавиши</p>
-                <div className="grid grid-cols-5 gap-2">
-                  {BLACK_NOTES.map((note) => (
-                    <button
-                      key={note}
-                      onClick={() => setEditingNote(note)}
-                      className={`flex flex-col items-center gap-1 p-2 rounded-xl border transition-all duration-150 ${
-                        editingNote === note
-                          ? "border-[var(--accent)] bg-[var(--accent)]/10 ring-2 ring-[var(--accent)]/30"
-                          : "border-[var(--border)] bg-[#1a1a2e] hover:border-[var(--accent)]/30"
-                      }`}
-                    >
-                      <span className="text-[10px] font-bold text-[#888]">{note}</span>
-                      <span className="text-lg font-bold" style={{ color: editingNote === note ? "var(--accent)" : "#ccc" }}>
-                        {getKeyDisplay(note)}
-                      </span>
-                      {editingNote === note && (
-                        <span className="text-[8px] text-[var(--accent)] animate-pulse">Нажми клавишу...</span>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex gap-2 pt-2 border-t border-[var(--border)]">
-                <Button variant="outline" size="sm" onClick={handleResetBindings}>
-                  <RotateCcw className="h-3.5 w-3.5 mr-1" /> По умолчанию
-                </Button>
-                <Button size="sm" onClick={handleSaveBindings}>
-                  <Save className="h-3.5 w-3.5 mr-1" /> Сохранить
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </div>
 
       {/* Melodies */}
       <div>
@@ -474,33 +352,6 @@ export default function SynthPage() {
         </div>
       )}
 
-      {/* Hidden listener for key binding */}
-      {editingNote && (
-        <KeyBindingListener
-          note={editingNote}
-          onKey={(key) => handleBindKey(editingNote, key)}
-          onCancel={() => setEditingNote(null)}
-        />
-      )}
     </div>
   );
-}
-
-function KeyBindingListener({ note, onKey, onCancel }: { note: string; onKey: (key: string) => void; onCancel: () => void }) {
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.repeat) return;
-      e.preventDefault();
-      e.stopPropagation();
-      if (e.key === "Escape") {
-        onCancel();
-      } else {
-        onKey(e.key);
-      }
-    };
-    window.addEventListener("keydown", handler, true);
-    return () => window.removeEventListener("keydown", handler, true);
-  }, [note, onKey, onCancel]);
-
-  return null;
 }

@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
+import Link from "next/link";
 import { Task } from "@/types/task";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -20,7 +21,8 @@ import {
   subDays,
 } from "date-fns";
 import { ru } from "date-fns/locale";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Home, Menu } from "lucide-react";
+import { useMobileSidebar } from "@/components/layout/mobile-sidebar-context";
 
 type ViewMode = "month" | "week" | "day";
 
@@ -38,6 +40,7 @@ export function CalendarPageMobile() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [viewMode, setViewMode] = useState<ViewMode>("month");
   const [currentDate, setCurrentDate] = useState(new Date());
+  const { setOpen } = useMobileSidebar();
 
   const fetchTasks = useCallback(async () => {
     const res = await fetch("/api/tasks");
@@ -93,8 +96,16 @@ export function CalendarPageMobile() {
   return (
     <div className="mobile-main">
       {/* Header */}
-      <div className="sticky top-0 z-30 bg-[var(--background)]/80 backdrop-blur-xl border-b border-[var(--border)]/50 px-5 py-4">
-        <h1 className="text-2xl font-bold tracking-tight">Календарь</h1>
+      <div className="sticky top-0 z-30 bg-[var(--background)]/80 backdrop-blur-xl border-b border-[var(--border)]/50 px-4 py-3 flex items-center gap-3">
+        <button onClick={() => setOpen(true)} className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--surface)] active:scale-95 transition-all shrink-0">
+          <Menu className="h-4 w-4" />
+        </button>
+        <Link href="/" className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--surface)] active:scale-95 transition-all shrink-0">
+          <Home className="h-4 w-4" />
+        </Link>
+        <div className="flex-1 min-w-0">
+          <h1 className="text-lg font-bold tracking-tight truncate">Календарь</h1>
+        </div>
       </div>
 
       <div className="p-5 space-y-5">
