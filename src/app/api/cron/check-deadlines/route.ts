@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
         body = `"${task.title}" — срок завтра`;
       }
 
-      if (title) {
+      if (title && task.userId) {
         await sendPushToUser(task.userId, {
           title,
           body,
