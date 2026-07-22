@@ -1,13 +1,12 @@
 {
-  "functions": {
-    "src/app/api/scrapers/rzd/route.ts": {
-      "maxDuration": 30
+  "crons": [
+    {
+      "path": "/api/cron/check-deadlines",
+      "schedule": "0 9 * * *"
     },
-    "src/app/api/scrapers/rzd/stations/route.ts": {
-      "maxDuration": 30
-    },
-    "src/app/api/cron/check/route.ts": {
-      "maxDuration": 60
+    {
+      "path": "/api/cron/check-habits",
+      "schedule": "0 20 * * *"
     }
-  }
+  ]
 }
