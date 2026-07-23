@@ -3,14 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Home, CheckSquare, MessageSquare, User, BookOpen } from "lucide-react";
+import { Home, CheckSquare, MessageSquare, Repeat, Timer } from "lucide-react";
 
 const navItems = [
   { label: "Главная", href: "/", icon: Home },
   { label: "Задачи", href: "/tasks", icon: CheckSquare },
-  { label: "Дневник", href: "/journal", icon: BookOpen },
+  { label: "Привычки", href: "/habits", icon: Repeat },
+  { label: "Таймер", href: "/pomodoro", icon: Timer },
   { label: "Чат", href: "/messenger", icon: MessageSquare },
-  { label: "Профиль", href: "/settings", icon: User },
 ];
 
 export function MobileNav() {

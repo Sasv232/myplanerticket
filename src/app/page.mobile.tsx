@@ -6,7 +6,8 @@ import { WidgetRendererMobile } from "@/components/widgets/widget-renderer";
 import { WidgetEditor } from "@/components/widgets/widget-editor";
 import { useMobileSidebar } from "@/components/layout/mobile-sidebar-context";
 import { useAuth } from "@/lib/auth-context";
-import { Settings } from "lucide-react";
+import { TagBadge } from "@/components/ui/tag-badge";
+import { Settings, Sparkles } from "lucide-react";
 
 export function DashboardPageMobile() {
   const [widgetConfig, setWidgetConfig] = useState<WidgetConfig[]>([]);
@@ -27,42 +28,34 @@ export function DashboardPageMobile() {
   const now = new Date();
   const hour = now.getHours();
   const greeting = hour < 12 ? "Доброе утро" : hour < 18 ? "Добрый день" : "Добрый вечер";
-  const dateStr = now.toLocaleDateString("ru-RU", { day: "numeric", month: "long", weekday: "long" });
 
   return (
-    <div className="mobile-main">
-      {/* Header */}
-      <div className="sticky top-0 z-30 bg-[var(--background)]/80 backdrop-blur-xl border-b border-[var(--border)]/50 px-5 py-4 flex items-center justify-between">
-        <div className="min-w-0 flex-1">
-          <p className="text-2xl font-bold tracking-tight">{greeting}, {user?.name?.split(" ")[0] || ""}!</p>
-          <p className="text-sm text-[var(--secondary)] mt-0.5 capitalize">{dateStr}</p>
-        </div>
-        <div className="flex items-center gap-3 shrink-0 ml-4">
-          <button
-            onClick={() => setEditorOpen(true)}
-            className="h-10 w-10 rounded-2xl bg-[var(--surface)] flex items-center justify-center active:scale-95 transition-all duration-150"
-          >
-            <Settings className="h-5 w-5 text-[var(--secondary)]" />
-          </button>
-          <button
-            onClick={() => setOpen(true)}
-            className="h-10 w-10 rounded-2xl bg-[var(--surface)] flex items-center justify-center active:scale-95 transition-all duration-150"
-          >
-            {user?.avatar ? (
-              <img src={user.avatar} alt="" className="h-7 w-7 rounded-xl object-cover" />
-            ) : (
-              <span className="text-sm font-bold text-[var(--accent)]">{user?.name?.[0]?.toUpperCase() || "?"}</span>
-            )}
-          </button>
-        </div>
+    <div className="mobile-main blob-bg">
+      {/* Hero */}
+      <div className="px-5 pt-14 pb-4">
+        <TagBadge variant="green" className="mb-3">
+          <Sparkles className="h-3 w-3" />
+          Планер
+        </TagBadge>
+        <h1 className="text-[26px] font-extrabold tracking-tight leading-tight">
+          {greeting}, {user?.name?.split(" ")[0] || ""} 👋
+        </h1>
       </div>
 
-      {/* Widgets */}
-      <div className="p-5 space-y-5">
+      {/* Виджеты */}
+      <div className="p-5 space-y-4">
         {loaded && <WidgetRendererMobile config={widgetConfig} />}
       </div>
 
-      {/* Editor */}
+      {/* FAB настроек */}
+      <button
+        onClick={() => setEditorOpen(true)}
+        className="mobile-fab"
+        style={{ display: "flex" }}
+      >
+        <Settings className="h-5 w-5" />
+      </button>
+
       <WidgetEditor
         open={editorOpen}
         onClose={() => setEditorOpen(false)}

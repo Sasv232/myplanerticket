@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Sidebar } from "./sidebar";
+import { TopNav } from "./topnav";
 import { MobileNav } from "./mobile-nav";
 import { MobileSidebar } from "./mobile-sidebar";
 import { MobileSidebarProvider, useMobileSidebar } from "./mobile-sidebar-context";
@@ -19,10 +19,10 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-screen">
-      <Sidebar />
+    <div className="min-h-screen">
+      <TopNav />
       <MobileSidebar open={open} onClose={() => setOpen(false)} />
-      <main className="flex-1 desktop-main">
+      <main className="desktop-main">
         <PageTransition>{children}</PageTransition>
       </main>
       <MobileNav />
