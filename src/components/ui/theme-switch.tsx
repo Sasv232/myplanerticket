@@ -1,7 +1,5 @@
 "use client";
 
-import { useId } from "react";
-
 interface ThemeSwitchProps {
   checked?: boolean;
   onChange?: (checked: boolean) => void;
@@ -9,32 +7,40 @@ interface ThemeSwitchProps {
 }
 
 export function ThemeSwitch({ checked = false, onChange, className }: ThemeSwitchProps) {
-  const id = useId();
-
   return (
-    <div className={`theme-switch ${className || ""}`}>
-      <input
-        type="checkbox"
-        id={id}
-        className="theme-switch__checkbox"
-        checked={checked}
-        onChange={(e) => onChange?.(e.target.checked)}
+    <button
+      onClick={() => onChange?.(!checked)}
+      className={`relative inline-flex h-7 w-12 items-center rounded-full transition-all duration-300 ${
+        checked
+          ? "bg-[var(--text)]"
+          : "bg-[var(--border)]"
+      } ${className || ""}`}
+      style={{
+        boxShadow: checked
+          ? "inset 0 2px 4px rgba(0,0,0,0.3)"
+          : "inset 0 1px 3px rgba(0,0,0,0.1)",
+      }}
+    >
+      {/* Иконки */}
+      <span
+        className="absolute left-1 text-[11px] transition-opacity duration-200"
+        style={{ opacity: checked ? 0 : 1 }}
+      >
+        ☀️
+      </span>
+      <span
+        className="absolute right-1 text-[11px] transition-opacity duration-200"
+        style={{ opacity: checked ? 1 : 0 }}
+      >
+        🌙
+      </span>
+
+      {/* Кружок */}
+      <span
+        className={`inline-block h-5 w-5 rounded-full bg-white transition-transform duration-300 shadow-md ${
+          checked ? "translate-x-6" : "translate-x-1"
+        }`}
       />
-      <label className="theme-switch__container" htmlFor={id}>
-        <div className="theme-switch__circle-container">
-          <div className="theme-switch__sun-moon-container">
-            <div className="theme-switch__moon">
-              <span className="theme-switch__spot" />
-              <span className="theme-switch__spot" />
-              <span className="theme-switch__spot" />
-            </div>
-          </div>
-        </div>
-        <div className="theme-switch__clouds" />
-        <svg className="theme-switch__stars-container" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8l-6.2 4.5 2.4-7.4L2 9.4h7.6z" />
-        </svg>
-      </label>
-    </div>
+    </button>
   );
 }

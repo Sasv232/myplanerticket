@@ -8,7 +8,6 @@ import { UserAvatar } from "@/components/ui/user-avatar";
 import { ThemeSwitch } from "@/components/ui/theme-switch";
 import { useTheme } from "./theme-provider";
 import { Zap, LogOut, Bell } from "lucide-react";
-import { useLang } from "@/lib/i18n/context";
 import { useState } from "react";
 
 const NAV_ITEMS = [
@@ -24,7 +23,6 @@ export function TopNav() {
   const router = useRouter();
   const { user, logout } = useAuth();
   const { theme, toggle } = useTheme();
-  const { t } = useLang();
   const [showMenu, setShowMenu] = useState(false);
 
   const handleLogout = async () => {
@@ -34,7 +32,6 @@ export function TopNav() {
 
   return (
     <nav className="topnav">
-      {/* Лого */}
       <Link href="/" className="topnav-logo">
         <div className="topnav-logo-icon">
           <Zap className="h-4 w-4" />
@@ -42,7 +39,6 @@ export function TopNav() {
         <span className="hidden sm:inline">MyPlanerTicket</span>
       </Link>
 
-      {/* Ссылки */}
       <div className="topnav-links">
         {NAV_ITEMS.map((item) => {
           const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
@@ -58,15 +54,8 @@ export function TopNav() {
         })}
       </div>
 
-      {/* Правая часть */}
       <div className="topnav-right">
-        <button
-          onClick={toggle}
-          className="flex h-8 w-8 items-center justify-center rounded-full transition-all hover:bg-[var(--bg-alt)]"
-          title={theme === "dark" ? "Светлая тема" : "Тёмная тема"}
-        >
-          <ThemeSwitch checked={theme === "dark"} onChange={toggle} />
-        </button>
+        <ThemeSwitch checked={theme === "dark"} onChange={toggle} />
 
         <Link
           href="/notifications"
