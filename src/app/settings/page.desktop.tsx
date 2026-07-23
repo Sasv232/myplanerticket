@@ -84,7 +84,7 @@ export function SettingsPageDesktop() {
   const initials = profile?.name?.slice(0, 1).toUpperCase() || "?";
 
   const Section = ({ title, icon: Icon, children }: { title: string; icon: typeof Bell; children: React.ReactNode }) => (
-    <div className="card" style={{ padding: 24 }}>
+    <div style={{ paddingBottom: 24, marginBottom: 24, borderBottom: "1px solid var(--border)" }}>
       <div className="flex items-center gap-3" style={{ marginBottom: 20 }}>
         <div className="stat-icon" style={{ background: "var(--primary-light)", color: "var(--primary)" }}><Icon className="h-4 w-4" /></div>
         <h2 className="heading-md">{title}</h2>
@@ -152,8 +152,12 @@ export function SettingsPageDesktop() {
             <div>
               <label className="label">Язык</label>
               <div className="pill-nav" style={{ display: "flex" }}>
-                <button onClick={() => setLang("ru")} className={`pill-nav-item ${lang === "ru" ? "pill-nav-item-active" : ""}`}>🇷🇺 Русский</button>
-                <button onClick={() => setLang("en")} className={`pill-nav-item ${lang === "en" ? "pill-nav-item-active" : ""}`}>🇬🇧 English</button>
+                <button onClick={() => setLang("ru")} className={`pill-nav-item ${lang === "ru" ? "pill-nav-item-active" : ""}`}>
+                  <span style={{ fontSize: 16 }}>🇷🇺</span> Русский
+                </button>
+                <button onClick={() => setLang("en")} className={`pill-nav-item ${lang === "en" ? "pill-nav-item-active" : ""}`}>
+                  <span style={{ fontSize: 16 }}>🇬🇧</span> English
+                </button>
               </div>
             </div>
           </div>
@@ -161,19 +165,15 @@ export function SettingsPageDesktop() {
 
         {/* Notifications */}
         <Section title="Уведомления" icon={Bell}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <label className="flex items-center justify-between cursor-pointer">
+          <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+            <label className="flex items-center justify-between cursor-pointer" style={{ padding: "12px 0", borderBottom: "1px solid var(--border)" }}>
               <span className="text-caption">Push-уведомления</span>
-              <div onClick={handleTogglePush} style={{ width: 44, height: 24, borderRadius: 12, background: pushEnabled ? "var(--primary)" : "var(--border)", cursor: "pointer", position: "relative", transition: "background 0.2s" }}>
-                <div style={{ width: 20, height: 20, borderRadius: "50%", background: "white", position: "absolute", top: 2, left: pushEnabled ? 22 : 2, transition: "left 0.2s", boxShadow: "var(--shadow-sm)" }} />
-              </div>
+              <button type="button" onClick={handleTogglePush} className={`toggle ${pushEnabled ? "toggle-active" : ""}`} />
             </label>
-            {Object.entries({ messenger: "Мессенджер", deadlines: "Дедлайны", habits: "Привычки", serverErrors: "Ошибки сервера", maintenance: "Обслуживание" }).map(([k, v]) => (
-              <label key={k} className="flex items-center justify-between cursor-pointer">
+            {Object.entries({ messenger: "Мессенджер", deadlines: "Дедлайны", habits: "Привычки", serverErrors: "Ошибки сервера", maintenance: "Обслуживание" }).map(([k, v], i, arr) => (
+              <label key={k} className="flex items-center justify-between cursor-pointer" style={{ padding: "12px 0", borderBottom: i < arr.length - 1 ? "1px solid var(--border)" : "none" }}>
                 <span className="text-caption">{v}</span>
-                <div onClick={() => updateNotifPref(k, !(notifPrefs as any)[k])} style={{ width: 44, height: 24, borderRadius: 12, background: (notifPrefs as any)[k] ? "var(--primary)" : "var(--border)", cursor: "pointer", position: "relative", transition: "background 0.2s" }}>
-                  <div style={{ width: 20, height: 20, borderRadius: "50%", background: "white", position: "absolute", top: 2, left: (notifPrefs as any)[k] ? 22 : 2, transition: "left 0.2s", boxShadow: "var(--shadow-sm)" }} />
-                </div>
+                <button type="button" onClick={() => updateNotifPref(k, !(notifPrefs as any)[k])} className={`toggle ${(notifPrefs as any)[k] ? "toggle-active" : ""}`} />
               </label>
             ))}
           </div>

@@ -100,7 +100,7 @@ export default function HabitsPage() {
           <span className="text-caption" style={{ fontWeight: 600 }}>Прогресс дня</span>
           <span className="text-caption">{habits.length > 0 ? Math.round(doneToday / habits.length * 100) : 0}%</span>
         </div>
-        <div className="progress"><div className="progress-fill progress-fill-mint" style={{ width: `${habits.length > 0 ? (doneToday / habits.length * 100) : 0}%` }} /></div>
+        <div className="progress"><div className="progress-fill progress-fill-primary" style={{ width: `${habits.length > 0 ? (doneToday / habits.length * 100) : 0}%` }} /></div>
       </div>
 
       {/* Habits grid */}
@@ -127,7 +127,11 @@ export default function HabitsPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    {s > 0 && <span className="flex items-center gap-1 text-xs font-semibold" style={{ color: "var(--warning)" }}><Flame className="h-3.5 w-3.5" /> {s}</span>}
+                    {s > 0 && (
+                      s > 7
+                        ? <span className="streak-badge"><Flame className="h-3 w-3" /> {s}</span>
+                        : <span className="flex items-center gap-1 text-xs font-semibold" style={{ color: "var(--orange)" }}><Flame className="h-3.5 w-3.5" /> {s}</span>
+                    )}
                     <button onClick={() => handleDelete(habit.id)} className="btn-icon btn-icon-sm" style={{ color: "var(--text-muted)" }}><Trash2 className="h-3.5 w-3.5" /></button>
                   </div>
                 </div>

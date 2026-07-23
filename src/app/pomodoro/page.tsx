@@ -29,6 +29,7 @@ export default function PomodoroPage() {
   const [timeLeft, setTimeLeft] = useState(PRESETS.work);
   const [isRunning, setIsRunning] = useState(false);
   const [sessions, setSessions] = useState(0);
+  const [completed, setCompleted] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const total = PRESETS[mode];
@@ -37,7 +38,8 @@ export default function PomodoroPage() {
   const tick = useCallback(() => {
     setTimeLeft(prev => {
       if (prev <= 1) {
-        setIsRunning(false); playBeep();
+        setIsRunning(false); playBeep(); setCompleted(true);
+        setTimeout(() => setCompleted(false), 600);
         if (mode === "work") { setSessions(s => s + 1); setMode("break"); return PRESETS.break; }
         else { setMode("work"); return PRESETS.work; }
       }
@@ -56,17 +58,17 @@ export default function PomodoroPage() {
 
   const mins = Math.floor(timeLeft / 60);
   const secs = timeLeft % 60;
-  const circumference = 2 * Math.PI * 90;
+  const circumference = 2 * Math.PI * 100;
   const dashoffset = circumference - (progress / 100) * circumference;
 
   return (
     <div style={{ padding: "32px 40px" }}>
-      <div style={{ marginBottom: 32 }}>
+      <div style={{ marginBottom: 48 }}>
         <h1 className="heading-xl" style={{ marginBottom: 4 }}>Таймер</h1>
         <p className="text-body">Pomodoro — сосредоточься на важном</p>
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 28 }}>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 32 }}>
         {/* Mode toggle */}
         <div className="pill-nav">
           <button onClick={() => { setMode("work"); setTimeLeft(PRESETS.work); setIsRunning(false); }} className={`pill-nav-item ${mode === "work" ? "pill-nav-item-active" : ""}`}>
@@ -77,17 +79,27 @@ export default function PomodoroPage() {
           </button>
         </div>
 
-        {/* Timer circle */}
-        <div className="card" style={{ width: 260, height: 260, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", borderRadius: "50%" }}>
-          <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", transform: "rotate(-90deg)" }} viewBox="0 0 200 200">
-            <circle cx="100" cy="100" r="90" fill="none" stroke="var(--border)" strokeWidth="6" />
-            <circle cx="100" cy="100" r="90" fill="none" stroke={mode === "work" ? "var(--primary)" : "var(--mint)"} strokeWidth="6" strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={dashoffset} style={{ transition: "stroke-dashoffset 1s linear" }} />
+        {/* Timer circle — gradient stroke */}
+        <div className="card" style={{ width: 280, height: 280, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", borderRadius: "50%" }}>
+          <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", transform: "rotate(-90deg)" }} viewBox="0 0 220 220">
+            <defs>
+              <linearGradient id="timerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#6366f1" />
+                <stop offset="50%" stopColor="#8b5cf6" />
+                <stop offset="100%" stopColor="#a78bfa" />
+              </linearGradient>
+            </defs>
+            <circle cx="110" cy="110" r="100" fill="none" stroke="var(--border)" strokeWidth="6" />
+            <circle cx="110" cy="110" r="100" fill="none" stroke="url(#timerGradient)" strokeWidth="6" strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={dashoffset} style={{ transition: "stroke-dashoffset 1s linear" }} />
           </svg>
           <div style={{ textAlign: "center", zIndex: 1 }}>
-            <p style={{ fontSize: 48, fontWeight: 700, fontFamily: "var(--font-mono)", fontVariantNumeric: "tabular-nums", letterSpacing: "-0.02em" }}>
+            <p className={completed ? "pulse" : ""} style={{
+              fontSize: 72, fontWeight: 700, fontFamily: "var(--font-mono)",
+              fontVariantNumeric: "tabular-nums", letterSpacing: "-0.02em", lineHeight: 1,
+            }}>
               {String(mins).padStart(2, "0")}:{String(secs).padStart(2, "0")}
             </p>
-            <p className="text-muted" style={{ marginTop: 4 }}>{mode === "work" ? "Работа" : "Перерыв"}</p>
+            <p className="text-muted" style={{ marginTop: 8, fontSize: 14 }}>{mode === "work" ? "Работа" : "Перерыв"}</p>
           </div>
         </div>
 
@@ -103,7 +115,7 @@ export default function PomodoroPage() {
 
         {/* Sessions */}
         <div className="card" style={{ padding: "12px 24px" }}>
-          <span className="text-caption">Сессий завершено: <strong style={{ color: "var(--text)" }}>{sessions}</strong></span>
+          <span className="text-caption">Сессий завершено: <strong style={{ color: "var(--text)" }} className="tabular">{sessions}</strong></span>
         </div>
       </div>
     </div>
