@@ -1,22 +1,22 @@
-const SW_VERSION = "0.4.0";
+const SW_VERSION = "0.5.0";
 const CACHE_NAME = `planer-${SW_VERSION}`;
 
 const STATIC_ASSETS = [
   "/",
   "/tasks",
-  "/board",
-  "/calendar",
+  "/projects",
+  "/habits",
   "/pomodoro",
   "/settings",
   "/login",
   "/register",
-  "/mood",
+  "/messenger",
   "/fitness",
-  "/notes",
   "/journal",
-  "/habits",
+  "/notifications",
   "/synth",
   "/today",
+  "/stats",
 ];
 
 const OFFLINE_PAGE = `
@@ -27,13 +27,13 @@ const OFFLINE_PAGE = `
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Offline - MyPlanerTicket</title>
   <style>
-    body { font-family: system-ui; background: #0a0a0a; color: #e5e5e5; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+    body { font-family: system-ui; background: #f8fafc; color: #0f172a; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
     .container { text-align: center; padding: 2rem; }
     h1 { font-size: 2rem; margin-bottom: 0.5rem; }
-    p { color: #a3a3a3; margin-bottom: 1.5rem; }
+    p { color: #64748b; margin-bottom: 1.5rem; }
     .emoji { font-size: 4rem; margin-bottom: 1rem; }
-    button { background: #3b82f6; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-size: 1rem; cursor: pointer; }
-    button:hover { background: #2563eb; }
+    button { background: #6366f1; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-size: 1rem; cursor: pointer; }
+    button:hover { background: #4f46e5; }
   </style>
 </head>
 <body>
@@ -80,7 +80,6 @@ self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Skip non-GET requests
   if (request.method !== "GET") return;
 
   // API requests: network-first, fallback to cache
@@ -106,7 +105,30 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Static assets: cache-first with network update
+  // Navigation requests (HTML pages): NETWORK-FIRST
+  // This ensures the latest version is always shown
+  if (request.mode === "navigate") {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          }
+          return response;
+        })
+        .catch(() => {
+          return caches.match(request).then((cached) => {
+            return cached || new Response(OFFLINE_PAGE, {
+              headers: { "Content-Type": "text/html; charset=utf-8" },
+            });
+          });
+        })
+    );
+    return;
+  }
+
+  // Static assets (JS, CSS, images): cache-first with network update
   event.respondWith(
     caches.match(request).then((cached) => {
       const fetched = fetch(request)
@@ -118,13 +140,7 @@ self.addEventListener("fetch", (event) => {
           return response;
         })
         .catch(() => {
-          // Return cached version or offline page for navigation requests
           if (cached) return cached;
-          if (request.mode === "navigate") {
-            return new Response(OFFLINE_PAGE, {
-              headers: { "Content-Type": "text/html; charset=utf-8" },
-            });
-          }
           return new Response("Offline", { status: 503 });
         });
 
