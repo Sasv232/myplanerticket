@@ -120,7 +120,9 @@ export default function HabitsPage() {
               <div key={habit.id} className="card" style={{ padding: 20 }}>
                 <div className="flex items-start justify-between" style={{ marginBottom: 12 }}>
                   <div className="flex items-center gap-3">
-                    <span style={{ fontSize: 28 }}>{habit.emoji}</span>
+                    <div className="w-7 h-7 rounded-lg" style={{ background: habit.color, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <Flame className="h-4 w-4 text-white" />
+                    </div>
                     <div>
                       <p className="heading-sm">{habit.name}</p>
                       <span className="badge badge-outline" style={{ marginTop: 2 }}>{FREQ[habit.frequency]}</span>
@@ -168,14 +170,6 @@ export default function HabitsPage() {
               <div>
                 <label className="label">Название</label>
                 <input value={formName} onChange={e => setFormName(e.target.value)} className="input" placeholder="Например: Медитация" autoFocus />
-              </div>
-              <div>
-                <label className="label">Эмодзи</label>
-                <div className="flex gap-2" style={{ flexWrap: "wrap" }}>
-                  {EMOJIS.map(e => (
-                    <button key={e} onClick={() => setFormEmoji(e)} style={{ width: 36, height: 36, borderRadius: "var(--radius-sm)", border: formEmoji === e ? "2px solid var(--primary)" : "1px solid var(--border)", background: formEmoji === e ? "var(--primary-light)" : "var(--surface)", fontSize: 18, cursor: "pointer" }}>{e}</button>
-                  ))}
-                </div>
               </div>
               <div>
                 <label className="label">Цвет</label>

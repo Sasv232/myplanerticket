@@ -9,7 +9,7 @@ import { TaskFilters } from "@/components/tasks/task-filters";
 import { CalendarView } from "@/components/tasks/calendar-view";
 import {
   Plus, CheckCircle, Clock, ListTodo, AlertTriangle, Trash2,
-  ArrowUpDown, CalendarDays, List, Search, X,
+  ArrowUpDown, CalendarDays, List, Search, X, Pencil,
 } from "lucide-react";
 
 type SortBy = "date" | "priority" | "name" | "created";
@@ -145,7 +145,7 @@ export function TasksPageDesktop() {
           <div><div className="stat-value" style={{ fontSize: 20 }}>{stats.inProgress}</div><div className="stat-label">В работе</div></div>
         </div>
         <div className="stat-card">
-          <div className="stat-icon" style={{ background: "var(--mint-light)", color: "var(--mint)" }}><CheckCircle className="h-4 w-4" /></div>
+          <div className="stat-icon" style={{ background: "var(--success-light)", color: "var(--success)" }}><CheckCircle className="h-4 w-4" /></div>
           <div><div className="stat-value" style={{ fontSize: 20 }}>{stats.done}</div><div className="stat-label">Готово</div></div>
         </div>
         <div className="stat-card">
@@ -159,7 +159,7 @@ export function TasksPageDesktop() {
         <div className="flex flex-wrap items-center gap-3">
           <select value={selectedProject} onChange={e => setSelectedProject(e.target.value)} className="input" style={{ width: "auto", minWidth: 200 }}>
             <option value="">Все задачи</option>
-            {projects.map(p => <option key={p.id} value={p.id}>{p.emoji || "📁"} {p.name}</option>)}
+            {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
 
           <div className="input-group" style={{ flex: 1, minWidth: 200, maxWidth: 360 }}>
@@ -228,12 +228,12 @@ export function TasksPageDesktop() {
                   <div className="task-item-meta">
                     {task.dueDate && <span className="text-xs" style={{ color: new Date(task.dueDate) < new Date() && task.status !== "done" ? "var(--error)" : "var(--text-muted)" }}>{new Date(task.dueDate).toLocaleDateString("ru-RU", { day: "numeric", month: "short" })}</span>}
                     {task.label && <span className="badge badge-outline" style={{ height: 20, fontSize: 10, padding: "0 6px" }}>{task.label}</span>}
-                    {task.projectId && <span className="badge badge-primary" style={{ height: 20, fontSize: 10, padding: "0 6px" }}>📁 Проект</span>}
+                    {task.projectId && <span className="badge badge-primary" style={{ height: 20, fontSize: 10, padding: "0 6px" }}>{projects.find(p => p.id === task.projectId)?.name || "Проект"}</span>}
                   </div>
                 </div>
                 <div className="flex gap-1.5" style={{ flexShrink: 0 }}>
-                  <button onClick={e => { e.stopPropagation(); setEditingTask(task); setFormOpen(true); }} className="btn-icon btn-icon-sm">✏️</button>
-                  <button onClick={e => { e.stopPropagation(); handleDelete(task.id); }} className="btn-icon btn-icon-sm" style={{ color: "var(--error)" }}>🗑️</button>
+                  <button onClick={e => { e.stopPropagation(); setEditingTask(task); setFormOpen(true); }} className="btn-icon btn-icon-sm"><Pencil className="h-3.5 w-3.5" /></button>
+                  <button onClick={e => { e.stopPropagation(); handleDelete(task.id); }} className="btn-icon btn-icon-sm" style={{ color: "var(--error)" }}><Trash2 className="h-3.5 w-3.5" /></button>
                   {task.status !== "done" && <button onClick={e => { e.stopPropagation(); handleStatusChange(task.id, "done"); }} className="btn btn-mint btn-sm">✓</button>}
                 </div>
               </div>

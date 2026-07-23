@@ -19,6 +19,7 @@ import {
   User,
   CalendarDays,
   List,
+  ListTodo,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useMobileSidebar } from "@/components/layout/mobile-sidebar-context";
@@ -203,7 +204,7 @@ export function TasksPageMobile() {
             >
               <option value="">Все задачи (личные + проекты)</option>
               {projects.map((p) => (
-                <option key={p.id} value={p.id}>{p.emoji || "📁"} {p.name}</option>
+                <option key={p.id} value={p.id}>{p.name}</option>
               ))}
             </select>
           </div>
@@ -216,8 +217,8 @@ export function TasksPageMobile() {
           {loading ? (
             <div className="py-20 text-center text-[var(--secondary)] text-base">Загрузка...</div>
           ) : filtered.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <div className="text-5xl mb-4">📝</div>
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+              <ListTodo className="h-12 w-12 text-[var(--secondary)] mb-4" />
               <p className="text-lg font-semibold mb-1">Нет задач</p>
               <p className="text-sm text-[var(--secondary)]">Нажмите + чтобы создать</p>
             </div>
@@ -250,7 +251,6 @@ export function TasksPageMobile() {
                       </button>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1.5">
-                          {task.emoji && <span className="text-base">{task.emoji}</span>}
                           <p className={`text-base font-semibold truncate ${task.status === "done" ? "line-through opacity-50" : ""}`}>
                             {task.title}
                           </p>

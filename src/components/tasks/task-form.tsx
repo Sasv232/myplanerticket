@@ -194,29 +194,6 @@ export function TaskForm({ open, onClose, onSubmit, initialData, defaultProjectI
                     className="absolute right-2 top-1/2 -translate-y-1/2"
                   />
                 </div>
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                  className="flex h-11 w-11 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)] text-xl hover:bg-[var(--surface-hover)] transition-all duration-150"
-                >
-                  {emoji || "😊"}
-                </button>
-                {showEmojiPicker && (
-                  <div className="absolute right-0 top-12 z-50 p-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-[var(--shadow-lg)] grid grid-cols-4 gap-2 animate-scale-in">
-                    {EMOJI_OPTIONS.map((e) => (
-                      <button
-                        key={e}
-                        type="button"
-                        onClick={() => { setEmoji(e); setShowEmojiPicker(false); }}
-                        className="text-xl w-9 h-9 flex items-center justify-center rounded-lg hover:bg-[var(--surface)] transition-all duration-150"
-                      >
-                        {e}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
               </div>
               {titleError && (
                 <p className="mt-2 text-sm text-[var(--error)] font-medium animate-slide-down">
@@ -233,13 +210,13 @@ export function TaskForm({ open, onClose, onSubmit, initialData, defaultProjectI
             )}
 
             <div>
-              <label className="form-label">Описание (Markdown)</label>
+              <label className="form-label">Описание</label>
               <div className="relative">
                 <textarea
-                  placeholder="**Жирный**, *курсив*, - список"
+                  placeholder="Описание задачи"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="form-input min-h-[100px] font-mono text-[13px] resize-none"
+                  className="form-input min-h-[100px] text-[13px] resize-none"
                 />
                 <VoiceButton
                   onResult={handleVoiceDescription}
@@ -257,10 +234,10 @@ export function TaskForm({ open, onClose, onSubmit, initialData, defaultProjectI
                   onChange={(e) => setPriority(e.target.value as TaskPriority)}
                   className="form-input"
                 >
-                  <option value="low">🟢 Низкий</option>
-                  <option value="medium">🔵 Средний</option>
-                  <option value="high">🟠 Высокий</option>
-                  <option value="urgent">🔴 Срочный</option>
+                  <option value="low">Низкий</option>
+                  <option value="medium">Средний</option>
+                  <option value="high">Высокий</option>
+                  <option value="urgent">Срочный</option>
                 </select>
               </div>
               <div>
@@ -321,7 +298,7 @@ export function TaskForm({ open, onClose, onSubmit, initialData, defaultProjectI
                 >
                   <option value="">Без проекта</option>
                   {projects.map((p) => (
-                    <option key={p.id} value={p.id}>{p.emoji || "📁"} {p.name}</option>
+                    <option key={p.id} value={p.id}>{p.name}</option>
                   ))}
                 </select>
               </div>

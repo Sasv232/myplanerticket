@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useLang } from "@/lib/i18n/context";
-import { Plus, FolderKanban, Users, X, Copy } from "lucide-react";
+import { Plus, FolderKanban, Users, X, Copy, Trash2 } from "lucide-react";
 
 interface Project { id: string; name: string; emoji: string | null; color: string | null; createdAt: string; ownerId: string; role?: string; members?: { id: string; name: string; role: string }[]; }
 
@@ -67,7 +67,7 @@ export default function ProjectsPage() {
           <div key={project.id} className="project-card" onClick={() => setSelectedProject(project)}>
             <div className="flex items-center gap-3" style={{ marginBottom: 12 }}>
               <div className="project-card-icon" style={{ background: project.color || "var(--primary)", color: "white" }}>
-                {project.emoji || "📁"}
+                {project.name?.[0] || "?"}
               </div>
               <div>
                 <p className="heading-sm">{project.name}</p>
@@ -102,10 +102,7 @@ export default function ProjectsPage() {
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <div><label className="label">Название</label><input value={formName} onChange={e => setFormName(e.target.value)} className="input" placeholder="Название проекта" autoFocus /></div>
-            <div style={{ display: "flex", gap: 12 }}>
-              <div style={{ flex: 1 }}><label className="label">Эмодзи</label><input value={formEmoji} onChange={e => setFormEmoji(e.target.value)} className="input" placeholder="📁" style={{ textAlign: "center" }} /></div>
-              <div><label className="label">Цвет</label><input type="color" value={formColor} onChange={e => setFormColor(e.target.value)} style={{ width: 44, height: 44, border: "none", borderRadius: "var(--radius-md)", cursor: "pointer" }} /></div>
-            </div>
+            <div><label className="label">Цвет</label><input type="color" value={formColor} onChange={e => setFormColor(e.target.value)} style={{ width: 44, height: 44, border: "none", borderRadius: "var(--radius-md)", cursor: "pointer" }} /></div>
             <button onClick={handleCreate} className="btn btn-primary" disabled={!formName.trim()} style={{ width: "100%" }}>Создать</button>
           </div>
         </div>
@@ -116,7 +113,7 @@ export default function ProjectsPage() {
         <div className="card" style={{ padding: 24, marginTop: 20, maxWidth: 520 }}>
           <div className="flex items-center justify-between" style={{ marginBottom: 16 }}>
             <div className="flex items-center gap-3">
-              <div className="project-card-icon" style={{ background: selectedProject.color || "var(--primary)", color: "white" }}>{selectedProject.emoji || "📁"}</div>
+              <div className="project-card-icon" style={{ background: selectedProject.color || "var(--primary)", color: "white" }}>{selectedProject.name?.[0] || "?"}</div>
               <div>
                 <p className="heading-md">{selectedProject.name}</p>
                 <p className="text-xs">{selectedProject.role === "owner" ? "Владелец" : "Участник"}</p>
@@ -124,7 +121,7 @@ export default function ProjectsPage() {
             </div>
             <div className="flex gap-2">
               <button onClick={() => copyInviteCode(selectedProject.id)} className="btn btn-outline btn-sm"><Copy className="h-3.5 w-3.5" /> {copiedCode === selectedProject.id ? "Скопировано!" : "Код"}</button>
-              {selectedProject.role === "owner" && <button onClick={() => handleDelete(selectedProject.id)} className="btn btn-outline btn-sm" style={{ color: "var(--error)", borderColor: "var(--error)" }}>🗑️</button>}
+              {selectedProject.role === "owner" && <button onClick={() => handleDelete(selectedProject.id)} className="btn btn-outline btn-sm" style={{ color: "var(--error)", borderColor: "var(--error)" }}><Trash2 className="h-3.5 w-3.5" /></button>}
               <button onClick={() => setSelectedProject(null)} className="btn-icon btn-icon-sm"><X className="h-4 w-4" /></button>
             </div>
           </div>
@@ -135,7 +132,7 @@ export default function ProjectsPage() {
                 {selectedProject.members.map(m => (
                   <div key={m.id} className="badge badge-outline" style={{ gap: 6 }}>
                     <div style={{ width: 20, height: 20, borderRadius: "50%", background: "var(--primary)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 600 }}>{m.name?.[0] || "?"}</div>
-                    {m.name} {m.role === "owner" && "👑"}
+                    {m.name} {m.role === "owner" && "(владелец)"}
                   </div>
                 ))}
               </div>

@@ -10,10 +10,10 @@ interface WeightEntry { id: string; weight: number; date: string; }
 interface HealthProfile { height?: number; birthDate?: string; gender?: string; dailyCalorieGoal?: number; dailyWaterGoal?: number; }
 
 const MEAL_TYPES = [
-  { value: "breakfast", emoji: "🌅" },
-  { value: "lunch", emoji: "☀️" },
-  { value: "dinner", emoji: "🌙" },
-  { value: "snack", emoji: "🍎" },
+  { value: "breakfast", icon: "Sunrise" },
+  { value: "lunch", icon: "Sun" },
+  { value: "dinner", icon: "Moon" },
+  { value: "snack", icon: "Apple" },
 ];
 
 const MEAL_LABELS: Record<string, string> = {
@@ -252,7 +252,7 @@ export function FitnessPageDesktop() {
                 <input type="number" placeholder={t("fitness_food_fat")} value={foodFat} onChange={e => setFoodFat(e.target.value)} className="h-10 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 text-sm" />
               </div>
               <select value={foodMeal} onChange={e => setFoodMeal(e.target.value)} className="w-full h-10 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 text-sm">
-                {MEAL_TYPES.map(m => <option key={m.value} value={m.value}>{m.emoji} {t(MEAL_LABELS[m.value] as any)}</option>)}
+                {MEAL_TYPES.map(m => <option key={m.value} value={m.value}>{t(MEAL_LABELS[m.value] as any)}</option>)}
               </select>
               <button onClick={addFood} className="w-full h-10 rounded-xl bg-[var(--accent)] text-white text-sm font-medium">{t("fitness_add")}</button>
             </div>
@@ -262,7 +262,7 @@ export function FitnessPageDesktop() {
             if (mealFoods.length === 0) return null;
             return (
               <div key={key} className="mb-3">
-                <p className="text-xs text-[var(--muted)] mb-1">{meal.emoji} {t(MEAL_LABELS[key] as any)}</p>
+                <p className="text-xs text-[var(--muted)] mb-1">{t(MEAL_LABELS[key] as any)}</p>
                 {mealFoods.map(f => (
                   <div key={f.id} className="flex items-center justify-between py-1.5 text-sm">
                     <span>{f.name}</span>

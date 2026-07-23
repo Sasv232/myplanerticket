@@ -18,10 +18,10 @@ export function FitnessPageMobile() {
   const { setOpen } = useMobileSidebar();
 
   const MEAL_TYPES = [
-    { value: "breakfast", label: t("fitness_breakfast"), emoji: "🌅" },
-    { value: "lunch", label: t("fitness_lunch"), emoji: "☀️" },
-    { value: "dinner", label: t("fitness_dinner"), emoji: "🌙" },
-    { value: "snack", label: t("fitness_snack"), emoji: "🍎" },
+    { value: "breakfast", label: t("fitness_breakfast") },
+    { value: "lunch", label: t("fitness_lunch") },
+    { value: "dinner", label: t("fitness_dinner") },
+    { value: "snack", label: t("fitness_snack") },
   ];
 
   const [date, setDate] = useState(getToday());
@@ -177,7 +177,7 @@ export function FitnessPageMobile() {
               <div className="grid grid-cols-2 gap-3">
                 <input type="number" placeholder="ккал" value={foodCal} onChange={e => setFoodCal(e.target.value)} className="mobile-input h-11 text-sm" />
                 <select value={foodMeal} onChange={e => setFoodMeal(e.target.value)} className="mobile-input h-11 text-sm">
-                  {MEAL_TYPES.map(m => <option key={m.value} value={m.value}>{m.emoji} {m.label}</option>)}
+                  {MEAL_TYPES.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
                 </select>
               </div>
               <button onClick={addFood} className="mobile-btn mobile-btn-primary w-full h-11 text-sm">{t("fitness_add")}</button>
@@ -186,7 +186,7 @@ export function FitnessPageMobile() {
           <div className="space-y-3">
             {foods.map(f => (
               <div key={f.id} className="flex items-center justify-between py-2">
-                <span className="text-sm">{MEAL_TYPES.find(m => m.value === f.mealType)?.emoji} {f.name}</span>
+                <span className="text-sm">{f.name}</span>
                 <div className="flex items-center gap-3">
                   <span className="text-sm text-[var(--muted)]">{f.calories}ккал</span>
                   <button onClick={() => deleteFood(f.id)} className="text-red-400 active:scale-90 transition-all">
