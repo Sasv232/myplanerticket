@@ -4,11 +4,17 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Task, TaskStatus } from "@/types/task";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, ArrowRight, Home, Menu } from "lucide-react";
+import { Calendar, ArrowRight, Home, Menu, User } from "lucide-react";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { useMobileSidebar } from "@/components/layout/mobile-sidebar-context";
-import { useAuth } from "@/lib/auth-context";
+
+interface Project {
+  id: string;
+  name: string;
+  emoji: string | null;
+  color: string | null;
+}
 
 const columns: { status: TaskStatus; title: string; color: string }[] = [
   { status: "todo", title: "К выполнению", color: "var(--accent)" },
@@ -31,11 +37,21 @@ const NEXT_STATUS: Record<TaskStatus, TaskStatus> = {
 
 export function BoardPageMobile() {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [selectedProject, setSelectedProject] = useState<string>("");
   const { setOpen } = useMobileSidebar();
-  const { user } = useAuth();
+
+  const fetchProjects = useCallback(async () => {
+    const res = await fetch("/api/projects");
+    const data = await res.json();
+    if (Array.isArray(data)) setProjects(data);
+  }, []);
 
   const fetchTasks = useCallback(async () => {
-    const res = await fetch("/api/tasks?t=" + Date.now());
+    const url = selectedProject
+      ? `/api/tasks?projectId=${selectedProject}&t=${Date.now()}`
+      : `/api/tasks?t=${Date.now()}`;
+    const res = await fetch(url);
     const data = await res.json();
     setTasks(
       data.map((t: Task & { tags: string; repeat_rule: string | null }) => ({
@@ -44,7 +60,11 @@ export function BoardPageMobile() {
         repeatRule: t.repeat_rule || t.repeatRule || null,
       }))
     );
-  }, []);
+  }, [selectedProject]);
+
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
 
   useEffect(() => {
     fetchTasks();
@@ -64,7 +84,6 @@ export function BoardPageMobile() {
 
   return (
     <div className="mobile-main">
-      {/* Header */}
       <div className="sticky top-0 z-30 bg-[var(--background)]/80 backdrop-blur-xl border-b border-[var(--border)]/50 px-4 py-3 flex items-center gap-3">
         <button onClick={() => setOpen(true)} className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--surface)] active:scale-95 transition-all shrink-0">
           <Menu className="h-4 w-4" />
@@ -76,6 +95,19 @@ export function BoardPageMobile() {
           <h1 className="text-lg font-bold tracking-tight truncate">Доска</h1>
           <p className="text-[11px] text-[var(--secondary)] truncate">Перетаскивайте или нажмите кнопку</p>
         </div>
+      </div>
+
+      <div className="px-5 pt-4 pb-2">
+        <select
+          value={selectedProject}
+          onChange={(e) => setSelectedProject(e.target.value)}
+          className="w-full h-10 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-sm"
+        >
+          <option value="">Все задачи (личные + проекты)</option>
+          {projects.map((p) => (
+            <option key={p.id} value={p.id}>{p.emoji || "📁"} {p.name}</option>
+          ))}
+        </select>
       </div>
 
       <div className="p-5 space-y-6">
@@ -95,13 +127,16 @@ export function BoardPageMobile() {
                   <div key={task.id} className="mobile-task-card p-5">
                     <div className="flex items-start gap-4">
                       <div className="flex-1 min-w-0">
-                        <p className="text-base font-semibold truncate">{task.title}</p>
+                        <p className="text-base font-semibold truncate">
+                          {task.emoji && <span className="mr-1">{task.emoji}</span>}
+                          {task.title}
+                        </p>
                         {task.description && (
                           <p className="mt-1.5 text-sm text-[var(--secondary)] line-clamp-2">
                             {task.description}
                           </p>
                         )}
-                        <div className="mt-3 flex items-center gap-2.5">
+                        <div className="mt-3 flex items-center gap-2.5 flex-wrap">
                           <Badge variant={priorityVariant[task.priority]} className="text-[10px] px-2.5 py-0.5">
                             {task.priority}
                           </Badge>
@@ -109,6 +144,12 @@ export function BoardPageMobile() {
                             <span className="flex items-center gap-1 text-xs text-[var(--secondary)]">
                               <Calendar className="h-3 w-3" />
                               {format(new Date(task.dueDate), "d MMM", { locale: ru })}
+                            </span>
+                          )}
+                          {task.assigneeName && (
+                            <span className="flex items-center gap-1 text-xs text-[var(--accent)] font-medium">
+                              <User className="h-3 w-3" />
+                              {task.assigneeName}
                             </span>
                           )}
                         </div>

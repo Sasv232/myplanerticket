@@ -1,21 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { tasks, projects, projectMembers } from "@/lib/db/schema";
-import { inArray, eq } from "drizzle-orm";
+import { tasks } from "@/lib/db/schema";
+import { inArray } from "drizzle-orm";
 import { getUserFromToken } from "@/lib/auth";
-
-async function getMemberProjectIds(userId: string): Promise<string[]> {
-  const memberRecords = await db
-    .select({ projectId: projectMembers.projectId })
-    .from(projectMembers)
-    .where(eq(projectMembers.userId, userId));
-  const projectIds = memberRecords.map(r => r.projectId).filter(Boolean) as string[];
-  const ownedProjects = await db
-    .select({ id: projects.id })
-    .from(projects)
-    .where(eq(projects.userId, userId));
-  return [...new Set([...projectIds, ...ownedProjects.map(p => p.id)])];
-}
+import { canAccessTask } from "@/lib/project-utils";
 
 export async function POST(request: NextRequest) {
   try {
@@ -31,16 +19,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "ids required" }, { status: 400 });
     }
 
-    const memberProjectIds = await getMemberProjectIds(user.id);
-
-    const allTasks = await db.select({ id: tasks.id, projectId: tasks.projectId, userId: tasks.userId })
-      .from(tasks)
-      .where(inArray(tasks.id, ids));
-    
-    const accessible = allTasks.filter(t =>
-      t.userId === user.id || (t.projectId && memberProjectIds.includes(t.projectId))
-    );
-    const accessibleIds = accessible.map(r => r.id);
+    const accessibleIds: string[] = [];
+    for (const id of ids) {
+      if (await canAccessTask(id, user.id)) {
+        accessibleIds.push(id);
+      }
+    }
     if (accessibleIds.length === 0) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
     const updates: Record<string, unknown> = { updatedAt: new Date().toISOString() };
@@ -52,6 +36,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: true, deleted: accessibleIds.length });
     }
     else if (action === "label") updates.label = value || null;
+    else if (action === "assignee") updates.assigneeId = value || null;
     else {
       return NextResponse.json({ error: "Invalid action" }, { status: 400 });
     }

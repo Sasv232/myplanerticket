@@ -5,9 +5,16 @@ import { Task, TaskStatus } from "@/types/task";
 import { Header } from "@/components/layout/header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, GripVertical } from "lucide-react";
+import { Calendar, GripVertical, User } from "lucide-react";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
+
+interface Project {
+  id: string;
+  name: string;
+  emoji: string | null;
+  color: string | null;
+}
 
 const columns: { status: TaskStatus; title: string; color: string }[] = [
   { status: "todo", title: "К выполнению", color: "var(--accent)" },
@@ -27,11 +34,22 @@ const priorityVariant: Record<
 
 export function BoardPageDesktop() {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [selectedProject, setSelectedProject] = useState<string>("");
   const [dragOverCol, setDragOverCol] = useState<string | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
 
+  const fetchProjects = useCallback(async () => {
+    const res = await fetch("/api/projects");
+    const data = await res.json();
+    if (Array.isArray(data)) setProjects(data);
+  }, []);
+
   const fetchTasks = useCallback(async () => {
-    const res = await fetch("/api/tasks?t=" + Date.now());
+    const url = selectedProject
+      ? `/api/tasks?projectId=${selectedProject}&t=${Date.now()}`
+      : `/api/tasks?t=${Date.now()}`;
+    const res = await fetch(url);
     const data = await res.json();
     setTasks(
       data.map(
@@ -42,7 +60,11 @@ export function BoardPageDesktop() {
         })
       )
     );
-  }, []);
+  }, [selectedProject]);
+
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
 
   useEffect(() => {
     fetchTasks();
@@ -86,13 +108,33 @@ export function BoardPageDesktop() {
     setDragOverCol(status);
   };
 
+  const selectedProjectData = projects.find(p => p.id === selectedProject);
+
   return (
     <>
       <Header
         title="Доска"
-        description="Перетаскивайте задачи между колонками"
+        description={selectedProjectData ? `${selectedProjectData.emoji || "📁"} ${selectedProjectData.name}` : "Перетаскивайте задачи между колонками"}
       />
       <main className="p-6">
+        <div className="mb-4 flex items-center gap-3">
+          <select
+            value={selectedProject}
+            onChange={(e) => setSelectedProject(e.target.value)}
+            className="h-9 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-sm"
+          >
+            <option value="">Все задачи (личные + проекты)</option>
+            {projects.map((p) => (
+              <option key={p.id} value={p.id}>{p.emoji || "📁"} {p.name}</option>
+            ))}
+          </select>
+          {selectedProject && (
+            <span className="text-xs text-[var(--secondary)]">
+              {tasks.length} задач
+            </span>
+          )}
+        </div>
+
         <div className="grid grid-cols-3 gap-4">
           {columns.map((col) => {
             const columnTasks = tasks.filter(
@@ -136,6 +178,7 @@ export function BoardPageDesktop() {
                           <GripVertical className="mt-0.5 h-3.5 w-3.5 text-[var(--muted)]" />
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium truncate">
+                              {task.emoji && <span className="mr-1">{task.emoji}</span>}
                               {task.title}
                             </p>
                             {task.description && (
@@ -158,6 +201,12 @@ export function BoardPageDesktop() {
                                     "d MMM",
                                     { locale: ru }
                                   )}
+                                </span>
+                              )}
+                              {task.assigneeName && (
+                                <span className="flex items-center gap-1 text-[10px] text-[var(--accent)] font-medium">
+                                  <User className="h-2.5 w-2.5" />
+                                  {task.assigneeName}
                                 </span>
                               )}
                             </div>

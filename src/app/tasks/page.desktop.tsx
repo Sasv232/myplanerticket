@@ -36,9 +36,18 @@ const PRIORITY_ORDER: Record<TaskPriority, number> = {
   low: 3,
 };
 
+interface Project {
+  id: string;
+  name: string;
+  emoji: string | null;
+  color: string | null;
+}
+
 export function TasksPageDesktop() {
   const { t } = useLang();
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [selectedProject, setSelectedProject] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | undefined>();
@@ -57,9 +66,18 @@ export function TasksPageDesktop() {
   const [showTemplates, setShowTemplates] = useState(false);
   const [sortBy, setSortBy] = useState<SortBy>("created");
 
+  const fetchProjects = useCallback(async () => {
+    const res = await fetch("/api/projects");
+    const data = await res.json();
+    if (Array.isArray(data)) setProjects(data);
+  }, []);
+
   const fetchTasks = useCallback(async () => {
     try {
-      const res = await fetch("/api/tasks?t=" + Date.now());
+      const url = selectedProject
+        ? `/api/tasks?projectId=${selectedProject}&t=${Date.now()}`
+        : `/api/tasks?t=${Date.now()}`;
+      const res = await fetch(url);
       const data = await res.json();
       setTasks(
         data.map(
@@ -81,7 +99,7 @@ export function TasksPageDesktop() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedProject]);
 
   const fetchTemplates = useCallback(async () => {
     try {
@@ -91,11 +109,12 @@ export function TasksPageDesktop() {
   }, []);
 
   useEffect(() => {
+    fetchProjects();
     fetchTasks();
     fetchTemplates();
     const interval = setInterval(fetchTasks, 15000);
     return () => clearInterval(interval);
-  }, [fetchTasks, fetchTemplates]);
+  }, [fetchProjects, fetchTasks, fetchTemplates]);
 
   const shortcuts = useMemo(
     () => ({
@@ -449,6 +468,16 @@ export function TasksPageDesktop() {
         </div>
 
         <div className="mb-4 flex flex-wrap items-center gap-2">
+          <select
+            value={selectedProject}
+            onChange={(e) => setSelectedProject(e.target.value)}
+            className="h-9 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-sm"
+          >
+            <option value="">Все задачи (личные + проекты)</option>
+            {projects.map((p) => (
+              <option key={p.id} value={p.id}>{p.emoji || "📁"} {p.name}</option>
+            ))}
+          </select>
           <TaskFilters
             search={search}
             onSearchChange={setSearch}
@@ -536,6 +565,7 @@ export function TasksPageDesktop() {
         }}
         onSubmit={editingTask ? handleUpdate : handleCreate}
         initialData={editingTask}
+        defaultProjectId={selectedProject}
       />
       <TaskDetail
         task={detailTask}

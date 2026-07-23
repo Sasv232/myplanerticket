@@ -13,14 +13,21 @@ import {
   ModalDescription,
   ModalFooter,
 } from "@/components/ui/modal";
-import { Repeat, Palette, Sparkles } from "lucide-react";
+import { Repeat, Palette, Sparkles, User } from "lucide-react";
 import { parseTaskInput } from "@/lib/nlp";
+
+interface ProjectMember {
+  userId: string;
+  userName: string;
+  role: string;
+}
 
 interface TaskFormProps {
   open: boolean;
   onClose: () => void;
   onSubmit: (data: CreateTaskInput) => void;
   initialData?: Task;
+  defaultProjectId?: string;
 }
 
 interface Project {
@@ -54,18 +61,20 @@ const LABEL_OPTIONS = [
 
 const EMOJI_OPTIONS = ["📝", "💼", "🏠", "🏋️", "📚", "💰", "🎯", "🛒", "✈️", "🎨", "💻", "🎵", "🍕", "🎂", "🔔", "⭐"];
 
-export function TaskForm({ open, onClose, onSubmit, initialData }: TaskFormProps) {
+export function TaskForm({ open, onClose, onSubmit, initialData, defaultProjectId }: TaskFormProps) {
   const [title, setTitle] = useState(initialData?.title || "");
   const [description, setDescription] = useState(initialData?.description || "");
   const [priority, setPriority] = useState<TaskPriority>(initialData?.priority || "medium");
   const [dueDate, setDueDate] = useState(initialData?.dueDate?.split("T")[0] || "");
-  const [tagsInput, setTagsInput] = useState(initialData?.tags.join(", ") || "");
+  const [tagsInput, setTagsInput] = useState(initialData?.tags?.join(", ") || "");
   const [repeatRule, setRepeatRule] = useState(initialData?.repeatRule || "");
   const [repeatAfterComplete, setRepeatAfterComplete] = useState(initialData?.repeatAfterComplete ?? false);
   const [label, setLabel] = useState(initialData?.label || "");
-  const [projectId, setProjectId] = useState(initialData?.projectId || "");
+  const [projectId, setProjectId] = useState(initialData?.projectId || defaultProjectId || "");
   const [emoji, setEmoji] = useState(initialData?.emoji || "");
+  const [assigneeId, setAssigneeId] = useState(initialData?.assigneeId || "");
   const [projects, setProjects] = useState<Project[]>([]);
+  const [projectMembers, setProjectMembers] = useState<ProjectMember[]>([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [titleError, setTitleError] = useState(false);
 
@@ -77,6 +86,23 @@ export function TaskForm({ open, onClose, onSubmit, initialData }: TaskFormProps
       })
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (projectId) {
+      fetch(`/api/projects/${projectId}/members`)
+        .then((r) => r.json())
+        .then((data) => {
+          if (Array.isArray(data)) setProjectMembers(data);
+        })
+        .catch(() => {});
+    } else {
+      setProjectMembers([]);
+    }
+  }, [projectId]);
+
+  useEffect(() => {
+    if (defaultProjectId) setProjectId(defaultProjectId);
+  }, [defaultProjectId]);
 
   const handleNlpInput = useCallback((text: string) => {
     const parsed = parseTaskInput(text);
@@ -119,6 +145,7 @@ export function TaskForm({ open, onClose, onSubmit, initialData }: TaskFormProps
       label: label || undefined,
       projectId: projectId || undefined,
       emoji: emoji || undefined,
+      assigneeId: assigneeId || undefined,
     });
 
     setTitle("");
@@ -129,8 +156,9 @@ export function TaskForm({ open, onClose, onSubmit, initialData }: TaskFormProps
     setRepeatRule("");
     setRepeatAfterComplete(false);
     setLabel("");
-    setProjectId("");
+    setProjectId(defaultProjectId || "");
     setEmoji("");
+    setAssigneeId("");
     onClose();
   };
 
@@ -145,7 +173,6 @@ export function TaskForm({ open, onClose, onSubmit, initialData }: TaskFormProps
             </ModalDescription>
           </ModalHeader>
           <div className="grid gap-4 py-4">
-            {/* Title + Emoji */}
             <div>
               <div className="flex gap-2">
                 <div className="relative flex-1">
@@ -198,7 +225,6 @@ export function TaskForm({ open, onClose, onSubmit, initialData }: TaskFormProps
               )}
             </div>
 
-            {/* NLP hint */}
             {!initialData && (
               <div className="flex items-center gap-2 text-[11px] text-[var(--muted)]">
                 <Sparkles className="h-3 w-3" />
@@ -206,7 +232,6 @@ export function TaskForm({ open, onClose, onSubmit, initialData }: TaskFormProps
               </div>
             )}
 
-            {/* Description */}
             <div>
               <label className="form-label">Описание (Markdown)</label>
               <div className="relative">
@@ -224,7 +249,6 @@ export function TaskForm({ open, onClose, onSubmit, initialData }: TaskFormProps
               </div>
             </div>
 
-            {/* Priority + Due Date */}
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="form-label">Приоритет</label>
@@ -245,7 +269,6 @@ export function TaskForm({ open, onClose, onSubmit, initialData }: TaskFormProps
               </div>
             </div>
 
-            {/* Repeat + Label */}
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="form-label flex items-center gap-1.5">
@@ -288,13 +311,12 @@ export function TaskForm({ open, onClose, onSubmit, initialData }: TaskFormProps
               </div>
             </div>
 
-            {/* Project */}
             {projects.length > 0 && (
               <div>
                 <label className="form-label">Проект</label>
                 <select
                   value={projectId}
-                  onChange={(e) => setProjectId(e.target.value)}
+                  onChange={(e) => { setProjectId(e.target.value); setAssigneeId(""); }}
                   className="form-input"
                 >
                   <option value="">Без проекта</option>
@@ -305,7 +327,24 @@ export function TaskForm({ open, onClose, onSubmit, initialData }: TaskFormProps
               </div>
             )}
 
-            {/* Tags */}
+            {projectId && projectMembers.length > 0 && (
+              <div>
+                <label className="form-label flex items-center gap-1.5">
+                  <User className="h-3 w-3" /> Ответственный
+                </label>
+                <select
+                  value={assigneeId}
+                  onChange={(e) => setAssigneeId(e.target.value)}
+                  className="form-input"
+                >
+                  <option value="">Не назначен</option>
+                  {projectMembers.map((m) => (
+                    <option key={m.userId} value={m.userId}>{m.userName}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
             <div>
               <label className="form-label">Теги</label>
               <Input

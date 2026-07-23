@@ -45,6 +45,7 @@ export const tasks = pgTable("tasks", {
   tags: text("tags").default("[]"),
   repeatRule: text("repeat_rule"),
   repeatAfterComplete: boolean("repeat_after_complete").default(false),
+  assigneeId: text("assignee_id").references(() => users.id, { onDelete: "set null" }),
   label: text("label"),
   emoji: text("emoji"),
   completedAt: text("completed_at"),

@@ -4,7 +4,7 @@ import { Task, TaskStatus, TaskPriority } from "@/types/task";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, Calendar, Repeat, Check } from "lucide-react";
+import { Pencil, Trash2, Calendar, Repeat, Check, User } from "lucide-react";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import Markdown from "react-markdown";
@@ -121,6 +121,12 @@ export function TaskCard({ task, onEdit, onDelete, onStatusChange, onClick, sele
               <span className="flex items-center gap-1">
                 <Calendar className="h-3 w-3" />
                 {format(new Date(task.dueDate), "d MMM", { locale: ru })}
+              </span>
+            )}
+            {task.assigneeName && (
+              <span className="flex items-center gap-1 text-[var(--accent)] font-medium">
+                <User className="h-3 w-3" />
+                {task.assigneeName}
               </span>
             )}
             {task.tags.length > 0 && (

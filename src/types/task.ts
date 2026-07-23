@@ -15,6 +15,8 @@ export interface Task {
   repeatAfterComplete: boolean;
   label: string | null;
   emoji: string | null;
+  assigneeId: string | null;
+  assigneeName: string | null;
   completedAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -32,6 +34,7 @@ export interface CreateTaskInput {
   label?: string;
   projectId?: string;
   emoji?: string;
+  assigneeId?: string;
 }
 
 export interface UpdateTaskInput extends Partial<CreateTaskInput> {

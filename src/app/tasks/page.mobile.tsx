@@ -15,6 +15,7 @@ import {
   Repeat,
   X,
   Home,
+  User,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useMobileSidebar } from "@/components/layout/mobile-sidebar-context";
@@ -36,6 +37,8 @@ const FILTERS: { key: string; label: string }[] = [
 
 export function TasksPageMobile() {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [projects, setProjects] = useState<{ id: string; name: string; emoji: string | null }[]>([]);
+  const [selectedProject, setSelectedProject] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
@@ -46,18 +49,27 @@ export function TasksPageMobile() {
   const { setOpen } = useMobileSidebar();
   const { user } = useAuth();
 
+  const fetchProjects = useCallback(async () => {
+    const res = await fetch("/api/projects");
+    const data = await res.json();
+    if (Array.isArray(data)) setProjects(data);
+  }, []);
+
   const fetchTasks = useCallback(async () => {
     try {
-      const res = await fetch("/api/tasks");
+      const url = selectedProject
+        ? `/api/tasks?projectId=${selectedProject}&t=${Date.now()}`
+        : `/api/tasks?t=${Date.now()}`;
+      const res = await fetch(url);
       const data = await res.json();
       setTasks(data.map((t: Task & { tags: string }) => ({
         ...t,
         tags: typeof t.tags === "string" ? JSON.parse(t.tags) : t.tags,
       })));
     } catch {} finally { setLoading(false); }
-  }, []);
+  }, [selectedProject]);
 
-  useEffect(() => { fetchTasks(); }, [fetchTasks]);
+  useEffect(() => { fetchProjects(); fetchTasks(); }, [fetchProjects, fetchTasks]);
 
   const filtered = tasks.filter((t) => {
     if (filter !== "all" && t.status !== filter) return false;
@@ -163,6 +175,21 @@ export function TasksPageMobile() {
             </button>
           ))}
         </div>
+
+        {projects.length > 0 && (
+          <div className="mt-3">
+            <select
+              value={selectedProject}
+              onChange={(e) => setSelectedProject(e.target.value)}
+              className="w-full h-10 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-sm"
+            >
+              <option value="">Все задачи (личные + проекты)</option>
+              {projects.map((p) => (
+                <option key={p.id} value={p.id}>{p.emoji || "📁"} {p.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
       {/* Task List */}
@@ -222,6 +249,12 @@ export function TasksPageMobile() {
                         {task.repeatRule && (
                           <Repeat className="h-3 w-3 text-[var(--muted)]" />
                         )}
+                        {task.assigneeName && (
+                          <span className="flex items-center gap-1 text-xs text-[var(--accent)] font-medium">
+                            <User className="h-3 w-3" />
+                            {task.assigneeName}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -243,6 +276,7 @@ export function TasksPageMobile() {
         onClose={() => { setFormOpen(false); setEditTask(undefined); }}
         onSubmit={editTask ? handleUpdate : handleCreate}
         initialData={editTask}
+        defaultProjectId={selectedProject}
       />
       {detailTask && (
         <TaskDetail
