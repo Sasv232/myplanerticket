@@ -23,7 +23,7 @@ function mergeWidgets(saved: WidgetConfig[]): WidgetConfig[] {
     const found = saved.find((w) => w.id === def.id);
     return {
       id: def.id,
-      enabled: found ? found.enabled : ["task-stats", "weather", "currency", "habits-today", "upcoming", "pomodoro"].includes(def.id),
+      enabled: found ? found.enabled : ["task-stats", "weather", "currency", "habits-today", "upcoming", "mini-calendar"].includes(def.id),
       order: found ? found.order : i,
     };
   });

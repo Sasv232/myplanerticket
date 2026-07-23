@@ -14,6 +14,7 @@ import {
   KarmaWidget,
   QuickNoteWidget,
   WeeklyChartWidget,
+  MiniCalendarWidget,
 } from "./widget-registry";
 
 const WIDGET_COMPONENTS: Record<string, React.ComponentType<{ compact?: boolean }>> = {
@@ -27,6 +28,7 @@ const WIDGET_COMPONENTS: Record<string, React.ComponentType<{ compact?: boolean 
   "karma": KarmaWidget,
   "quick-note": QuickNoteWidget,
   "weekly-chart": WeeklyChartWidget,
+  "mini-calendar": MiniCalendarWidget,
 };
 
 interface WidgetRendererProps {

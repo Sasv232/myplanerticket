@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Home, CheckSquare, Calendar, MessageSquare, User } from "lucide-react";
+import { Home, CheckSquare, MessageSquare, User, BookOpen } from "lucide-react";
 
 const navItems = [
   { label: "Главная", href: "/", icon: Home },
   { label: "Задачи", href: "/tasks", icon: CheckSquare },
-  { label: "Календарь", href: "/calendar", icon: Calendar },
+  { label: "Дневник", href: "/journal", icon: BookOpen },
   { label: "Чат", href: "/messenger", icon: MessageSquare },
   { label: "Профиль", href: "/settings", icon: User },
 ];

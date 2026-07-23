@@ -4,8 +4,6 @@ import { useLang } from "@/lib/i18n/context";
 import {
   LayoutDashboard,
   CheckSquare,
-  Kanban,
-  Calendar,
   Settings,
   Bell,
   Timer,
@@ -14,10 +12,8 @@ import {
   Repeat,
   FolderKanban,
   Music,
-  StickyNote,
   BookOpen,
   Dumbbell,
-  Smile,
   MessageCircle,
 } from "lucide-react";
 
@@ -44,8 +40,6 @@ export function useNavigation() {
         { label: t("nav_today"), href: "/today", icon: Sun },
         { label: t("nav_tasks"), href: "/tasks", icon: CheckSquare },
         { label: t("nav_projects"), href: "/projects", icon: FolderKanban },
-        { label: t("nav_board"), href: "/board", icon: Kanban },
-        { label: t("nav_calendar"), href: "/calendar", icon: Calendar },
         { label: t("nav_timer"), href: "/pomodoro", icon: Timer },
       ],
     },
@@ -67,7 +61,6 @@ export function useNavigation() {
     {
       title: t("group_records"),
       items: [
-        { label: t("nav_notes"), href: "/notes", icon: StickyNote },
         { label: t("nav_journal"), href: "/journal", icon: BookOpen },
       ],
     },
@@ -75,7 +68,6 @@ export function useNavigation() {
       title: t("group_health"),
       items: [
         { label: t("nav_fitness"), href: "/fitness", icon: Dumbbell },
-        { label: "Настроение", href: "/mood", icon: Smile },
       ],
     },
     {

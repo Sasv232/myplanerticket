@@ -2,10 +2,10 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Search, FileText, CheckSquare, FolderKanban, StickyNote, BookOpen, X, ArrowRight } from "lucide-react";
+import { Search, CheckSquare, FolderKanban, BookOpen, X, ArrowRight } from "lucide-react";
 
 interface SearchResult {
-  type: "task" | "project" | "note" | "journal";
+  type: "task" | "project" | "journal";
   id: string;
   title: string;
   subtitle: string;
@@ -16,14 +16,12 @@ interface SearchResult {
 const ICONS = {
   task: <CheckSquare className="h-4 w-4 text-[var(--accent)]" />,
   project: <FolderKanban className="h-4 w-4 text-green-500" />,
-  note: <StickyNote className="h-4 w-4 text-yellow-500" />,
   journal: <BookOpen className="h-4 w-4 text-purple-500" />,
 };
 
 const TYPE_LABELS = {
   task: "Задача",
   project: "Проект",
-  note: "Заметка",
   journal: "Дневник",
 };
 
@@ -67,10 +65,9 @@ export function GlobalSearch() {
     }
     setLoading(true);
     try {
-      const [tasksRes, projectsRes, notesRes, journalRes] = await Promise.all([
+      const [tasksRes, projectsRes, journalRes] = await Promise.all([
         fetch("/api/tasks").then((r) => r.json()).catch(() => []),
         fetch("/api/projects").then((r) => r.json()).catch(() => []),
-        fetch("/api/notes").then((r) => r.json()).catch(() => []),
         fetch("/api/journal").then((r) => r.json()).catch(() => []),
       ]);
 
@@ -102,22 +99,6 @@ export function GlobalSearch() {
             subtitle: "Проект",
             href: "/projects",
             icon: ICONS.project,
-          });
-        }
-      });
-
-      (notesRes || []).forEach((n: any) => {
-        if (
-          n.content?.toLowerCase().includes(lower) ||
-          n.title?.toLowerCase().includes(lower)
-        ) {
-          found.push({
-            type: "note",
-            id: n.id,
-            title: n.title || n.content?.slice(0, 40) || "Заметка",
-            subtitle: n.content?.slice(0, 60) || "",
-            href: "/notes",
-            icon: ICONS.note,
           });
         }
       });
@@ -231,7 +212,7 @@ export function GlobalSearch() {
           {!query && (
             <div className="py-8 text-center text-[var(--muted)] text-sm">
               <p>Начни вводить для поиска</p>
-              <p className="text-[10px] mt-1">Задачи · Проекты · Заметки · Дневник</p>
+              <p className="text-[10px] mt-1">Задачи · Проекты · Дневник</p>
             </div>
           )}
         </div>

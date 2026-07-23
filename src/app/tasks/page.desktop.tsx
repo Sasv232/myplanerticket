@@ -13,6 +13,7 @@ import { TaskCard } from "@/components/tasks/task-card";
 import { TaskForm } from "@/components/tasks/task-form";
 import { TaskDetail } from "@/components/tasks/task-detail";
 import { TaskFilters } from "@/components/tasks/task-filters";
+import { CalendarView } from "@/components/tasks/calendar-view";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -24,10 +25,13 @@ import {
   Trash2,
   ArrowUpDown,
   BookTemplate,
+  CalendarDays,
+  List,
 } from "lucide-react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 
 type SortBy = "date" | "priority" | "name" | "created";
+type ViewMode = "list" | "calendar";
 
 const PRIORITY_ORDER: Record<TaskPriority, number> = {
   urgent: 0,
@@ -65,6 +69,7 @@ export function TasksPageDesktop() {
   const [templateName, setTemplateName] = useState("");
   const [showTemplates, setShowTemplates] = useState(false);
   const [sortBy, setSortBy] = useState<SortBy>("created");
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
 
   const fetchProjects = useCallback(async () => {
     const res = await fetch("/api/projects");
@@ -301,6 +306,28 @@ export function TasksPageDesktop() {
         description={`Всего: ${stats.total} · Активных: ${stats.todo + stats.inProgress}`}
         actions={
           <div className="flex gap-2">
+            <div className="flex items-center gap-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-1">
+              <button
+                onClick={() => setViewMode("list")}
+                className={`rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors ${
+                  viewMode === "list"
+                    ? "bg-[var(--background)] text-foreground shadow-sm"
+                    : "text-[var(--secondary)] hover:text-foreground"
+                }`}
+              >
+                <List className="h-3.5 w-3.5" />
+              </button>
+              <button
+                onClick={() => setViewMode("calendar")}
+                className={`rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors ${
+                  viewMode === "calendar"
+                    ? "bg-[var(--background)] text-foreground shadow-sm"
+                    : "text-[var(--secondary)] hover:text-foreground"
+                }`}
+              >
+                <CalendarDays className="h-3.5 w-3.5" />
+              </button>
+            </div>
             <Button
               variant="outline"
               size="sm"
@@ -517,42 +544,46 @@ export function TasksPageDesktop() {
         </div>
 
         <div className="space-y-2">
-          {filteredTasks.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12 text-[var(--secondary)]">
-                <ListTodo className="mb-3 h-10 w-10 opacity-50" />
-                <p>{t("tasks_empty")}</p>
-                <Button
-                  variant="ghost"
-                  className="mt-2"
-                  onClick={() => {
-                    setEditingTask(undefined);
+          {viewMode === "list" ? (
+            filteredTasks.length === 0 ? (
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-12 text-[var(--secondary)]">
+                  <ListTodo className="mb-3 h-10 w-10 opacity-50" />
+                  <p>{t("tasks_empty")}</p>
+                  <Button
+                    variant="ghost"
+                    className="mt-2"
+                    onClick={() => {
+                      setEditingTask(undefined);
+                      setFormOpen(true);
+                    }}
+                  >
+                    {t("tasks_create_first")}
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              filteredTasks.map((task) => (
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  onEdit={(t) => {
+                    setEditingTask(t);
                     setFormOpen(true);
                   }}
-                >
-                  {t("tasks_create_first")}
-                </Button>
-              </CardContent>
-            </Card>
+                  onDelete={handleDelete}
+                  onStatusChange={handleStatusChange}
+                  onClick={(t) => {
+                    if (!showBulkBar) setDetailTask(t);
+                  }}
+                  selected={selectedIds.has(task.id)}
+                  onSelect={toggleSelect}
+                  showCheckbox={showBulkBar}
+                />
+              ))
+            )
           ) : (
-            filteredTasks.map((task) => (
-              <TaskCard
-                key={task.id}
-                task={task}
-                onEdit={(t) => {
-                  setEditingTask(t);
-                  setFormOpen(true);
-                }}
-                onDelete={handleDelete}
-                onStatusChange={handleStatusChange}
-                onClick={(t) => {
-                  if (!showBulkBar) setDetailTask(t);
-                }}
-                selected={selectedIds.has(task.id)}
-                onSelect={toggleSelect}
-                showCheckbox={showBulkBar}
-              />
-            ))
+            <CalendarView tasks={filteredTasks} />
           )}
         </div>
       </main>

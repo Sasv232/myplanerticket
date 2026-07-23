@@ -25,11 +25,12 @@ export const AVAILABLE_WIDGETS: WidgetDef[] = [
   { id: "karma", name: "Карма", description: "Очки и серия", icon: "🔥", color: "#f97316", defaultSize: "sm" },
   { id: "quick-note", name: "Быстрая заметка", description: "Текстовая заметка", icon: "📝", color: "#64748b", defaultSize: "lg" },
   { id: "weekly-chart", name: "Недельная активность", description: "График за неделю", icon: "📈", color: "#2563eb", defaultSize: "lg" },
+  { id: "mini-calendar", name: "Календарь", description: "Мини-календарь с задачами", icon: "📅", color: "#8b5cf6", defaultSize: "md" },
 ];
 
 export const DEFAULT_WIDGETS: WidgetConfig[] = AVAILABLE_WIDGETS.map((w, i) => ({
   id: w.id,
-  enabled: ["task-stats", "weather", "currency", "habits-today", "upcoming", "pomodoro"].includes(w.id),
+  enabled: ["task-stats", "weather", "currency", "habits-today", "upcoming", "mini-calendar"].includes(w.id),
   order: i,
 }));
 

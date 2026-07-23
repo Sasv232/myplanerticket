@@ -1,8 +1,6 @@
 import {
   LayoutDashboard,
   CheckSquare,
-  Kanban,
-  Calendar,
   Settings,
   Bell,
   Timer,
@@ -11,7 +9,6 @@ import {
   Repeat,
   FolderKanban,
   Music,
-  StickyNote,
   BookOpen,
   Dumbbell,
 } from "lucide-react";
@@ -36,8 +33,6 @@ export const navigation: NavGroup[] = [
       { label: "Сегодня", href: "/today", icon: Sun },
       { label: "Задачи", href: "/tasks", icon: CheckSquare },
       { label: "Проекты", href: "/projects", icon: FolderKanban },
-      { label: "Доска", href: "/board", icon: Kanban },
-      { label: "Календарь", href: "/calendar", icon: Calendar },
       { label: "Таймер", href: "/pomodoro", icon: Timer },
     ],
   },
@@ -58,7 +53,6 @@ export const navigation: NavGroup[] = [
   {
     title: "Записи",
     items: [
-      { label: "Заметки", href: "/notes", icon: StickyNote },
       { label: "Дневник", href: "/journal", icon: BookOpen },
     ],
   },

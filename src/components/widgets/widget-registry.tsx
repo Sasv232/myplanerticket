@@ -6,9 +6,14 @@ import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import {
   Cloud, DollarSign, Quote, CheckCircle, Clock, ListTodo,
-  AlertTriangle, Timer, Flame, TrendingUp, Edit3, Trash2,
+  AlertTriangle, Timer, Flame, TrendingUp, Edit3, Trash2, ChevronLeft, ChevronRight,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import {
+  startOfMonth, endOfMonth, eachDayOfInterval, format,
+  isSameDay, isToday, addMonths, subMonths, startOfWeek, endOfWeek,
+} from "date-fns";
+import { ru } from "date-fns/locale";
 
 // ====== Task Stats ======
 export function TaskStatsWidget() {
@@ -335,6 +340,74 @@ export function WeeklyChartWidget() {
           <span className="text-[9px] font-medium text-[var(--secondary)]">{d.label}</span>
         </div>
       ))}
+    </div>
+  );
+}
+
+// ====== Mini Calendar ======
+export function MiniCalendarWidget() {
+  const [tasks, setTasks] = useState<{ id: string; dueDate: string | null; priority: string; title: string }[]>([]);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+
+  useEffect(() => {
+    fetch("/api/tasks").then((r) => r.json()).then((d) => {
+      if (Array.isArray(d)) setTasks(d.filter((t: { dueDate: string | null }) => t.dueDate));
+    }).catch(() => {});
+  }, []);
+
+  const monthStart = startOfMonth(currentMonth);
+  const monthEnd = endOfMonth(currentMonth);
+  const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
+
+  const getTasksForDay = (day: Date) =>
+    tasks.filter((t) => isSameDay(new Date(t.dueDate!), day));
+
+  const today = new Date();
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="h-6 w-6 rounded flex items-center justify-center hover:bg-[var(--surface)]">
+          <ChevronLeft className="h-3 w-3" />
+        </button>
+        <span className="text-[12px] font-semibold">{format(currentMonth, "LLLL yyyy", { locale: ru })}</span>
+        <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="h-6 w-6 rounded flex items-center justify-center hover:bg-[var(--surface)]">
+          <ChevronRight className="h-3 w-3" />
+        </button>
+      </div>
+      <div className="grid grid-cols-7 gap-px">
+        {["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"].map((d) => (
+          <div key={d} className="p-1 text-center text-[9px] font-medium text-[var(--secondary)]">{d}</div>
+        ))}
+        {days.map((day) => {
+          const dayTasks = getTasksForDay(day);
+          const t = isToday(day);
+          return (
+            <div
+              key={day.toISOString()}
+              className={`relative flex flex-col items-center justify-center h-8 rounded-md text-[11px] font-medium transition-colors ${
+                t ? "bg-[var(--accent)] text-white" : dayTasks.length > 0 ? "bg-[var(--accent)]/10 text-[var(--accent)]" : ""
+              }`}
+            >
+              {format(day, "d")}
+              {dayTasks.length > 0 && !t && (
+                <div className="absolute -bottom-0.5 flex gap-px">
+                  {dayTasks.slice(0, 3).map((task, i) => (
+                    <div
+                      key={i}
+                      className="w-1 h-1 rounded-full"
+                      style={{
+                        backgroundColor: task.priority === "urgent" ? "#dc2626" : task.priority === "high" ? "#ea580c" : task.priority === "medium" ? "#2563eb" : "#16a34a",
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      <Link href="/tasks" className="block text-center text-[11px] font-semibold text-[var(--accent)] hover:underline">Открыть задачи →</Link>
     </div>
   );
 }
