@@ -315,7 +315,7 @@ body {
    ============================================================ */
 .topnav {
   position: fixed; top: 12px; left: 50%; transform: translateX(-50%);
-  max-width: 920px; width: calc(100% - 32px); height: 48px;
+  max-width: 1100px; width: calc(100% - 32px); height: 48px;
   background: color-mix(in srgb, var(--surface) 88%, transparent);
   backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
   border: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
