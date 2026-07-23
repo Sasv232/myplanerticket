@@ -7,8 +7,8 @@ import { WidgetRenderer } from "@/components/widgets/widget-renderer";
 import { WidgetEditor } from "@/components/widgets/widget-editor";
 import { useRouter } from "next/navigation";
 import {
-  CheckCircle, Clock, FolderKanban, Zap, BarChart3,
-  Settings, ArrowRight, TrendingUp, ListTodo,
+  CheckCircle, Clock, FolderKanban, Zap, TrendingUp, ListTodo,
+  AlertTriangle, ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -24,12 +24,14 @@ export function DashboardPageDesktop() {
   const [loaded, setLoaded] = useState(false);
   const [tasks, setTasks] = useState<any[]>([]);
   const [habits, setHabits] = useState<any[]>([]);
+  const [projects, setProjects] = useState<any[]>([]);
 
   useEffect(() => {
     setWidgetConfig(loadWidgetConfig());
     setLoaded(true);
     fetch("/api/tasks").then(r => r.json()).then(d => { if (Array.isArray(d)) setTasks(d); }).catch(() => {});
     fetch("/api/habits").then(r => r.json()).then(d => { if (Array.isArray(d)) setHabits(d); }).catch(() => {});
+    fetch("/api/projects").then(r => r.json()).then(d => { if (Array.isArray(d)) setProjects(d); }).catch(() => {});
   }, []);
 
   const handleConfigChange = useCallback((newConfig: WidgetConfig[]) => {
@@ -41,6 +43,8 @@ export function DashboardPageDesktop() {
   const greeting = hour < 12 ? "Доброе утро" : hour < 18 ? "Добрый день" : "Добрый вечер";
   const dateStr = now.toLocaleDateString("ru-RU", { weekday: "long", day: "numeric", month: "long" });
 
+  const projectMap = Object.fromEntries(projects.map((p: any) => [p.id, p.name]));
+
   const todayTasks = tasks.filter((t: any) => {
     if (!t.dueDate) return false;
     return new Date(t.dueDate).toDateString() === now.toDateString();
@@ -49,7 +53,20 @@ export function DashboardPageDesktop() {
   const completedTasks = tasks.filter((t: any) => t.status === "done");
   const urgentTasks = tasks.filter((t: any) => t.priority === "urgent" && t.status !== "done");
   const doneHabits = habits.filter((h: any) => h.completedToday).length;
-  const progressPct = tasks.length > 0 ? Math.round(completedTasks.length / tasks.length * 100) : 0;
+
+  const nextDeadline = tasks
+    .filter((t: any) => t.dueDate && t.status !== "done" && new Date(t.dueDate) >= now)
+    .sort((a: any, b: any) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())[0];
+
+  const getDeadlineColor = (date: string) => {
+    const d = new Date(date);
+    const diff = d.getTime() - now.getTime();
+    const days = diff / (1000 * 60 * 60 * 24);
+    if (days < 0) return "var(--error)";
+    if (days < 1) return "var(--orange)";
+    if (days < 3) return "var(--warning)";
+    return "var(--text-muted)";
+  };
 
   if (!loaded) {
     return (
@@ -58,8 +75,6 @@ export function DashboardPageDesktop() {
         <div className="dash-main">
           <SkeletonCard className="card-enter card-enter-1" />
           <SkeletonCard className="card-enter card-enter-2" />
-          <SkeletonCard className="card-enter card-enter-3" />
-          <SkeletonCard className="card-enter card-enter-4" />
         </div>
       </div>
     );
@@ -67,25 +82,19 @@ export function DashboardPageDesktop() {
 
   return (
     <div style={{ padding: "32px 40px 48px" }}>
-      {/* Hero — full width */}
       <div className="card-enter card-enter-1" style={{ marginBottom: 48 }}>
-        <div className="badge badge-primary" style={{ marginBottom: 12, width: "fit-content" }}>
-          <Zap className="h-3 w-3" /> Планер
-        </div>
         <h1 className="heading-hero">
           {greeting}, {user?.name?.split(" ")[0] || ""}
         </h1>
-        <p className="text-body" style={{ marginTop: 8, maxWidth: 480 }}>
-          {dateStr.charAt(0).toUpperCase() + dateStr.slice(1)}. Вот что у тебя на сегодня.
+        <p className="text-body" style={{ marginTop: 6 }}>
+          {dateStr.charAt(0).toUpperCase() + dateStr.slice(1)}
         </p>
       </div>
 
-      {/* Asymmetric grid: 60% left, 40% right */}
-      <div className="dash-main" style={{ marginBottom: 32 }}>
-        {/* LEFT: Tasks on today (large card) */}
+      <div className="dash-main" style={{ marginBottom: 24 }}>
         <div className="card card-enter card-enter-2" style={{ padding: 24 }}>
-          <div className="flex items-center justify-between" style={{ marginBottom: 20 }}>
-            <div className="flex items-center gap-3">
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <div className="stat-icon" style={{ background: "var(--primary-light)", color: "var(--primary)" }}>
                 <ListTodo className="h-5 w-5" />
               </div>
@@ -98,24 +107,23 @@ export function DashboardPageDesktop() {
               Все <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {todayTasks.slice(0, 5).map((task: any) => (
               <div key={task.id} className="task-item" onClick={() => router.push("/tasks")}>
-                <div style={{
-                  position: "absolute", left: 0, top: 8, bottom: 8, width: 3, borderRadius: 2,
-                  background: task.priority === "urgent" ? "var(--error)" : task.priority === "high" ? "var(--orange)" : task.priority === "medium" ? "var(--primary)" : "var(--success)",
-                }} />
+                <div className={`priority-dot priority-dot-${task.priority}`} style={{ marginTop: 6 }} />
                 <div className="task-item-content">
                   <div className="task-item-title">{task.title}</div>
                   <div className="task-item-meta">
+                    {task.projectId && (
+                      <span className="badge badge-outline" style={{ height: 16, fontSize: 10, padding: "0 5px" }}>
+                        {projectMap[task.projectId] || "Проект"}
+                      </span>
+                    )}
                     {task.dueDate && (
-                      <span className="text-xs" style={{ color: new Date(task.dueDate) < now ? "var(--error)" : "var(--text-faint)" }}>
+                      <span className="text-xs" style={{ color: getDeadlineColor(task.dueDate) }}>
                         {new Date(task.dueDate).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" })}
                       </span>
                     )}
-                    <span className={`badge priority-${task.priority}`} style={{ height: 18, fontSize: 10, padding: "0 6px" }}>
-                      {task.priority === "urgent" ? "Срочно" : task.priority === "high" ? "Высокий" : task.priority === "medium" ? "Средний" : "Низкий"}
-                    </span>
                   </div>
                 </div>
               </div>
@@ -129,95 +137,97 @@ export function DashboardPageDesktop() {
           </div>
         </div>
 
-        {/* RIGHT: Stats (tall card) */}
-        <div className="card card-enter card-enter-3" style={{ padding: 24, display: "flex", flexDirection: "column" }}>
-          <h2 className="heading-lg" style={{ marginBottom: 20 }}>Статистика</h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: 16, flex: 1 }}>
-            <div className="stat-card" style={{ padding: 16 }}>
-              <div className="stat-icon" style={{ background: "var(--primary-light)", color: "var(--primary)" }}><Clock className="h-4 w-4" /></div>
-              <div><div className="stat-value" style={{ fontSize: 22 }}>{activeTasks.length}</div><div className="stat-label">Активных</div></div>
-            </div>
-            <div className="stat-card" style={{ padding: 16 }}>
-              <div className="stat-icon" style={{ background: "var(--success-light)", color: "var(--success)" }}><CheckCircle className="h-4 w-4" /></div>
-              <div><div className="stat-value" style={{ fontSize: 22 }}>{completedTasks.length}</div><div className="stat-label">Выполнено</div></div>
-            </div>
-            <div className="stat-card" style={{ padding: 16 }}>
-              <div className="stat-icon" style={{ background: "var(--error-light)", color: "var(--error)" }}><TrendingUp className="h-4 w-4" /></div>
-              <div><div className="stat-value" style={{ fontSize: 22 }}>{urgentTasks.length}</div><div className="stat-label">Срочных</div></div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <div className="card card-enter card-enter-3" style={{ padding: 20 }}>
+            <h2 className="heading-md" style={{ marginBottom: 16 }}>Статистика</h2>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+              <div style={{ textAlign: "center" }}>
+                <div className="stat-value tabular" style={{ fontSize: 20, color: "var(--primary)" }}>{activeTasks.length}</div>
+                <div className="stat-label">Активных</div>
+              </div>
+              <div style={{ textAlign: "center" }}>
+                <div className="stat-value tabular" style={{ fontSize: 20, color: "var(--success)" }}>{completedTasks.length}</div>
+                <div className="stat-label">Готово</div>
+              </div>
+              <div style={{ textAlign: "center" }}>
+                <div className="stat-value tabular" style={{ fontSize: 20, color: "var(--error)" }}>{urgentTasks.length}</div>
+                <div className="stat-label">Срочных</div>
+              </div>
             </div>
           </div>
-          <div style={{ marginTop: 20 }}>
-            <div className="flex items-center justify-between" style={{ marginBottom: 6 }}>
-              <span className="text-xs">Прогресс</span>
-              <span className="text-xs tabular">{progressPct}%</span>
+
+          {nextDeadline && (
+            <div className="card card-enter card-enter-4" style={{ padding: 16 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                <AlertTriangle className="h-4 w-4" style={{ color: getDeadlineColor(nextDeadline.dueDate) }} />
+                <span className="text-caption" style={{ fontWeight: 600 }}>Ближайший дедлайн</span>
+              </div>
+              <p className="heading-sm" style={{ marginBottom: 4 }}>{nextDeadline.title}</p>
+              <span className="text-xs" style={{ color: getDeadlineColor(nextDeadline.dueDate) }}>
+                {new Date(nextDeadline.dueDate).toLocaleDateString("ru-RU", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+              </span>
             </div>
-            <div className="progress"><div className="progress-fill progress-fill-primary" style={{ width: `${progressPct}%` }} /></div>
+          )}
+
+          <div className="card card-enter card-enter-5" style={{ padding: 16 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div className="stat-icon" style={{ background: "var(--violet-light)", color: "var(--violet)", width: 28, height: 28 }}>
+                  <ListTodo className="h-3.5 w-3.5" />
+                </div>
+                <span className="text-caption" style={{ fontWeight: 600 }}>Привычки</span>
+              </div>
+              <Link href="/habits" className="btn btn-ghost btn-sm" style={{ padding: "0 6px", height: 24, fontSize: 11 }}>
+                Все <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
+            <div style={{ textAlign: "center" }}>
+              <div className="stat-value tabular" style={{ fontSize: 24, color: doneHabits === habits.length && habits.length > 0 ? "var(--success)" : "var(--text)" }}>
+                {doneHabits}/{habits.length}
+              </div>
+              <div className="stat-label">выполнено сегодня</div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Row 2: Habits + Timer + Projects */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20, marginBottom: 32 }}>
-        {/* Habits */}
-        <div className="card card-enter card-enter-4" style={{ padding: 20 }}>
-          <div className="flex items-center justify-between" style={{ marginBottom: 16 }}>
-            <h2 className="heading-md">Привычки</h2>
-            <Link href="/habits" className="btn btn-ghost btn-sm"><ArrowRight className="h-3 w-3" /></Link>
-          </div>
-          <div style={{ textAlign: "center", marginBottom: 16 }}>
-            <div className="stat-value" style={{ fontSize: 28, color: "var(--primary)" }}>{doneHabits}/{habits.length}</div>
-            <div className="stat-label">выполнено</div>
-          </div>
-          <div className="progress"><div className="progress-fill progress-fill-primary" style={{ width: `${habits.length > 0 ? (doneHabits / habits.length * 100) : 0}%` }} /></div>
-        </div>
-
-        {/* Pomodoro */}
-        <Link href="/pomodoro" className="card card-interactive card-enter card-enter-5" style={{ padding: 20, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textDecoration: "none", gap: 12 }}>
-          <div className="stat-icon" style={{
-            background: "var(--gradient-primary)", color: "white", width: 52, height: 52, borderRadius: "var(--radius-md)",
-          }}>
-            <Zap className="h-5 w-5" />
-          </div>
-          <div style={{ textAlign: "center" }}>
-            <p className="heading-md">Таймер</p>
-            <p className="text-muted" style={{ marginTop: 2 }}>Фокусировка</p>
-          </div>
-        </Link>
-
-        {/* Projects */}
-        <Link href="/projects" className="card card-interactive card-enter card-enter-6" style={{ padding: 20, textDecoration: "none" }}>
-          <div className="flex items-center gap-3" style={{ marginBottom: 16 }}>
-            <div className="stat-icon" style={{ background: "var(--success-light)", color: "var(--success)" }}>
-              <FolderKanban className="h-4 w-4" />
-            </div>
-            <div>
+      {projects.length > 0 && (
+        <div className="card card-enter card-enter-6" style={{ padding: 20, marginBottom: 24 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div className="stat-icon" style={{ background: "var(--success-light)", color: "var(--success)" }}>
+                <FolderKanban className="h-4 w-4" />
+              </div>
               <h2 className="heading-md">Проекты</h2>
-              <p className="text-muted">Команда</p>
             </div>
+            <Link href="/projects" className="btn btn-ghost btn-sm"><ArrowRight className="h-3 w-3" /></Link>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-            <div className="stat-card" style={{ padding: 12 }}>
-              <div>
-                <div className="stat-value tabular" style={{ fontSize: 18 }}>{tasks.filter((t: any) => t.projectId).length}</div>
-                <div className="stat-label">В проектах</div>
-              </div>
-            </div>
-            <div className="stat-card" style={{ padding: 12 }}>
-              <div>
-                <div className="stat-value tabular" style={{ fontSize: 18 }}>{tasks.filter((t: any) => !t.projectId).length}</div>
-                <div className="stat-label">Личных</div>
-              </div>
-            </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 10 }}>
+            {projects.slice(0, 4).map((project: any) => {
+              const projectTasks = tasks.filter((t: any) => t.projectId === project.id);
+              const done = projectTasks.filter((t: any) => t.status === "done").length;
+              const total = projectTasks.length;
+              const pct = total > 0 ? Math.round(done / total * 100) : 0;
+              return (
+                <Link key={project.id} href="/projects" style={{ padding: 14, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-md)", textDecoration: "none", transition: "all 0.15s ease-out", cursor: "pointer" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "var(--shadow-card-hover)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}
+                >
+                  <p className="heading-sm" style={{ marginBottom: 8 }}>{project.name}</p>
+                  <div className="progress" style={{ marginBottom: 6 }}><div className="progress-fill progress-fill-primary" style={{ width: `${pct}%` }} /></div>
+                  <span className="text-xs tabular">{done}/{total} задач</span>
+                </Link>
+              );
+            })}
           </div>
-        </Link>
-      </div>
+        </div>
+      )}
 
-      {/* Widget System — restored */}
       <div style={{ marginBottom: 24 }}>
-        <div className="flex items-center justify-between" style={{ marginBottom: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
           <h2 className="heading-lg">Виджеты</h2>
           <button className="btn btn-ghost btn-sm" onClick={() => setEditorOpen(true)}>
-            <Settings className="h-3.5 w-3.5" /> Настроить
+            <ListTodo className="h-3.5 w-3.5" /> Настроить
           </button>
         </div>
         {loaded && <WidgetRenderer config={widgetConfig} />}

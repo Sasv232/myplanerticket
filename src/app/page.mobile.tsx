@@ -35,7 +35,7 @@ export function DashboardPageMobile() {
           <Zap className="h-3 w-3" /> Планер
         </div>
         <h1 className="mobile-page-title">
-          {greeting}, {user?.name?.split(" ")[0] || ""} 👋
+          {greeting}, {user?.name?.split(" ")[0] || ""}
         </h1>
         <p className="mobile-page-subtitle">Вот что у тебя на сегодня</p>
       </div>
