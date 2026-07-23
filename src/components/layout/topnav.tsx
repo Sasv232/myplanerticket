@@ -30,7 +30,7 @@ const NAV_MORE = [
 export function TopNav() {
   const pathname = usePathname();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { theme, toggle } = useTheme();
   const [showMenu, setShowMenu] = useState(false);
   const [showMore, setShowMore] = useState(false);
@@ -64,7 +64,7 @@ export function TopNav() {
       </Link>
 
       <div className="topnav-links">
-        {NAV_ITEMS.map((item) => (
+        {NAV_MAIN.map((item) => (
           <Link
             key={item.href}
             href={item.href}
