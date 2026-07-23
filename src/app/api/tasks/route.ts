@@ -1,9 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { tasks } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { tasks, projectMembers, projects } from "@/lib/db/schema";
+import { eq, inArray, or, and } from "drizzle-orm";
 import { v4 as uuid } from "uuid";
 import { getUserFromToken } from "@/lib/auth";
+
+async function getMemberProjectIds(userId: string): Promise<string[]> {
+  const memberRecords = await db
+    .select({ projectId: projectMembers.projectId })
+    .from(projectMembers)
+    .where(eq(projectMembers.userId, userId));
+  const projectIds = memberRecords.map(r => r.projectId).filter(Boolean) as string[];
+
+  const ownedProjects = await db
+    .select({ id: projects.id })
+    .from(projects)
+    .where(eq(projects.userId, userId));
+  const ownedIds = ownedProjects.map(p => p.id);
+
+  return [...new Set([...projectIds, ...ownedIds])];
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,15 +29,27 @@ export async function GET(request: NextRequest) {
     if (!user) return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
 
     const projectId = request.nextUrl.searchParams.get("projectId");
-    let query = db.select().from(tasks).where(eq(tasks.userId, user.id));
+    const memberProjectIds = await getMemberProjectIds(user.id);
 
     if (projectId) {
-      const allTasks = await db.select().from(tasks).where(eq(tasks.userId, user.id));
-      const filtered = allTasks.filter(t => t.projectId === projectId);
-      return NextResponse.json(filtered);
+      if (!memberProjectIds.includes(projectId)) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+      const allTasks = await db.select().from(tasks).where(
+        and(
+          eq(tasks.projectId, projectId),
+          inArray(tasks.userId, memberProjectIds)
+        )
+      );
+      return NextResponse.json(allTasks);
     }
 
-    const allTasks = await query;
+    const allTasks = await db.select().from(tasks).where(
+      or(
+        eq(tasks.userId, user.id),
+        memberProjectIds.length > 0 ? inArray(tasks.projectId, memberProjectIds) : undefined
+      )
+    );
     return NextResponse.json(allTasks);
   } catch {
     return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });

@@ -1,10 +1,34 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { tasks } from "@/lib/db/schema";
-import { eq, and } from "drizzle-orm";
+import { tasks, projects, projectMembers } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
 import { v4 as uuid } from "uuid";
 import { addDays, addWeeks, addMonths, addYears, format } from "date-fns";
 import { getUserFromToken } from "@/lib/auth";
+
+async function getMemberProjectIds(userId: string): Promise<string[]> {
+  const memberRecords = await db
+    .select({ projectId: projectMembers.projectId })
+    .from(projectMembers)
+    .where(eq(projectMembers.userId, userId));
+  const projectIds = memberRecords.map(r => r.projectId).filter(Boolean) as string[];
+  const ownedProjects = await db
+    .select({ id: projects.id })
+    .from(projects)
+    .where(eq(projects.userId, userId));
+  return [...new Set([...projectIds, ...ownedProjects.map(p => p.id)])];
+}
+
+async function canAccessTask(taskId: string, userId: string): Promise<boolean> {
+  const [task] = await db.select().from(tasks).where(eq(tasks.id, taskId)).limit(1);
+  if (!task) return false;
+  if (task.userId === userId) return true;
+  if (task.projectId) {
+    const memberProjectIds = await getMemberProjectIds(userId);
+    return memberProjectIds.includes(task.projectId);
+  }
+  return false;
+}
 
 function getNextDueDate(currentDueDate: string, repeatRule: string): string {
   const date = new Date(currentDueDate);
@@ -39,7 +63,11 @@ export async function GET(
     if (!user) return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
 
     const { id } = await params;
-    const rows = await db.select().from(tasks).where(and(eq(tasks.id, id), eq(tasks.userId, user.id))).limit(1);
+    const allowed = await canAccessTask(id, user.id);
+    if (!allowed) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+    const rows = await db.select().from(tasks).where(eq(tasks.id, id)).limit(1);
     if (!rows[0]) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
@@ -61,8 +89,8 @@ export async function PUT(
 
     const { id } = await params;
 
-    const existing = await db.select().from(tasks).where(and(eq(tasks.id, id), eq(tasks.userId, user.id))).limit(1);
-    if (!existing[0]) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    const allowed = await canAccessTask(id, user.id);
+    if (!allowed) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
     const body = await request.json();
 
@@ -82,10 +110,10 @@ export async function PUT(
     if (body.emoji !== undefined) updates.emoji = body.emoji || null;
     if (body.completedAt !== undefined) updates.completedAt = body.completedAt || null;
 
-    await db.update(tasks).set(updates).where(and(eq(tasks.id, id), eq(tasks.userId, user.id)));
+    await db.update(tasks).set(updates).where(eq(tasks.id, id));
 
     if (body.status === "done") {
-      const rows2 = await db.select().from(tasks).where(and(eq(tasks.id, id), eq(tasks.userId, user.id))).limit(1);
+      const rows2 = await db.select().from(tasks).where(eq(tasks.id, id)).limit(1);
       const completedTask = rows2[0];
       if (completedTask?.repeatRule) {
         const nextDueDate = completedTask.dueDate
@@ -112,7 +140,7 @@ export async function PUT(
       }
     }
 
-    const rows = await db.select().from(tasks).where(and(eq(tasks.id, id), eq(tasks.userId, user.id))).limit(1);
+    const rows = await db.select().from(tasks).where(eq(tasks.id, id)).limit(1);
     return NextResponse.json(rows[0]);
   } catch {
     return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
@@ -130,10 +158,10 @@ export async function DELETE(
     if (!user) return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
 
     const { id } = await params;
-    const existing = await db.select().from(tasks).where(and(eq(tasks.id, id), eq(tasks.userId, user.id))).limit(1);
-    if (!existing[0]) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    const allowed = await canAccessTask(id, user.id);
+    if (!allowed) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-    await db.delete(tasks).where(and(eq(tasks.id, id), eq(tasks.userId, user.id)));
+    await db.delete(tasks).where(eq(tasks.id, id));
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });

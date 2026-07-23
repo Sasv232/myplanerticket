@@ -1,8 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { tasks } from "@/lib/db/schema";
-import { inArray, eq, and } from "drizzle-orm";
+import { tasks, projects, projectMembers } from "@/lib/db/schema";
+import { inArray, eq } from "drizzle-orm";
 import { getUserFromToken } from "@/lib/auth";
+
+async function getMemberProjectIds(userId: string): Promise<string[]> {
+  const memberRecords = await db
+    .select({ projectId: projectMembers.projectId })
+    .from(projectMembers)
+    .where(eq(projectMembers.userId, userId));
+  const projectIds = memberRecords.map(r => r.projectId).filter(Boolean) as string[];
+  const ownedProjects = await db
+    .select({ id: projects.id })
+    .from(projects)
+    .where(eq(projects.userId, userId));
+  return [...new Set([...projectIds, ...ownedProjects.map(p => p.id)])];
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,25 +31,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "ids required" }, { status: 400 });
     }
 
-    const owned = await db.select({ id: tasks.id }).from(tasks).where(and(inArray(tasks.id, ids), eq(tasks.userId, user.id)));
-    const ownedIds = owned.map(r => r.id);
-    if (ownedIds.length === 0) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    const memberProjectIds = await getMemberProjectIds(user.id);
+
+    const allTasks = await db.select({ id: tasks.id, projectId: tasks.projectId, userId: tasks.userId })
+      .from(tasks)
+      .where(inArray(tasks.id, ids));
+    
+    const accessible = allTasks.filter(t =>
+      t.userId === user.id || (t.projectId && memberProjectIds.includes(t.projectId))
+    );
+    const accessibleIds = accessible.map(r => r.id);
+    if (accessibleIds.length === 0) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
     const updates: Record<string, unknown> = { updatedAt: new Date().toISOString() };
 
     if (action === "status") updates.status = value;
     else if (action === "priority") updates.priority = value;
     else if (action === "delete") {
-      await db.delete(tasks).where(inArray(tasks.id, ownedIds));
-      return NextResponse.json({ ok: true, deleted: ownedIds.length });
+      await db.delete(tasks).where(inArray(tasks.id, accessibleIds));
+      return NextResponse.json({ ok: true, deleted: accessibleIds.length });
     }
     else if (action === "label") updates.label = value || null;
     else {
       return NextResponse.json({ error: "Invalid action" }, { status: 400 });
     }
 
-    await db.update(tasks).set(updates).where(inArray(tasks.id, ownedIds));
-    return NextResponse.json({ ok: true, updated: ownedIds.length });
+    await db.update(tasks).set(updates).where(inArray(tasks.id, accessibleIds));
+    return NextResponse.json({ ok: true, updated: accessibleIds.length });
   } catch {
     return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
