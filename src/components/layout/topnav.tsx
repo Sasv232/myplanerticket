@@ -7,7 +7,7 @@ import { useAuth } from "@/lib/auth-context";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { ThemeSwitch } from "@/components/ui/theme-switch";
 import { useTheme } from "./theme-provider";
-import { Zap, LogOut, Bell } from "lucide-react";
+import { Zap, LogOut, Bell, Settings } from "lucide-react";
 import { useState } from "react";
 
 const NAV_ITEMS = [
@@ -36,7 +36,7 @@ export function TopNav() {
         <div className="topnav-logo-icon">
           <Zap className="h-4 w-4" />
         </div>
-        <span className="hidden sm:inline">MyPlanerTicket</span>
+        <span className="hidden sm:inline">MyPlaner</span>
       </Link>
 
       <div className="topnav-links">
@@ -57,18 +57,15 @@ export function TopNav() {
       <div className="topnav-right">
         <ThemeSwitch checked={theme === "dark"} onChange={toggle} />
 
-        <Link
-          href="/notifications"
-          className="flex h-8 w-8 items-center justify-center rounded-full transition-all hover:bg-[var(--bg-alt)] relative"
-        >
-          <Bell className="h-4 w-4 text-[var(--text-secondary)]" />
+        <Link href="/notifications" className="btn-icon btn-icon-sm" style={{ position: "relative" }}>
+          <Bell className="h-4 w-4" />
         </Link>
 
         {user && (
           <div className="relative">
             <button
               onClick={() => setShowMenu(!showMenu)}
-              className="flex items-center gap-2 rounded-full p-0.5 transition-all hover:bg-[var(--bg-alt)]"
+              className="flex items-center gap-2 p-0.5 rounded-full transition-all hover:bg-[var(--bg-alt)]"
             >
               <UserAvatar src={user.avatar} name={user.name} size="sm" />
             </button>
@@ -76,24 +73,33 @@ export function TopNav() {
             {showMenu && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
-                <div className="absolute right-0 top-full mt-2 w-48 rounded-2xl bg-[var(--card)] border border-[var(--border-light)] shadow-[var(--shadow-lg)] py-2 z-50 animate-scale-in">
-                  <div className="px-4 py-2 border-b border-[var(--border)]">
+                <div className="absolute right-0 top-full mt-2 w-52 rounded-xl py-1.5 z-50 animate-scale" style={{
+                  background: "var(--surface)",
+                  border: "1px solid var(--border)",
+                  boxShadow: "var(--shadow-lg)",
+                }}>
+                  <div className="px-4 py-2.5 mb-1" style={{ borderBottom: "1px solid var(--border)" }}>
                     <p className="text-sm font-semibold">{user.name}</p>
-                    <p className="text-xs text-[var(--text-muted)]">{user.email || "Пользователь"}</p>
+                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>{user.email || "Пользователь"}</p>
                   </div>
                   <Link
                     href="/settings"
-                    className="flex items-center gap-2 px-4 py-2.5 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-alt)] transition-colors"
+                    className="flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors"
+                    style={{ color: "var(--text-secondary)" }}
                     onClick={() => setShowMenu(false)}
+                    onMouseEnter={(e) => e.currentTarget.style.background = "var(--bg-alt)"}
+                    onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
                   >
-                    Настройки
+                    <Settings className="h-4 w-4" /> Настройки
                   </Link>
                   <button
                     onClick={() => { setShowMenu(false); handleLogout(); }}
-                    className="flex items-center gap-2 px-4 py-2.5 text-sm text-[var(--error)] hover:bg-[var(--bg-alt)] transition-colors w-full text-left"
+                    className="flex items-center gap-2.5 px-4 py-2.5 text-sm w-full text-left transition-colors"
+                    style={{ color: "var(--error)" }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = "var(--bg-alt)"}
+                    onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
                   >
-                    <LogOut className="h-4 w-4" />
-                    Выйти
+                    <LogOut className="h-4 w-4" /> Выйти
                   </button>
                 </div>
               </>

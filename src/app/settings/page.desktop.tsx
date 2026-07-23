@@ -1,80 +1,26 @@
 ﻿"use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Header } from "@/components/layout/header";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  Palette,
-  RefreshCw,
-  CheckCircle,
-  AlertCircle,
-  Mail,
-  Database,
-  Download,
-  Upload,
-  Bell,
-  Camera,
-  User,
-  Phone,
-} from "lucide-react";
 import { useTheme } from "@/components/layout/theme-provider";
 import { useLang } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth-context";
 import { subscribeToPush, unsubscribeFromPush, isPushSubscribed } from "@/lib/push-client";
-import { Globe } from "lucide-react";
+import {
+  Palette, RefreshCw, CheckCircle, AlertCircle, Mail, Database,
+  Download, Upload, Bell, Camera, User, Phone, Globe,
+} from "lucide-react";
 
-const PRIMARY_COLORS = [
-  { name: "Синий", value: "#3b82f6" },
-  { name: "Индиго", value: "#6366f1" },
-  { name: "Фиолетовый", value: "#8b5cf6" },
-  { name: "Розовый", value: "#ec4899" },
-  { name: "Красный", value: "#ef4444" },
-  { name: "Оранжевый", value: "#f97316" },
-  { name: "Янтарный", value: "#f59e0b" },
-  { name: "Зелёный", value: "#22c55e" },
-  { name: "Изумрудный", value: "#10b981" },
-  { name: "Бирюзовый", value: "#06b6d4" },
-];
+const COLORS = ["#6366f1","#10b981","#3b82f6","#8b5cf6","#ec4899","#ef4444","#f97316","#f59e0b","#22c55e","#06b6d4"];
 
-const SECONDARY_COLORS = [
-  { name: "Серый", value: "#6b7280" },
-  { name: "Серый-600", value: "#4b5563" },
-  { name: "Серый-700", value: "#374151" },
-  { name: "Серый-800", value: "#1f2937" },
-  { name: "Серый-900", value: "#111827" },
-  { name: "Коричневый", value: "#78716c" },
-  { name: "Цинковый", value: "#71717a" },
-  { name: "Нейтральный", value: "#737373" },
-  { name: "Сланцевый", value: "#64748b" },
-  { name: "Тёмно-синий", value: "#475569" },
-];
-
-interface Settings {
-  smtpConfigured: boolean;
-  databaseConnected: boolean;
-}
-
-interface Profile {
-  id: string;
-  name: string;
-  email: string | null;
-  phone: string | null;
-  avatar: string | null;
-  role: string;
-  createdAt: string;
-}
+interface Settings { smtpConfigured: boolean; databaseConnected: boolean; }
+interface Profile { id: string; name: string; email: string | null; phone: string | null; avatar: string | null; role: string; createdAt: string; }
 
 export function SettingsPageDesktop() {
   const { theme, schedule, setSchedule } = useTheme();
   const { t, lang, setLang } = useLang();
   const { user } = useAuth();
-  const [primaryColor, setPrimaryColor] = useState("#3b82f6");
-  const [secondaryColor, setSecondaryColor] = useState("#6b7280");
   const [settings, setSettings] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(true);
-  const [notifPermission, setNotifPermission] = useState<NotificationPermission>("default");
   const [profile, setProfile] = useState<Profile | null>(null);
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState("");
@@ -85,537 +31,177 @@ export function SettingsPageDesktop() {
   const [pushEnabled, setPushEnabled] = useState(false);
 
   const fetchNotifPrefs = useCallback(async () => {
-    try {
-      const res = await fetch("/api/push/preferences");
-      if (res.ok) setNotifPrefs(await res.json());
-    } catch {}
+    try { const res = await fetch("/api/push/preferences"); if (res.ok) setNotifPrefs(await res.json()); } catch {}
   }, []);
-
   const updateNotifPref = async (key: string, value: boolean | string) => {
     const updated = { ...notifPrefs, [key]: value };
     setNotifPrefs(updated);
-    await fetch("/api/push/preferences", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(updated),
-    });
+    await fetch("/api/push/preferences", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(updated) });
   };
-
   const handleTogglePush = async () => {
-    if (pushEnabled) {
-      await unsubscribeFromPush();
-      setPushEnabled(false);
-    } else {
-      const ok = await subscribeToPush();
-      setPushEnabled(ok);
-    }
+    if (pushEnabled) { await unsubscribeFromPush(); setPushEnabled(false); }
+    else { const ok = await subscribeToPush(); setPushEnabled(ok); }
   };
 
   const fetchProfile = useCallback(async () => {
-    try {
-      const res = await fetch("/api/profile");
-      if (res.ok) {
-        const data = await res.json();
-        setProfile(data);
-        setName(data.name || "");
-        setEmail(data.email || "");
-        setPhone(data.phone || "");
-      }
-    } catch {}
+    try { const res = await fetch("/api/profile"); if (res.ok) { const data = await res.json(); setProfile(data); setName(data.name || ""); setEmail(data.email || ""); setPhone(data.phone || ""); } } catch {}
   }, []);
-
   const handleSave = async () => {
-    await fetch("/api/profile", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, phone }),
-    });
-    setEditing(false);
-    fetchProfile();
+    await fetch("/api/profile", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, email, phone }) });
+    setEditing(false); fetchProfile();
   };
-
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const file = e.target.files?.[0]; if (!file) return;
     const reader = new FileReader();
     reader.onload = async () => {
-      const base64 = reader.result as string;
-      await fetch("/api/profile", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ avatar: base64 }),
-      });
+      await fetch("/api/profile", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ avatar: reader.result }) });
       fetchProfile();
     };
     reader.readAsDataURL(file);
   };
 
-  const initials = profile?.name?.slice(0, 1).toUpperCase() || "?";
-
   const fetchSettings = useCallback(async () => {
     setLoading(true);
-    try {
-      const res = await fetch("/api/settings");
-      if (res.ok) setSettings(await res.json());
-    } catch {}
+    try { const res = await fetch("/api/settings"); if (res.ok) setSettings(await res.json()); } catch {}
     setLoading(false);
   }, []);
 
-  useEffect(() => {
-    fetchSettings();
-    fetchProfile();
-    fetchNotifPrefs();
-    isPushSubscribed().then(setPushEnabled);
-    const savedPrimary = localStorage.getItem("primaryColor") || "#3b82f6";
-    const savedSecondary =
-      localStorage.getItem("secondaryColor") || "#6b7280";
-    setPrimaryColor(savedPrimary);
-    setSecondaryColor(savedSecondary);
-    applyColors(savedPrimary, savedSecondary);
-    if (typeof window !== "undefined" && "Notification" in window) {
-      setNotifPermission(Notification.permission);
-    }
-  }, [fetchSettings, fetchProfile, fetchNotifPrefs]);
-
-  const applyColors = (primary: string, secondary: string) => {
-    document.documentElement.style.setProperty("--accent", primary);
-    document.documentElement.style.setProperty("--secondary", secondary);
-  };
-
-  const handlePrimaryChange = (color: string) => {
-    setPrimaryColor(color);
-    localStorage.setItem("primaryColor", color);
-    applyColors(color, secondaryColor);
-  };
-
-  const handleSecondaryChange = (color: string) => {
-    setSecondaryColor(color);
-    localStorage.setItem("secondaryColor", color);
-    applyColors(primaryColor, color);
-  };
+  useEffect(() => { fetchSettings(); fetchProfile(); fetchNotifPrefs(); isPushSubscribed().then(setPushEnabled); }, [fetchSettings, fetchProfile, fetchNotifPrefs]);
 
   const handleExport = async () => {
-    const res = await fetch("/api/export");
-    const data = await res.json();
-    const blob = new Blob([JSON.stringify(data, null, 2)], {
-      type: "application/json",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `myplanericket-export-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const res = await fetch("/api/export"); const data = await res.json();
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob); const a = document.createElement("a");
+    a.href = url; a.download = `myplaner-export-${new Date().toISOString().slice(0, 10)}.json`; a.click(); URL.revokeObjectURL(url);
+  };
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]; if (!file) return;
+    const text = await file.text(); const data = JSON.parse(text);
+    const res = await fetch("/api/export", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
+    const result = await res.json(); if (result.ok) { alert(`Импортировано: ${result.imported}`); window.location.reload(); }
   };
 
-  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const text = await file.text();
-    const data = JSON.parse(text);
-    const res = await fetch("/api/export", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    const result = await res.json();
-    if (result.ok) {
-      alert(`${t("settings_imported")} ${result.imported}`);
-      window.location.reload();
-    }
-  };
+  const initials = profile?.name?.slice(0, 1).toUpperCase() || "?";
+
+  const Section = ({ title, icon: Icon, children }: { title: string; icon: typeof Bell; children: React.ReactNode }) => (
+    <div className="card" style={{ padding: 24 }}>
+      <div className="flex items-center gap-3" style={{ marginBottom: 20 }}>
+        <div className="stat-icon" style={{ background: "var(--primary-light)", color: "var(--primary)" }}><Icon className="h-4 w-4" /></div>
+        <h2 className="heading-md">{title}</h2>
+      </div>
+      {children}
+    </div>
+  );
 
   return (
-    <>
-      <Header
-        title={t("settings_title")}
-        description={t("settings_desc")}
-        actions={
-          <Button variant="outline" size="sm" onClick={fetchSettings}>
-            <RefreshCw
-              className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
-            />
-            {t("settings_refresh")}
-          </Button>
-        }
-      />
-      <main className="p-6 space-y-4">
-        {/* Profile Card */}
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-6">
-              <div className="relative shrink-0">
-                {profile?.avatar ? (
-                  <img src={profile.avatar} alt="" className="h-20 w-20 rounded-full object-cover ring-4 ring-[var(--accent)]/15" />
-                ) : (
-                  <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-[var(--accent)] to-[var(--accent)]/60 text-2xl font-bold text-white ring-4 ring-[var(--accent)]/15">
-                    {initials}
-                  </div>
-                )}
-                <button
-                  onClick={() => fileRef.current?.click()}
-                  className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full bg-[var(--card)] shadow-lg ring-1 ring-[var(--border)] hover:ring-[var(--accent)]/50 transition-all"
-                >
-                  <Camera className="h-4 w-4 text-[var(--accent)]" />
-                </button>
-                <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-3 mb-3">
-                  {editing ? (
-                    <input
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="text-xl font-bold bg-transparent border-b border-[var(--border)] outline-none focus:border-[var(--accent)] transition-colors px-1 py-0.5"
-                      placeholder="Имя"
-                    />
-                  ) : (
-                    <h2 className="text-xl font-bold truncate">{profile?.name}</h2>
-                  )}
-                  <Badge variant={profile?.role === "admin" ? "default" : "secondary"}>
-                    {profile?.role === "admin" ? "Админ" : "Пользователь"}
-                  </Badge>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm">
-                    <Mail className="h-4 w-4 text-[var(--muted)] shrink-0" />
-                    {editing ? (
-                      <input
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="flex-1 bg-transparent border-b border-[var(--border)] outline-none focus:border-[var(--accent)] transition-colors px-1 py-0.5 text-sm"
-                        placeholder="email@example.com"
-                        type="email"
-                      />
-                    ) : (
-                      <span className="text-[var(--secondary)] truncate">{profile?.email || "Не указана"}</span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <Phone className="h-4 w-4 text-[var(--muted)] shrink-0" />
-                    {editing ? (
-                      <input
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        className="flex-1 bg-transparent border-b border-[var(--border)] outline-none focus:border-[var(--accent)] transition-colors px-1 py-0.5 text-sm"
-                        placeholder="+7 (999) 123-45-67"
-                        type="tel"
-                      />
-                    ) : (
-                      <span className="text-[var(--secondary)] truncate">{profile?.phone || "Не указан"}</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-              <div className="shrink-0">
-                <Button
-                  variant={editing ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => editing ? handleSave() : setEditing(true)}
-                >
-                  {editing ? "Сохранить" : "Изменить"}
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+    <div style={{ padding: "32px 40px" }}>
+      <div className="flex items-center justify-between" style={{ marginBottom: 24 }}>
+        <div>
+          <h1 className="heading-xl" style={{ marginBottom: 4 }}>{t("settings_title")}</h1>
+          <p className="text-body">{t("settings_desc")}</p>
+        </div>
+        <button className="btn btn-outline" onClick={fetchSettings}><RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} /> {t("settings_refresh")}</button>
+      </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Palette className="h-4 w-4" /> {t("settings_colors")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <p className="mb-2 text-sm font-medium">{t("settings_primary")}</p>
-              <div className="grid grid-cols-5 gap-2">
-                {PRIMARY_COLORS.map((c) => (
-                  <button
-                    key={c.value}
-                    onClick={() => handlePrimaryChange(c.value)}
-                    className={`flex flex-col items-center gap-1 rounded-lg border-2 p-2 transition-all ${
-                      primaryColor === c.value
-                        ? "border-[var(--foreground)] scale-105"
-                        : "border-transparent hover:border-[var(--border)]"
-                    }`}
-                  >
-                    <div
-                      className="h-8 w-8 rounded-full shadow-inner"
-                      style={{ backgroundColor: c.value }}
-                    />
-                    <span className="text-[10px] text-[var(--secondary)]">
-                      {c.name}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <p className="mb-2 text-sm font-medium">
-                {t("settings_secondary")}
-              </p>
-              <div className="grid grid-cols-5 gap-2">
-                {SECONDARY_COLORS.map((c) => (
-                  <button
-                    key={c.value}
-                    onClick={() => handleSecondaryChange(c.value)}
-                    className={`flex flex-col items-center gap-1 rounded-lg border-2 p-2 transition-all ${
-                      secondaryColor === c.value
-                        ? "border-[var(--foreground)] scale-105"
-                        : "border-transparent hover:border-[var(--border)]"
-                    }`}
-                  >
-                    <div
-                      className="h-8 w-8 rounded-full shadow-inner"
-                      style={{ backgroundColor: c.value }}
-                    />
-                    <span className="text-[10px] text-[var(--secondary)]">
-                      {c.name}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Palette className="h-4 w-4" /> {t("settings_theme_schedule")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium">{t("settings_auto_switch")}</p>
-                <p className="text-[11px] text-[var(--secondary)]">{t("settings_auto_switch_desc")}</p>
-              </div>
-              <button
-                onClick={() => setSchedule({ ...schedule, enabled: !schedule.enabled })}
-                className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
-                style={{ backgroundColor: schedule.enabled ? "var(--accent)" : "var(--border)" }}
-              >
-                <span
-                  className="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
-                  style={{ transform: schedule.enabled ? "translateX(22px)" : "translateX(2px)" }}
-                />
-              </button>
-            </div>
-            {schedule.enabled && (
-              <div className="flex gap-4">
-                <div className="flex-1">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">{t("settings_dark_from")}</label>
-                  <input
-                    type="number"
-                    min={0}
-                    max={23}
-                    value={schedule.darkHour}
-                    onChange={(e) => setSchedule({ ...schedule, darkHour: parseInt(e.target.value) || 0 })}
-                    className="mt-1 w-full rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm"
-                  />
-                </div>
-                <div className="flex-1">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">{t("settings_light_from")}</label>
-                  <input
-                    type="number"
-                    min={0}
-                    max={23}
-                    value={schedule.lightHour}
-                    onChange={(e) => setSchedule({ ...schedule, lightHour: parseInt(e.target.value) || 0 })}
-                    className="mt-1 w-full rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm"
-                  />
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Globe className="h-4 w-4" /> {t("settings_language")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setLang("ru")}
-                className={`flex-1 py-3 rounded-xl border-2 text-sm font-medium transition-all ${
-                  lang === "ru"
-                    ? "border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)]"
-                    : "border-[var(--border)] hover:border-[var(--accent)]/50"
-                }`}
-              >
-                🇷🇺 Русский
-              </button>
-              <button
-                onClick={() => setLang("en")}
-                className={`flex-1 py-3 rounded-xl border-2 text-sm font-medium transition-all ${
-                  lang === "en"
-                    ? "border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)]"
-                    : "border-[var(--border)] hover:border-[var(--accent)]/50"
-                }`}
-              >
-                🇬🇧 English
-              </button>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Bell className="h-4 w-4" /> Уведомления
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium">Push-уведомления</p>
-                <p className="text-[11px] text-[var(--secondary)]">Системные уведомления в браузере</p>
-              </div>
-              <button
-                onClick={handleTogglePush}
-                className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
-                style={{ backgroundColor: pushEnabled ? "var(--accent)" : "var(--border)" }}
-              >
-                <span
-                  className="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
-                  style={{ transform: pushEnabled ? "translateX(22px)" : "translateX(2px)" }}
-                />
-              </button>
-            </div>
-
-            <div className="border-t border-[var(--border)] pt-3 space-y-3">
-              <p className="text-xs font-medium text-[var(--secondary)] uppercase tracking-wider">Типы уведомлений</p>
-              {[
-                { key: "messenger", label: "Сообщения в чате", desc: "Новые сообщения от пользователей" },
-                { key: "deadlines", label: "Дедлайны задач", desc: "Напоминания о сроках" },
-                { key: "habits", label: "Привычки", desc: "Ежедневные напоминания" },
-                { key: "serverErrors", label: "Ошибки сервера", desc: "Когда API недоступен" },
-                { key: "maintenance", label: "Технические работы", desc: "Плановые отключения" },
-              ].map(({ key, label, desc }) => (
-                <div key={key} className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium">{label}</p>
-                    <p className="text-[11px] text-[var(--secondary)]">{desc}</p>
-                  </div>
-                  <button
-                    onClick={() => updateNotifPref(key, !(notifPrefs as any)[key])}
-                    className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
-                    style={{ backgroundColor: (notifPrefs as any)[key] ? "var(--accent)" : "var(--border)" }}
-                  >
-                    <span
-                      className="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
-                      style={{ transform: (notifPrefs as any)[key] ? "translateX(22px)" : "translateX(2px)" }}
-                    />
-                  </button>
-                </div>
-              ))}
-
-              <div className="flex items-center justify-between pt-2 border-t border-[var(--border)]">
-                <div>
-                  <p className="text-sm font-medium">Время напоминаний</p>
-                  <p className="text-[11px] text-[var(--secondary)]">Когда присылать ежедневные напоминания</p>
-                </div>
-                <input
-                  type="time"
-                  value={notifPrefs.reminderTime}
-                  onChange={(e) => updateNotifPref("reminderTime", e.target.value)}
-                  className="rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-1.5 text-sm"
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Mail className="h-4 w-4" /> {t("settings_email")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {settings?.smtpConfigured ? (
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-green-500" />
-                <span className="text-sm">{t("settings_smtp_ok")}</span>
-                <Badge variant="success">Активно</Badge>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4 text-yellow-500" />
-                  <span className="text-sm">{t("settings_smtp_not")}</span>
-                  <Badge variant="warning">{t("settings_smtp_wait")}</Badge>
-                </div>
-                <div className="rounded-lg bg-[var(--surface)] p-3 text-xs text-[var(--secondary)] space-y-1">
-                  <p>{t("settings_smtp_hint")}</p>
-                  <code className="block rounded bg-[var(--bg)] p-2 mt-1">
-                    SMTP_USER=your@gmail.com
-                    <br />
-                    SMTP_PASS=xxxx-xxxx-xxxx-xxxx
-                    <br />
-                    NOTIFICATION_EMAIL=your@gmail.com
-                  </code>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Database className="h-4 w-4" /> {t("settings_db")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              {settings?.databaseConnected ? (
-                <>
-                  <CheckCircle className="h-4 w-4 text-green-500" />
-                  <span className="text-sm">Supabase PostgreSQL</span>
-                  <Badge variant="success">{t("settings_db_online")}</Badge>
-                </>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+        {/* Profile */}
+        <Section title="Профиль" icon={User}>
+          <div className="flex items-center gap-5" style={{ marginBottom: 20 }}>
+            <div style={{ position: "relative", flexShrink: 0 }}>
+              {profile?.avatar ? (
+                <img src={profile.avatar} alt="" style={{ width: 72, height: 72, borderRadius: "50%", objectFit: "cover", border: "3px solid var(--primary-light)" }} />
               ) : (
-                <>
-                  <AlertCircle className="h-4 w-4 text-red-500" />
-                  <span className="text-sm">{t("settings_db_offline")}</span>
-                </>
+                <div style={{ width: 72, height: 72, borderRadius: "50%", background: "var(--gradient-primary)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, fontWeight: 700, color: "white" }}>{initials}</div>
               )}
+              <button onClick={() => fileRef.current?.click()} style={{ position: "absolute", bottom: 0, right: 0, width: 28, height: 28, borderRadius: "50%", background: "var(--surface)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                <Camera className="h-3.5 w-3.5" style={{ color: "var(--primary)" }} />
+              </button>
+              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
             </div>
-          </CardContent>
-        </Card>
+            <div>
+              <p className="heading-sm">{profile?.name || user?.name}</p>
+              <p className="text-xs">{profile?.role || "user"} · {profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString("ru-RU") : ""}</p>
+            </div>
+          </div>
+          {editing ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <div><label className="label">Имя</label><input value={name} onChange={e => setName(e.target.value)} className="input" /></div>
+              <div><label className="label">Email</label><input value={email} onChange={e => setEmail(e.target.value)} className="input" /></div>
+              <div><label className="label">Телефон</label><input value={phone} onChange={e => setPhone(e.target.value)} className="input" /></div>
+              <div className="flex gap-2">
+                <button onClick={handleSave} className="btn btn-primary btn-sm">Сохранить</button>
+                <button onClick={() => setEditing(false)} className="btn btn-ghost btn-sm">Отмена</button>
+              </div>
+            </div>
+          ) : (
+            <button onClick={() => setEditing(true)} className="btn btn-outline btn-sm">Редактировать профиль</button>
+          )}
+        </Section>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Download className="h-4 w-4" /> {t("settings_export")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex gap-3">
-            <Button variant="outline" size="sm" onClick={handleExport}>
-              <Download className="h-4 w-4" /> {t("settings_export_json")}
-            </Button>
-            <label>
-              <input
-                type="file"
-                accept=".json"
-                className="hidden"
-                onChange={handleImport}
-              />
-              <Button variant="outline" size="sm" asChild>
-                <span>
-                  <Upload className="h-4 w-4" /> {t("settings_import_json")}
-                </span>
-              </Button>
+        {/* Theme */}
+        <Section title="Тема" icon={Palette}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <div>
+              <label className="label">Режим</label>
+              <div className="pill-nav" style={{ display: "flex" }}>
+                <button onClick={() => setSchedule({ enabled: false, darkHour: 21, lightHour: 7 })} className={`pill-nav-item ${!schedule.enabled ? "pill-nav-item-active" : ""}`}>Светлая</button>
+                <button onClick={() => setSchedule({ enabled: true, darkHour: 0, lightHour: 0 })} className={`pill-nav-item ${schedule.enabled && schedule.darkHour === 0 ? "pill-nav-item-active" : ""}`}>Тёмная</button>
+                <button onClick={() => setSchedule({ enabled: true, darkHour: 21, lightHour: 7 })} className={`pill-nav-item ${schedule.enabled ? "pill-nav-item-active" : ""}`}>Авто</button>
+              </div>
+            </div>
+            <div>
+              <label className="label">Язык</label>
+              <div className="pill-nav" style={{ display: "flex" }}>
+                <button onClick={() => setLang("ru")} className={`pill-nav-item ${lang === "ru" ? "pill-nav-item-active" : ""}`}>🇷🇺 Русский</button>
+                <button onClick={() => setLang("en")} className={`pill-nav-item ${lang === "en" ? "pill-nav-item-active" : ""}`}>🇬🇧 English</button>
+              </div>
+            </div>
+          </div>
+        </Section>
+
+        {/* Notifications */}
+        <Section title="Уведомления" icon={Bell}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <label className="flex items-center justify-between cursor-pointer">
+              <span className="text-caption">Push-уведомления</span>
+              <div onClick={handleTogglePush} style={{ width: 44, height: 24, borderRadius: 12, background: pushEnabled ? "var(--primary)" : "var(--border)", cursor: "pointer", position: "relative", transition: "background 0.2s" }}>
+                <div style={{ width: 20, height: 20, borderRadius: "50%", background: "white", position: "absolute", top: 2, left: pushEnabled ? 22 : 2, transition: "left 0.2s", boxShadow: "var(--shadow-sm)" }} />
+              </div>
             </label>
-          </CardContent>
-        </Card>
-      </main>
-    </>
+            {Object.entries({ messenger: "Мессенджер", deadlines: "Дедлайны", habits: "Привычки", serverErrors: "Ошибки сервера", maintenance: "Обслуживание" }).map(([k, v]) => (
+              <label key={k} className="flex items-center justify-between cursor-pointer">
+                <span className="text-caption">{v}</span>
+                <div onClick={() => updateNotifPref(k, !(notifPrefs as any)[k])} style={{ width: 44, height: 24, borderRadius: 12, background: (notifPrefs as any)[k] ? "var(--primary)" : "var(--border)", cursor: "pointer", position: "relative", transition: "background 0.2s" }}>
+                  <div style={{ width: 20, height: 20, borderRadius: "50%", background: "white", position: "absolute", top: 2, left: (notifPrefs as any)[k] ? 22 : 2, transition: "left 0.2s", boxShadow: "var(--shadow-sm)" }} />
+                </div>
+              </label>
+            ))}
+          </div>
+        </Section>
+
+        {/* System */}
+        <Section title="Система" icon={Database}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <div className="flex items-center justify-between">
+              <span className="text-caption">SMTP</span>
+              <span className={`badge ${settings?.smtpConfigured ? "badge-mint" : "badge-error"}`}>
+                {settings?.smtpConfigured ? <><CheckCircle className="h-3 w-3" /> Настроен</> : <><AlertCircle className="h-3 w-3" /> Не настроен</>}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-caption">База данных</span>
+              <span className={`badge ${settings?.databaseConnected ? "badge-mint" : "badge-error"}`}>
+                {settings?.databaseConnected ? <><CheckCircle className="h-3 w-3" /> Подключена</> : <><AlertCircle className="h-3 w-3" /> Ошибка</>}
+              </span>
+            </div>
+            <div className="divider" />
+            <div className="flex gap-2">
+              <button onClick={handleExport} className="btn btn-outline btn-sm" style={{ flex: 1 }}><Download className="h-3.5 w-3.5" /> Экспорт</button>
+              <label className="btn btn-outline btn-sm" style={{ flex: 1, cursor: "pointer" }}><Upload className="h-3.5 w-3.5" /> Импорт<input type="file" className="hidden" accept=".json" onChange={handleImport} /></label>
+            </div>
+          </div>
+        </Section>
+      </div>
+    </div>
   );
 }

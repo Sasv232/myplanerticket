@@ -6,8 +6,7 @@ import { WidgetConfig, loadWidgetConfig } from "@/lib/widgets";
 import { WidgetRendererMobile } from "@/components/widgets/widget-renderer";
 import { WidgetEditor } from "@/components/widgets/widget-editor";
 import { useMobileSidebar } from "@/components/layout/mobile-sidebar-context";
-import { TagBadge } from "@/components/ui/tag-badge";
-import { Settings, Sparkles } from "lucide-react";
+import { Zap, Settings } from "lucide-react";
 
 export function DashboardPageMobile() {
   const { user } = useAuth();
@@ -30,21 +29,18 @@ export function DashboardPageMobile() {
   const greeting = hour < 12 ? "Доброе утро" : hour < 18 ? "Добрый день" : "Добрый вечер";
 
   return (
-    <div className="mobile-main blob-bg">
-      <div className="px-5 pt-14 pb-2">
-        <TagBadge variant="green" className="mb-3">
-          <Sparkles className="h-3 w-3" />
-          Планер
-        </TagBadge>
-        <h1 className="text-[26px] font-extrabold tracking-tight leading-tight">
+    <div className="mobile-main">
+      <div className="mobile-page-header">
+        <div className="badge badge-primary" style={{ marginBottom: 12, width: "fit-content" }}>
+          <Zap className="h-3 w-3" /> Планер
+        </div>
+        <h1 className="mobile-page-title">
           {greeting}, {user?.name?.split(" ")[0] || ""} 👋
         </h1>
-        <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
-          Вот что у тебя на сегодня
-        </p>
+        <p className="mobile-page-subtitle">Вот что у тебя на сегодня</p>
       </div>
 
-      <div className="p-5 space-y-4">
+      <div className="mobile-content" style={{ paddingTop: 16 }}>
         {loaded && <WidgetRendererMobile config={widgetConfig} />}
       </div>
 
@@ -56,11 +52,7 @@ export function DashboardPageMobile() {
         <Settings className="h-5 w-5" />
       </button>
 
-      <WidgetEditor
-        open={editorOpen}
-        onClose={() => setEditorOpen(false)}
-        onChange={handleConfigChange}
-      />
+      <WidgetEditor open={editorOpen} onClose={() => setEditorOpen(false)} onChange={handleConfigChange} />
     </div>
   );
 }

@@ -1,39 +1,25 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Play, Pause, RotateCcw, Coffee, Brain } from "lucide-react";
 
 type TimerMode = "work" | "break";
 
-const PRESETS = {
-  work: 25 * 60,
-  break: 5 * 60,
-};
+const PRESETS = { work: 25 * 60, break: 5 * 60 };
 
 function playBeep() {
   try {
     const ctx = new AudioContext();
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.frequency.value = 800;
-    osc.type = "sine";
-    gain.gain.value = 0.3;
-    osc.start();
-    osc.stop(ctx.currentTime + 0.3);
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = 800; osc.type = "sine"; gain.gain.value = 0.3;
+    osc.start(); osc.stop(ctx.currentTime + 0.3);
     setTimeout(() => {
-      const osc2 = ctx.createOscillator();
-      const gain2 = ctx.createGain();
-      osc2.connect(gain2);
-      gain2.connect(ctx.destination);
-      osc2.frequency.value = 1000;
-      osc2.type = "sine";
-      gain2.gain.value = 0.3;
-      osc2.start();
-      osc2.stop(ctx.currentTime + 0.3);
+      const osc2 = ctx.createOscillator(); const gain2 = ctx.createGain();
+      osc2.connect(gain2); gain2.connect(ctx.destination);
+      osc2.frequency.value = 1000; osc2.type = "sine"; gain2.gain.value = 0.3;
+      osc2.start(); osc2.stop(ctx.currentTime + 0.3);
     }, 350);
   } catch {}
 }
@@ -49,40 +35,24 @@ export default function PomodoroPage() {
   const progress = ((total - timeLeft) / total) * 100;
 
   const tick = useCallback(() => {
-    setTimeLeft((prev) => {
+    setTimeLeft(prev => {
       if (prev <= 1) {
-        setIsRunning(false);
-        playBeep();
-        if (mode === "work") {
-          setSessions((s) => s + 1);
-          setMode("break");
-          return PRESETS.break;
-        } else {
-          setMode("work");
-          return PRESETS.work;
-        }
+        setIsRunning(false); playBeep();
+        if (mode === "work") { setSessions(s => s + 1); setMode("break"); return PRESETS.break; }
+        else { setMode("work"); return PRESETS.work; }
       }
       return prev - 1;
     });
   }, [mode]);
 
   useEffect(() => {
-    if (isRunning) {
-      intervalRef.current = setInterval(tick, 1000);
-    } else if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-    }
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
+    if (isRunning) { intervalRef.current = setInterval(tick, 1000); }
+    else if (intervalRef.current) { clearInterval(intervalRef.current); }
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, [isRunning, tick]);
 
   const toggle = () => setIsRunning(!isRunning);
-  const reset = () => {
-    setIsRunning(false);
-    setMode("work");
-    setTimeLeft(PRESETS.work);
-  };
+  const reset = () => { setIsRunning(false); setMode("work"); setTimeLeft(PRESETS.work); };
 
   const mins = Math.floor(timeLeft / 60);
   const secs = timeLeft % 60;
@@ -90,67 +60,50 @@ export default function PomodoroPage() {
   const dashoffset = circumference - (progress / 100) * circumference;
 
   return (
-    <div className="space-y-6">
-      <div className="mobile-page-header">
-        <h1 className="text-2xl font-bold tracking-tight">Таймер</h1>
-        <p className="text-sm text-[var(--secondary)]">Pomodoro — сосредоточься</p>
+    <div style={{ padding: "32px 40px" }}>
+      <div style={{ marginBottom: 32 }}>
+        <h1 className="heading-xl" style={{ marginBottom: 4 }}>Таймер</h1>
+        <p className="text-body">Pomodoro — сосредоточься на важном</p>
       </div>
 
-      <div className="flex flex-col items-center gap-6">
-        <div className="flex gap-2">
-          <Button
-            variant={mode === "work" ? "default" : "outline"}
-            size="sm"
-            onClick={() => { setMode("work"); setTimeLeft(PRESETS.work); setIsRunning(false); }}
-          >
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 28 }}>
+        {/* Mode toggle */}
+        <div className="pill-nav">
+          <button onClick={() => { setMode("work"); setTimeLeft(PRESETS.work); setIsRunning(false); }} className={`pill-nav-item ${mode === "work" ? "pill-nav-item-active" : ""}`}>
             <Brain className="h-4 w-4" /> Работа
-          </Button>
-          <Button
-            variant={mode === "break" ? "default" : "outline"}
-            size="sm"
-            onClick={() => { setMode("break"); setTimeLeft(PRESETS.break); setIsRunning(false); }}
-          >
+          </button>
+          <button onClick={() => { setMode("break"); setTimeLeft(PRESETS.break); setIsRunning(false); }} className={`pill-nav-item ${mode === "break" ? "pill-nav-item-active" : ""}`}>
             <Coffee className="h-4 w-4" /> Перерыв
-          </Button>
+          </button>
         </div>
 
-        <Card className="w-56 h-56 sm:w-64 sm:h-64 flex items-center justify-center relative mobile-widget-card">
-          <svg className="absolute inset-0 h-full w-full -rotate-90" viewBox="0 0 200 200">
+        {/* Timer circle */}
+        <div className="card" style={{ width: 260, height: 260, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", borderRadius: "50%" }}>
+          <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", transform: "rotate(-90deg)" }} viewBox="0 0 200 200">
             <circle cx="100" cy="100" r="90" fill="none" stroke="var(--border)" strokeWidth="6" />
-            <circle
-              cx="100" cy="100" r="90" fill="none"
-              stroke={mode === "work" ? "var(--accent)" : "var(--success)"}
-              strokeWidth="6"
-              strokeLinecap="round"
-              strokeDasharray={circumference}
-              strokeDashoffset={dashoffset}
-              className="transition-all duration-1000"
-            />
+            <circle cx="100" cy="100" r="90" fill="none" stroke={mode === "work" ? "var(--primary)" : "var(--mint)"} strokeWidth="6" strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={dashoffset} style={{ transition: "stroke-dashoffset 1s linear" }} />
           </svg>
-          <div className="text-center z-10">
-            <p className="text-4xl sm:text-5xl font-bold font-mono tabular-nums">
+          <div style={{ textAlign: "center", zIndex: 1 }}>
+            <p style={{ fontSize: 48, fontWeight: 700, fontFamily: "var(--font-mono)", fontVariantNumeric: "tabular-nums", letterSpacing: "-0.02em" }}>
               {String(mins).padStart(2, "0")}:{String(secs).padStart(2, "0")}
             </p>
-            <p className="mt-2 text-sm text-[var(--secondary)]">
-              {mode === "work" ? "Работа" : "Перерыв"}
-            </p>
+            <p className="text-muted" style={{ marginTop: 4 }}>{mode === "work" ? "Работа" : "Перерыв"}</p>
           </div>
-        </Card>
-
-        <div className="flex gap-3">
-          <Button size="lg" onClick={toggle} className="min-w-[120px]">
-            {isRunning ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
-            {isRunning ? "Пауза" : "Старт"}
-          </Button>
-          <Button variant="outline" size="lg" onClick={reset}>
-            <RotateCcw className="h-5 w-5" />
-          </Button>
         </div>
 
-        <div className="mobile-widget-card px-4 py-3">
-          <span className="text-sm text-[var(--secondary)]">
-            Сессий завершено: <strong className="text-[var(--foreground)]">{sessions}</strong>
-          </span>
+        {/* Controls */}
+        <div className="flex gap-3">
+          <button onClick={toggle} className="btn btn-primary btn-lg" style={{ minWidth: 140 }}>
+            {isRunning ? <><Pause className="h-5 w-5" /> Пауза</> : <><Play className="h-5 w-5" /> Старт</>}
+          </button>
+          <button onClick={reset} className="btn btn-outline btn-lg">
+            <RotateCcw className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Sessions */}
+        <div className="card" style={{ padding: "12px 24px" }}>
+          <span className="text-caption">Сессий завершено: <strong style={{ color: "var(--text)" }}>{sessions}</strong></span>
         </div>
       </div>
     </div>

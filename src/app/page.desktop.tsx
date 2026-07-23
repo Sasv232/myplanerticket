@@ -5,12 +5,18 @@ import { useAuth } from "@/lib/auth-context";
 import { WidgetConfig, loadWidgetConfig } from "@/lib/widgets";
 import { WidgetRenderer } from "@/components/widgets/widget-renderer";
 import { WidgetEditor } from "@/components/widgets/widget-editor";
-import { TagBadge } from "@/components/ui/tag-badge";
-import { Settings, Sparkles, Zap, CheckCircle, Clock, FolderKanban, Repeat, BarChart3 } from "lucide-react";
+import { useLang } from "@/lib/i18n/context";
+import { useRouter } from "next/navigation";
+import {
+  CheckCircle, Clock, FolderKanban, Repeat, Zap, BarChart3,
+  Settings, ArrowRight, TrendingUp, ListTodo, Calendar,
+} from "lucide-react";
 import Link from "next/link";
 
 export function DashboardPageDesktop() {
   const { user } = useAuth();
+  const { t } = useLang();
+  const router = useRouter();
   const [widgetConfig, setWidgetConfig] = useState<WidgetConfig[]>([]);
   const [editorOpen, setEditorOpen] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -31,189 +37,210 @@ export function DashboardPageDesktop() {
   const now = new Date();
   const hour = now.getHours();
   const greeting = hour < 12 ? "Доброе утро" : hour < 18 ? "Добрый день" : "Добрый вечер";
+
   const todayTasks = tasks.filter((t: any) => {
     if (!t.dueDate) return false;
-    const d = new Date(t.dueDate);
-    return d.toDateString() === now.toDateString();
+    return new Date(t.dueDate).toDateString() === now.toDateString();
   });
   const activeTasks = tasks.filter((t: any) => t.status !== "done");
-  const completedToday = tasks.filter((t: any) => t.status === "done").length;
+  const completedTasks = tasks.filter((t: any) => t.status === "done");
+  const urgentTasks = tasks.filter((t: any) => t.priority === "urgent" && t.status !== "done");
   const doneHabits = habits.filter((h: any) => h.completedToday).length;
 
   return (
-    <div className="blob-bg min-h-screen" style={{ padding: "40px 48px" }}>
-      {/* Hero */}
-      <div className="mb-10" style={{ maxWidth: 700 }}>
-        <TagBadge variant="green" className="mb-4">
-          <Sparkles className="h-3.5 w-3.5" />
-          Персональный планер
-        </TagBadge>
-        <h1 className="heading-xl mb-3">
-          {greeting}, {user?.name?.split(" ")[0] || ""} 👋
-        </h1>
-        <p className="text-body" style={{ color: "var(--text-secondary)", maxWidth: 500 }}>
-          Вот что у тебя на сегодня. Нажимай на карточки — каждая интерактивна.
-        </p>
+    <div style={{ padding: "32px 40px" }}>
+      {/* Row 1: Welcome + Quick Actions */}
+      <div className="dash-grid" style={{ marginBottom: 24 }}>
+        {/* Welcome */}
+        <div className="dash-grid-2" style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
+          <div className="badge badge-primary" style={{ marginBottom: 12, width: "fit-content" }}>
+            <Zap className="h-3 w-3" /> Планер
+          </div>
+          <h1 className="heading-xl" style={{ marginBottom: 4 }}>
+            {greeting}, {user?.name?.split(" ")[0] || ""} 👋
+          </h1>
+          <p className="text-body" style={{ maxWidth: 400 }}>
+            Вот что у тебя на сегодня. Управляй задачами и отслеживай прогресс.
+          </p>
+        </div>
+
+        {/* Quick stats */}
+        <div className="stat-card" style={{ flexDirection: "column", alignItems: "flex-start", gap: 8 }}>
+          <div className="flex items-center gap-2">
+            <div className="stat-icon" style={{ background: "var(--primary-light)", color: "var(--primary)", width: 36, height: 36, borderRadius: "var(--radius-sm)" }}>
+              <CheckCircle className="h-4 w-4" />
+            </div>
+            <span className="stat-label">Готово сегодня</span>
+          </div>
+          <span className="stat-value">{completedTasks.length}</span>
+        </div>
+
+        <div className="stat-card" style={{ flexDirection: "column", alignItems: "flex-start", gap: 8 }}>
+          <div className="flex items-center gap-2">
+            <div className="stat-icon" style={{ background: "var(--mint-light)", color: "var(--mint)", width: 36, height: 36, borderRadius: "var(--radius-sm)" }}>
+              <Clock className="h-4 w-4" />
+            </div>
+            <span className="stat-label">Активных</span>
+          </div>
+          <span className="stat-value">{activeTasks.length}</span>
+        </div>
       </div>
 
-      {/* Летающие карточки — PSP XMB стиль */}
-      <div className="relative" style={{ minHeight: 500 }}>
-        {/* Карточка 1 — Задачи на сегодня (большая) */}
-        <Link href="/tasks" className="absolute dash-float dash-float-1" style={{ top: 0, left: 0, width: 340 }}>
-          <div className="dash-glass p-6">
-            <div className="gradient-ring gradient-ring-1" />
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-2xl flex items-center justify-center icon-pulse" style={{ background: "var(--gradient-accent)" }}>
-                <CheckCircle className="h-6 w-6 text-white" />
+      {/* Row 2: Stats + Active Tasks */}
+      <div className="dash-grid" style={{ marginBottom: 24 }}>
+        {/* Stats overview */}
+        <div className="card" style={{ padding: 20, gridColumn: "span 2" }}>
+          <div className="flex items-center justify-between" style={{ marginBottom: 16 }}>
+            <h2 className="heading-md">Статистика</h2>
+            <Link href="/stats" className="btn btn-ghost btn-sm" style={{ gap: 4 }}>
+              Подробнее <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <div className="stat-card" style={{ padding: 14 }}>
+              <div className="stat-icon" style={{ background: "var(--primary-light)", color: "var(--primary)", width: 40, height: 40 }}>
+                <ListTodo className="h-4 w-4" />
               </div>
               <div>
-                <p className="text-caption" style={{ fontWeight: 600 }}>Задачи на сегодня</p>
-                <p className="heading-lg" style={{ lineHeight: 1 }}>{todayTasks.length}</p>
+                <div className="stat-value" style={{ fontSize: 20 }}>{todayTasks.length}</div>
+                <div className="stat-label">На сегодня</div>
               </div>
             </div>
-            <div className="space-y-2">
-              {todayTasks.slice(0, 3).map((t: any) => (
-                <div key={t.id} className="flex items-center gap-2 p-2 rounded-xl" style={{ background: "var(--bg-alt)" }}>
-                  <div className="w-2 h-2 rounded-full" style={{ background: t.priority === "urgent" ? "var(--error)" : t.priority === "high" ? "var(--warning)" : "var(--green)" }} />
-                  <span className="text-sm truncate">{t.title}</span>
-                </div>
-              ))}
-              {todayTasks.length === 0 && <p className="text-sm" style={{ color: "var(--text-muted)" }}>Нет задач на сегодня</p>}
-            </div>
-          </div>
-        </Link>
-
-        {/* Карточка 2 — Активные задачи (средняя, смещена) */}
-        <Link href="/tasks" className="absolute dash-float dash-float-2" style={{ top: 20, left: 380, width: 260 }}>
-          <div className="dash-glass p-5">
-            <div className="gradient-ring gradient-ring-2" />
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center icon-pulse-delay wiggle" style={{ background: "var(--blue-light)" }}>
-                <Clock className="h-5 w-5" style={{ color: "var(--blue)" }} />
+            <div className="stat-card" style={{ padding: 14 }}>
+              <div className="stat-icon" style={{ background: "rgba(239,68,68,0.08)", color: "var(--error)", width: 40, height: 40 }}>
+                <TrendingUp className="h-4 w-4" />
               </div>
               <div>
-                <p className="text-caption" style={{ fontWeight: 600 }}>Активных</p>
-                <p className="heading-md" style={{ lineHeight: 1 }}>{activeTasks.length}</p>
+                <div className="stat-value" style={{ fontSize: 20 }}>{urgentTasks.length}</div>
+                <div className="stat-label">Срочных</div>
               </div>
             </div>
-            <div className="progress-bar mt-3">
-              <div className="progress-bar-fill" style={{ width: `${tasks.length > 0 ? (completedToday / tasks.length * 100) : 0}%` }} />
+          </div>
+          {/* Progress bar */}
+          <div style={{ marginTop: 16 }}>
+            <div className="flex items-center justify-between" style={{ marginBottom: 6 }}>
+              <span className="text-xs">Прогресс</span>
+              <span className="text-xs">{tasks.length > 0 ? Math.round(completedTasks.length / tasks.length * 100) : 0}%</span>
             </div>
-            <p className="text-muted mt-2">выполнено: {completedToday}/{tasks.length}</p>
+            <div className="progress">
+              <div className="progress-fill progress-fill-primary" style={{ width: `${tasks.length > 0 ? (completedTasks.length / tasks.length * 100) : 0}%` }} />
+            </div>
+          </div>
+        </div>
+
+        {/* Active tasks */}
+        <div className="card" style={{ padding: 20, gridColumn: "span 2" }}>
+          <div className="flex items-center justify-between" style={{ marginBottom: 16 }}>
+            <h2 className="heading-md">Активные задачи</h2>
+            <Link href="/tasks" className="btn btn-ghost btn-sm" style={{ gap: 4 }}>
+              Все <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {activeTasks.slice(0, 4).map((task: any) => (
+              <div key={task.id} className="task-item" onClick={() => router.push("/tasks")}>
+                <div className="task-item-priority" style={{
+                  background: task.priority === "urgent" ? "var(--error)" :
+                    task.priority === "high" ? "var(--warning)" :
+                    task.priority === "medium" ? "var(--primary)" : "var(--mint)"
+                }} />
+                <div className="task-item-content">
+                  <div className="task-item-title">{task.title}</div>
+                  <div className="task-item-meta">
+                    {task.dueDate && (
+                      <span className="text-xs" style={{
+                        color: new Date(task.dueDate) < now ? "var(--error)" : "var(--text-muted)"
+                      }}>
+                        {new Date(task.dueDate).toLocaleDateString("ru-RU", { day: "numeric", month: "short" })}
+                      </span>
+                    )}
+                    <span className={`badge badge-${task.priority === "urgent" ? "error" : task.priority === "high" ? "warning" : "primary"}`} style={{ height: 20, fontSize: 10, padding: "0 6px" }}>
+                      {task.priority === "urgent" ? "Срочно" : task.priority === "high" ? "Высокий" : task.priority === "medium" ? "Средний" : "Низкий"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+            {activeTasks.length === 0 && (
+              <div className="empty-state" style={{ padding: "24px 16px" }}>
+                <div className="empty-state-icon" style={{ width: 48, height: 48 }}>
+                  <CheckCircle className="h-6 w-6" />
+                </div>
+                <p className="empty-state-title" style={{ fontSize: 14 }}>Все задачи выполнены!</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Row 3: Habits + Timer + Projects */}
+      <div className="dash-grid">
+        {/* Habits */}
+        <div className="card" style={{ padding: 20 }}>
+          <div className="flex items-center justify-between" style={{ marginBottom: 16 }}>
+            <h2 className="heading-md">Привычки</h2>
+            <Link href="/habits" className="btn btn-ghost btn-sm" style={{ gap: 4 }}>
+              <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
+          <div style={{ textAlign: "center", marginBottom: 16 }}>
+            <div className="stat-value" style={{ fontSize: 32, color: "var(--mint)" }}>{doneHabits}/{habits.length}</div>
+            <div className="stat-label">выполнено сегодня</div>
+          </div>
+          <div className="progress">
+            <div className="progress-fill progress-fill-mint" style={{ width: `${habits.length > 0 ? (doneHabits / habits.length * 100) : 0}%` }} />
+          </div>
+        </div>
+
+        {/* Pomodoro */}
+        <Link href="/pomodoro" className="card card-interactive" style={{ padding: 20, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textDecoration: "none", gap: 12 }}>
+          <div className="stat-icon" style={{
+            background: "var(--gradient-primary)", color: "white", width: 56, height: 56, borderRadius: "var(--radius-lg)",
+            boxShadow: "0 4px 12px var(--primary-glow)",
+          }}>
+            <Zap className="h-6 w-6" />
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <p className="heading-md">Таймер</p>
+            <p className="text-muted" style={{ marginTop: 2 }}>Фокусировка</p>
           </div>
         </Link>
 
-        {/* Карточка 3 — Проекты (маленькая, выше) */}
-        <Link href="/projects" className="absolute dash-float dash-float-3" style={{ top: -10, left: 680, width: 220 }}>
-          <div className="dash-glass p-5 bounce-click">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center icon-pulse-delay2" style={{ background: "rgba(168,85,247,0.1)" }}>
-              <FolderKanban className="h-5 w-5" style={{ color: "var(--purple)" }} />
+        {/* Projects */}
+        <Link href="/projects" className="card card-interactive" style={{ padding: 20, textDecoration: "none", gridColumn: "span 2" }}>
+          <div className="flex items-center gap-3" style={{ marginBottom: 16 }}>
+            <div className="stat-icon" style={{ background: "var(--mint-light)", color: "var(--mint)" }}>
+              <FolderKanban className="h-5 w-5" />
             </div>
-            <p className="text-caption mt-3" style={{ fontWeight: 600 }}>Проекты</p>
-            <p className="heading-md mt-1" style={{ lineHeight: 1 }}>Открыть</p>
+            <div>
+              <h2 className="heading-md">Проекты</h2>
+              <p className="text-muted">Командная работа</p>
+            </div>
           </div>
-        </Link>
-
-        {/* Карточка 4 — Привычки (средняя, ниже) */}
-        <Link href="/habits" className="absolute dash-float dash-float-4" style={{ top: 220, left: 40, width: 300 }}>
-          <div className="dash-glass p-5">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center icon-pulse wiggle" style={{ background: "var(--green-light)" }}>
-                <Repeat className="h-5 w-5" style={{ color: "var(--green)" }} />
-              </div>
+          <div className="flex gap-3">
+            <div className="stat-card" style={{ flex: 1, padding: 12 }}>
               <div>
-                <p className="text-caption" style={{ fontWeight: 600 }}>Привычки сегодня</p>
-                <p className="heading-md" style={{ lineHeight: 1 }}>{doneHabits}/{habits.length}</p>
+                <div className="stat-value" style={{ fontSize: 18 }}>{tasks.filter((t: any) => t.projectId).length}</div>
+                <div className="stat-label">В проектах</div>
               </div>
             </div>
-            <div className="flex gap-1.5 mt-3">
-              {habits.slice(0, 7).map((h: any) => (
-                <div
-                  key={h.id}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold bounce-click"
-                  style={{
-                    background: h.completedToday ? "var(--gradient-green)" : "var(--bg-alt)",
-                    color: h.completedToday ? "white" : "var(--text-muted)",
-                    boxShadow: h.completedToday ? "0 2px 8px rgba(34,197,94,0.3)" : "none",
-                  }}
-                >
-                  {h.completedToday ? "✓" : "·"}
-                </div>
-              ))}
-            </div>
-          </div>
-        </Link>
-
-        {/* Карточка 5 — Таймер (маленькая, справа) */}
-        <Link href="/pomodoro" className="absolute dash-float dash-float-5" style={{ top: 200, left: 380, width: 200 }}>
-          <div className="dash-glass p-5 bounce-click" style={{ textAlign: "center" }}>
-            <div className="w-14 h-14 rounded-full mx-auto flex items-center justify-center icon-pulse" style={{ background: "var(--gradient-accent)", boxShadow: "0 4px 20px var(--accent-glow)" }}>
-              <Zap className="h-7 w-7 text-white" />
-            </div>
-            <p className="heading-sm mt-3">Таймер</p>
-            <p className="text-muted text-xs mt-1">Фокусировка</p>
-          </div>
-        </Link>
-
-        {/* Карточка 6 — Статистика (широкая, внизу) */}
-        <Link href="/stats" className="absolute dash-float dash-float-1" style={{ top: 340, left: 40, width: 400 }}>
-          <div className="dash-glass p-5">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center icon-pulse-delay" style={{ background: "rgba(255,107,53,0.1)" }}>
-                <BarChart3 className="h-5 w-5" style={{ color: "var(--orange)" }} />
+            <div className="stat-card" style={{ flex: 1, padding: 12 }}>
+              <div>
+                <div className="stat-value" style={{ fontSize: 18 }}>{tasks.filter((t: any) => !t.projectId).length}</div>
+                <div className="stat-label">Личных</div>
               </div>
-              <p className="text-caption" style={{ fontWeight: 600 }}>Статистика недели</p>
             </div>
-            <div className="flex gap-4">
-              {["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"].map((day, i) => (
-                <div key={day} className="flex-1 flex flex-col items-center gap-1">
-                  <div
-                    className="w-full rounded-lg bounce-click"
-                    style={{
-                      height: `${20 + Math.random() * 60}px`,
-                      background: i === new Date().getDay() - 1 ? "var(--gradient-green)" : "var(--bg-alt)",
-                      minHeight: 20,
-                    }}
-                  />
-                  <span className="text-muted text-[10px]">{day}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </Link>
-
-        {/* Карточка 7 — Мессенджер (маленькая, плавающая) */}
-        <Link href="/messenger" className="absolute dash-float dash-float-3" style={{ top: 350, left: 480, width: 180 }}>
-          <div className="dash-glass p-4 bounce-click" style={{ textAlign: "center" }}>
-            <div className="text-3xl mb-2">💬</div>
-            <p className="heading-sm">Чат</p>
-            <p className="text-muted text-xs mt-1">Сообщения</p>
-          </div>
-        </Link>
-
-        {/* Карточка 8 — Фитнес */}
-        <Link href="/fitness" className="absolute dash-float dash-float-4" style={{ top: 420, left: 700, width: 180 }}>
-          <div className="dash-glass p-4 bounce-click" style={{ textAlign: "center" }}>
-            <div className="text-3xl mb-2 wiggle">🏋️</div>
-            <p className="heading-sm">Фитнес</p>
-            <p className="text-muted text-xs mt-1">Тренировки</p>
           </div>
         </Link>
       </div>
 
-      {/* Настройка виджетов */}
-      <div className="mt-8">
-        <button className="pill-btn pill-btn-outline" onClick={() => setEditorOpen(true)}>
-          <Settings className="h-4 w-4" />
-          Настроить виджеты
+      {/* Widget Editor */}
+      <div style={{ marginTop: 24 }}>
+        <button className="btn btn-outline" onClick={() => setEditorOpen(true)}>
+          <Settings className="h-4 w-4" /> Настроить виджеты
         </button>
       </div>
-
-      <WidgetEditor
-        open={editorOpen}
-        onClose={() => setEditorOpen(false)}
-        onChange={handleConfigChange}
-      />
+      <WidgetEditor open={editorOpen} onClose={() => setEditorOpen(false)} onChange={handleConfigChange} />
     </div>
   );
 }
