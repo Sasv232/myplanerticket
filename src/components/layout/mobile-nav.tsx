@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Home, CheckSquare, MessageSquare, Repeat, Timer, Grid3X3 } from "lucide-react";
+import { Home, CheckSquare, Repeat, Timer, Grid3X3 } from "lucide-react";
 import { useMobileSidebar } from "./mobile-sidebar-context";
+import { useState, useEffect, useRef } from "react";
 
 const navItems = [
   { label: "Главная", href: "/", icon: Home },
@@ -17,9 +18,34 @@ const navItems = [
 export function MobileNav() {
   const pathname = usePathname();
   const { setOpen } = useMobileSidebar();
+  const [hidden, setHidden] = useState(false);
+  const lastScrollY = useRef(0);
+  const ticking = useRef(false);
+
+  useEffect(() => {
+    const onScroll = () => {
+      if (ticking.current) return;
+      ticking.current = true;
+      requestAnimationFrame(() => {
+        const y = window.scrollY;
+        const delta = y - lastScrollY.current;
+        if (y < 10) {
+          setHidden(false);
+        } else if (delta > 8) {
+          setHidden(true);
+        } else if (delta < -8) {
+          setHidden(false);
+        }
+        lastScrollY.current = y;
+        ticking.current = false;
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
-    <nav className="mobile-nav">
+    <nav className={cn("mobile-nav", hidden && "mobile-nav-hidden")}>
       <div className="mobile-nav-inner">
         {navItems.map((item) => {
           const Icon = item.icon;
