@@ -709,7 +709,6 @@ function MobileTaskRow({
       </button>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          {task.emoji && <span className="text-base">{task.emoji}</span>}
           <span
             className={`text-[15px] font-medium truncate ${
               isDone ? "line-through opacity-60" : ""
