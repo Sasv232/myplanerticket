@@ -4,10 +4,12 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { X, Users, Search } from "lucide-react";
+import { UserAvatar } from "@/components/ui/user-avatar";
 
 interface User {
   id: string;
   name: string;
+  avatar?: string | null;
 }
 
 interface CreateChatModalProps {
@@ -153,9 +155,7 @@ export function CreateChatModal({ open, onClose, onCreate, onSearch, users, curr
                     : "hover:bg-[var(--surface)] text-[var(--foreground)]"
                 }`}
               >
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--accent)]/15 text-xs font-bold text-[var(--accent)]">
-                  {user.name[0].toUpperCase()}
-                </div>
+                <UserAvatar src={user.avatar} name={user.name} size="md" />
                 <span className="font-medium">{user.name}</span>
                 {selectedUsers.includes(user.id) && (
                   <span className="ml-auto text-[var(--accent)]">✓</span>

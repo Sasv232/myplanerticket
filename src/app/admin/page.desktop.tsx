@@ -5,11 +5,13 @@ import { Header } from "@/components/layout/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Users, Shield, User, RefreshCw, Mail } from "lucide-react";
+import { UserAvatar } from "@/components/ui/user-avatar";
 
 interface AdminUser {
   id: string;
   name: string;
   email: string | null;
+  avatar: string | null;
   role: string;
   createdAt: string;
   taskCount: number;
@@ -129,9 +131,7 @@ export function AdminPageDesktop() {
                     <tr key={u.id} className="border-b border-[var(--border)] hover:bg-muted/50">
                       <td className="px-4 py-3 font-medium">
                         <div className="flex items-center gap-2">
-                          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--accent)]/20 text-xs font-bold text-[var(--accent)]">
-                            {u.name[0].toUpperCase()}
-                          </div>
+                          <UserAvatar src={u.avatar} name={u.name} size="sm" />
                           {u.name}
                         </div>
                       </td>

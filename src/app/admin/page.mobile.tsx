@@ -5,11 +5,13 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Users, Shield, User, RefreshCw, Mail, Home } from "lucide-react";
 import { useMobileSidebar } from "@/components/layout/mobile-sidebar-context";
+import { UserAvatar } from "@/components/ui/user-avatar";
 
 interface AdminUser {
   id: string;
   name: string;
   email: string | null;
+  avatar: string | null;
   role: string;
   createdAt: string;
   taskCount: number;
@@ -132,9 +134,7 @@ export function AdminPageMobile() {
               <div key={u.id} className="mobile-section p-5">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--accent)]/15 text-sm font-bold text-[var(--accent)]">
-                      {u.name[0].toUpperCase()}
-                    </div>
+                    <UserAvatar src={u.avatar} name={u.name} size="lg" />
                     <div>
                       <p className="text-base font-semibold">{u.name}</p>
                       <div className="flex items-center gap-1.5 text-sm text-[var(--secondary)] mt-0.5">

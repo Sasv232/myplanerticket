@@ -8,6 +8,7 @@ import { useState } from "react";
 import { Menu, X, Train, Sun, Moon, LogOut, Shield } from "lucide-react";
 import { useTheme } from "./theme-provider";
 import { useAuth } from "@/lib/auth-context";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { useLang } from "@/lib/i18n/context";
 
 export function Sidebar() {
@@ -125,9 +126,7 @@ export function Sidebar() {
         <div className="border-t border-[var(--border)] p-4 space-y-2">
           {user && (
             <div className="flex items-center gap-2.5 px-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-xs font-bold text-[var(--accent)]">
-                {user.name[0].toUpperCase()}
-              </div>
+              <UserAvatar src={user.avatar} name={user.name} size="md" />
               <span className="text-sm font-medium truncate">{user.name}</span>
               <button
                 onClick={handleLogout}

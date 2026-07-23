@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     }
 
     const results = await db.execute(
-      sql`SELECT id, name FROM users WHERE id != ${user.id} AND name ILIKE ${"%" + q + "%"} LIMIT 20`
+      sql`SELECT id, name, avatar FROM users WHERE id != ${user.id} AND name ILIKE ${"%" + q + "%"} LIMIT 20`
     );
 
     return NextResponse.json(results.rows);

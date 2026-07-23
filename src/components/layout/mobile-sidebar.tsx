@@ -8,6 +8,7 @@ import { useEffect } from "react";
 import { X, LogOut, Shield } from "lucide-react";
 import { useTheme } from "./theme-provider";
 import { useAuth } from "@/lib/auth-context";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { useLang } from "@/lib/i18n/context";
 
 interface MobileSidebarProps {
@@ -75,13 +76,7 @@ export function MobileSidebar({ open, onClose }: MobileSidebarProps) {
         {user && (
           <div className="px-6 pb-8">
             <div className="flex flex-col items-center">
-              {user.avatar ? (
-                <img src={user.avatar} alt="" className="h-20 w-20 rounded-full object-cover ring-4 ring-[var(--accent)]/15 mb-4" />
-              ) : (
-                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-[var(--accent)] to-[var(--accent)]/60 text-2xl font-bold text-white ring-4 ring-[var(--accent)]/15 mb-4">
-                  {user.name[0].toUpperCase()}
-                </div>
-              )}
+              <UserAvatar src={user.avatar} name={user.name} size="xl" className="mb-4" />
               <h2 className="text-lg font-bold text-center">{user.name}</h2>
               <p className="text-sm text-[var(--secondary)] mt-0.5">
                 {user.role === "admin" ? t("common_admin") : t("common_user")}
