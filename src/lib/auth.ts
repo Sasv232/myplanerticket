@@ -67,7 +67,7 @@ export async function register(name: string, password: string, email?: string) {
 
   return {
     token,
-    user: { id, name, email: email || null, role: "user" },
+    user: { id, name, email: email || null, avatar: null, role: "user" },
   };
 }
 
@@ -95,7 +95,7 @@ export async function login(name: string, password: string) {
 
   return {
     token,
-    user: { id: user.id, name: user.name, email: user.email, role: user.role },
+    user: { id: user.id, name: user.name, email: user.email, avatar: user.avatar, role: user.role },
   };
 }
 
