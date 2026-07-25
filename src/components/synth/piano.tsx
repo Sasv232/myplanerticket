@@ -18,9 +18,14 @@ interface PianoProps {
   bindings?: Record<string, string>;
 }
 
-const BLACK_KEY_POSITIONS: Record<string, number> = {
-  "C#4": 1, "D#4": 2, "F#4": 4, "G#4": 5, "A#4": 6,
-  "C#5": 8, "D#5": 9, "F#5": 11, "G#5": 12, "A#5": 13,
+const WHITE_WIDTH = 50;
+const WHITE_HEIGHT = 200;
+const BLACK_WIDTH = 30;
+const BLACK_HEIGHT = 130;
+
+const BLACK_KEY_OFFSET: Record<string, number> = {
+  "C#4": 0, "D#4": 1, "F#4": 3, "G#4": 4, "A#4": 5,
+  "C#5": 7, "D#5": 8, "F#5": 10, "G#5": 11, "A#5": 12,
 };
 
 const NOTE_LABELS: Record<string, string> = {
@@ -87,9 +92,6 @@ export function Piano({ waveform, volume, activeNotes, onNotePlay, bindings }: P
     };
   }, []);
 
-  const whiteWidth = 100 / WHITE_NOTES.length;
-  const blackWidth = whiteWidth * 0.6;
-
   const allActive = new Set([...(activeNotes || []), ...pressed]);
 
   const getKeyBindLabel = (note: string): string => {
@@ -106,88 +108,102 @@ export function Piano({ waveform, volume, activeNotes, onNotePlay, bindings }: P
         <span className="text-[10px] font-bold text-[var(--muted)] uppercase tracking-widest">Октава 5</span>
       </div>
 
-      <div className="relative" style={{ paddingBottom: "55%" }}>
-        {WHITE_NOTES.map((note, i) => {
-          const bindLabel = getKeyBindLabel(note);
-          return (
-            <button
-              key={note}
-              onMouseDown={() => handleDown(note)}
-              onMouseUp={() => handleUp(note)}
-              onMouseLeave={() => handleUp(note)}
-              onTouchStart={(e) => { e.preventDefault(); handleDown(note); }}
-              onTouchEnd={(e) => { e.preventDefault(); handleUp(note); }}
-              className="absolute bottom-0 rounded-b-xl transition-all duration-75"
-              style={{
-                left: `${i * whiteWidth}%`,
-                width: `${whiteWidth - 0.3}%`,
-                height: "100%",
-                backgroundColor: allActive.has(note) ? "var(--accent)" : "var(--card)",
-                border: "1px solid var(--border)",
-                borderRight: "none",
-                boxShadow: allActive.has(note)
-                  ? "0 0 12px var(--accent), inset 0 -4px 8px rgba(0,0,0,0.15)"
-                  : "inset 0 -4px 8px rgba(0,0,0,0.08)",
-                zIndex: 1,
-              }}
-            >
-              <span
-                className="absolute bottom-6 left-1/2 -translate-x-1/2 text-[8px] font-bold"
-                style={{ color: allActive.has(note) ? "#fff" : "var(--muted)" }}
+      <div
+        className="overflow-x-auto"
+        style={{ WebkitOverflowScrolling: "touch" }}
+      >
+        <div
+          className="relative"
+          style={{
+            width: WHITE_NOTES.length * WHITE_WIDTH,
+            height: WHITE_HEIGHT,
+            flexShrink: 0,
+          }}
+        >
+          {WHITE_NOTES.map((note, i) => {
+            const bindLabel = getKeyBindLabel(note);
+            const isActive = allActive.has(note);
+            return (
+              <button
+                key={note}
+                onMouseDown={() => handleDown(note)}
+                onMouseUp={() => handleUp(note)}
+                onMouseLeave={() => handleUp(note)}
+                onTouchStart={(e) => { e.preventDefault(); handleDown(note); }}
+                onTouchEnd={(e) => { e.preventDefault(); handleUp(note); }}
+                className="absolute top-0 rounded-b-xl transition-all duration-75"
+                style={{
+                  left: i * WHITE_WIDTH,
+                  width: WHITE_WIDTH,
+                  height: WHITE_HEIGHT,
+                  backgroundColor: isActive ? "var(--accent)" : "var(--card)",
+                  border: "1px solid var(--border)",
+                  borderRight: "none",
+                  boxShadow: isActive
+                    ? "0 0 12px var(--accent), inset 0 -4px 8px rgba(0,0,0,0.15)"
+                    : "inset 0 -4px 8px rgba(0,0,0,0.08)",
+                  zIndex: 1,
+                }}
               >
-                {bindLabel}
-              </span>
-              <span
-                className="absolute bottom-1 left-1/2 -translate-x-1/2 text-[10px] font-bold"
-                style={{ color: allActive.has(note) ? "#fff" : "var(--secondary)" }}
-              >
-                {NOTE_LABELS[note]}
-              </span>
-            </button>
-          );
-        })}
+                <span
+                  className="absolute bottom-14 left-1/2 -translate-x-1/2 text-[8px] font-bold"
+                  style={{ color: isActive ? "#fff" : "var(--muted)" }}
+                >
+                  {bindLabel}
+                </span>
+                <span
+                  className="absolute bottom-2 left-1/2 -translate-x-1/2 text-[11px] font-bold"
+                  style={{ color: isActive ? "#fff" : "var(--secondary)" }}
+                >
+                  {NOTE_LABELS[note]}
+                </span>
+              </button>
+            );
+          })}
 
-        {BLACK_NOTES.map((note) => {
-          const pos = BLACK_KEY_POSITIONS[note];
-          const left = pos * whiteWidth - blackWidth / 2;
-          const bindLabel = getKeyBindLabel(note);
-          return (
-            <button
-              key={note}
-              onMouseDown={() => handleDown(note)}
-              onMouseUp={() => handleUp(note)}
-              onMouseLeave={() => handleUp(note)}
-              onTouchStart={(e) => { e.preventDefault(); handleDown(note); }}
-              onTouchEnd={(e) => { e.preventDefault(); handleUp(note); }}
-              className="absolute bottom-0 rounded-b-lg transition-all duration-75"
-              style={{
-                left: `${left}%`,
-                width: `${blackWidth}%`,
-                height: "60%",
-                backgroundColor: allActive.has(note) ? "var(--accent)" : "#1a1a2e",
-                border: "1px solid #333",
-                borderTop: "none",
-                boxShadow: allActive.has(note)
-                  ? "0 0 12px var(--accent), inset 0 -3px 6px rgba(0,0,0,0.3)"
-                  : "inset 0 -3px 6px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.3)",
-                zIndex: 2,
-              }}
-            >
-              <span
-                className="absolute bottom-5 left-1/2 -translate-x-1/2 text-[7px] font-bold"
-                style={{ color: allActive.has(note) ? "#ccc" : "#666" }}
+          {BLACK_NOTES.map((note) => {
+            const whiteIndex = BLACK_KEY_OFFSET[note];
+            const left = (whiteIndex + 1) * WHITE_WIDTH - BLACK_WIDTH / 2;
+            const bindLabel = getKeyBindLabel(note);
+            const isActive = allActive.has(note);
+            return (
+              <button
+                key={note}
+                onMouseDown={() => handleDown(note)}
+                onMouseUp={() => handleUp(note)}
+                onMouseLeave={() => handleUp(note)}
+                onTouchStart={(e) => { e.preventDefault(); handleDown(note); }}
+                onTouchEnd={(e) => { e.preventDefault(); handleUp(note); }}
+                className="absolute top-0 rounded-b-lg transition-all duration-75"
+                style={{
+                  left,
+                  width: BLACK_WIDTH,
+                  height: BLACK_HEIGHT,
+                  backgroundColor: isActive ? "var(--accent)" : "#1a1a2e",
+                  border: "1px solid #333",
+                  borderTop: "none",
+                  boxShadow: isActive
+                    ? "0 0 12px var(--accent), inset 0 -3px 6px rgba(0,0,0,0.3)"
+                    : "inset 0 -3px 6px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.3)",
+                  zIndex: 2,
+                }}
               >
-                {bindLabel}
-              </span>
-              <span
-                className="absolute bottom-1 left-1/2 -translate-x-1/2 text-[8px] font-bold"
-                style={{ color: allActive.has(note) ? "#fff" : "#888" }}
-              >
-                {NOTE_LABELS[note]}
-              </span>
-            </button>
-          );
-        })}
+                <span
+                  className="absolute bottom-5 left-1/2 -translate-x-1/2 text-[7px] font-bold"
+                  style={{ color: isActive ? "#ccc" : "#666" }}
+                >
+                  {bindLabel}
+                </span>
+                <span
+                  className="absolute bottom-1 left-1/2 -translate-x-1/2 text-[8px] font-bold"
+                  style={{ color: isActive ? "#fff" : "#888" }}
+                >
+                  {NOTE_LABELS[note]}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <p className="text-[10px] text-[var(--muted)] text-center mt-3 font-medium">

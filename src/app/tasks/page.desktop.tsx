@@ -49,12 +49,14 @@ export function TasksPageDesktop() {
       const url = selectedProject ? `/api/tasks?projectId=${selectedProject}&t=${Date.now()}` : `/api/tasks?t=${Date.now()}`;
       const res = await fetch(url);
       const data = await res.json();
-      setTasks(data.map((t: Task & { tags: string; repeat_rule: string | null; label: string | null }) => ({
+      const mapped = data.map((t: Task & { tags: string; repeat_rule: string | null; label: string | null }) => ({
         ...t,
         tags: typeof t.tags === "string" ? JSON.parse(t.tags) : t.tags,
         repeatRule: t.repeat_rule || t.repeatRule || null,
         label: t.label || null,
-      })));
+      }));
+      const unique = mapped.filter((t: Task, i: number, arr: Task[]) => arr.findIndex(x => x.title === t.title && x.projectId === t.projectId) === i);
+      setTasks(unique);
     } catch {} finally { setLoading(false); }
   }, [selectedProject]);
 
@@ -128,6 +130,14 @@ export function TasksPageDesktop() {
 
   return (
     <div style={{ padding: "32px 40px" }}>
+      <style>{`
+        .task-item { position: relative; }
+        .task-actions { opacity: 0; transition: opacity 0.15s ease; }
+        .task-item:hover .task-actions { opacity: 1; }
+        .task-checkbox:hover { border-color: var(--primary) !important; background: var(--primary-light) !important; }
+        .task-checkbox-checked { animation: checkbox-bounce 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        @keyframes checkbox-bounce { 0% { transform: scale(0.8); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
+      `}</style>
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
         <h1 className="heading-xl" style={{ marginBottom: 4 }}>{t("tasks_title")}</h1>
@@ -222,7 +232,19 @@ export function TasksPageDesktop() {
                     color: selectedIds.has(task.id) ? "white" : "transparent",
                   }}>✓</div>
                 )}
-                <div className="task-item-priority" style={{ background: priorityColor(task.priority) }} />
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleStatusChange(task.id, task.status === "done" ? "todo" : "done"); }}
+                  className={`task-checkbox ${task.status === "done" ? "task-checkbox-checked" : ""}`}
+                  style={{
+                    width: 20, height: 20, borderRadius: "50%", border: task.status === "done" ? "none" : "2px solid var(--border)",
+                    background: task.status === "done" ? "var(--primary)" : "transparent",
+                    display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer",
+                    transition: "all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                    transform: task.status === "done" ? "scale(1)" : "scale(1)",
+                  }}
+                >
+                  {task.status === "done" && <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                </button>
                 <div className="task-item-content">
                   <div className={`task-item-title ${task.status === "done" ? "task-item-title-done" : ""}`}>{task.title}</div>
                   <div className="task-item-meta">
@@ -231,7 +253,7 @@ export function TasksPageDesktop() {
                     {task.projectId && <span className="badge badge-primary" style={{ height: 20, fontSize: 10, padding: "0 6px" }}>{projects.find(p => p.id === task.projectId)?.name || "Проект"}</span>}
                   </div>
                 </div>
-                <div className="flex gap-1.5" style={{ flexShrink: 0 }}>
+                <div className="flex gap-1.5 task-actions" style={{ flexShrink: 0 }}>
                   <button onClick={e => { e.stopPropagation(); setEditingTask(task); setFormOpen(true); }} className="btn-icon btn-icon-sm"><Pencil className="h-3.5 w-3.5" /></button>
                   <button onClick={e => { e.stopPropagation(); handleDelete(task.id); }} className="btn-icon btn-icon-sm" style={{ color: "var(--error)" }}><Trash2 className="h-3.5 w-3.5" /></button>
                   {task.status !== "done" && <button onClick={e => { e.stopPropagation(); handleStatusChange(task.id, "done"); }} className="btn btn-mint btn-sm">✓</button>}

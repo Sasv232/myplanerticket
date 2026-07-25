@@ -158,7 +158,7 @@ export function FitnessPageDesktop() {
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold flex items-center gap-2">🏋️ {t("fitness_title")}</h1>
+        <h1 className="text-2xl font-bold flex items-center gap-2">{t("fitness_title")}</h1>
         <button onClick={() => setShowProfile(!showProfile)} className="px-4 py-2 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-sm hover:bg-[var(--accent)]/10 transition-colors flex items-center gap-2">
           <Heart className="h-4 w-4" /> {t("fitness_profile")}
         </button>
@@ -166,7 +166,7 @@ export function FitnessPageDesktop() {
 
       {showProfile && (
         <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 space-y-4">
-          <h3 className="font-semibold">🏥 {t("fitness_health")}</h3>
+          <h3 className="font-semibold">{t("fitness_health")}</h3>
           <div className="grid grid-cols-4 gap-4">
             <div>
               <label className="text-xs text-[var(--muted)]">{t("fitness_height")}</label>
@@ -229,9 +229,9 @@ export function FitnessPageDesktop() {
         <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4">
           <p className="text-xs text-[var(--muted)] mb-1">📊 {t("fitness_bju")}</p>
           <div className="flex gap-4 mt-1">
-            <div><p className="text-lg font-bold text-red-500">{Math.round(totalProtein)}г</p><p className="text-[10px] text-[var(--muted)]">{t("fitness_protein")}</p></div>
-            <div><p className="text-lg font-bold text-yellow-500">{Math.round(totalCarbs)}г</p><p className="text-[10px] text-[var(--muted)]">{t("fitness_carbs")}</p></div>
-            <div><p className="text-lg font-bold text-green-500">{Math.round(totalFat)}г</p><p className="text-[10px] text-[var(--muted)]">{t("fitness_fat")}</p></div>
+            <div><p className="text-lg font-bold text-red-500">{totalProtein ? `${Math.round(totalProtein)}г` : "—"}</p><p className="text-[10px] text-[var(--muted)]">{t("fitness_protein")}</p></div>
+            <div><p className="text-lg font-bold text-yellow-500">{totalCarbs ? `${Math.round(totalCarbs)}г` : "—"}</p><p className="text-[10px] text-[var(--muted)]">{t("fitness_carbs")}</p></div>
+            <div><p className="text-lg font-bold text-green-500">{totalFat ? `${Math.round(totalFat)}г` : "—"}</p><p className="text-[10px] text-[var(--muted)]">{t("fitness_fat")}</p></div>
           </div>
         </div>
       </div>
@@ -240,7 +240,7 @@ export function FitnessPageDesktop() {
         <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold flex items-center gap-2"><Apple className="h-4 w-4 text-green-500" /> {t("fitness_nutrition")}</h3>
-            <button onClick={() => setShowFoodForm(!showFoodForm)} className="p-2 rounded-xl hover:bg-[var(--surface)]"><Plus className="h-4 w-4" /></button>
+            <button onClick={() => setShowFoodForm(!showFoodForm)} className="p-2 rounded-xl hover:bg-[var(--surface)]"><Plus className="h-5 w-5" /></button>
           </div>
           {showFoodForm && (
             <div className="bg-[var(--surface)] rounded-xl p-4 mb-4 space-y-3">
@@ -284,7 +284,7 @@ export function FitnessPageDesktop() {
           </div>
           <div className="grid grid-cols-4 gap-2 mb-4">
             {[150, 250, 350, 500].map(amount => (
-              <button key={amount} onClick={() => addWater(amount)} className="h-12 rounded-xl bg-blue-500/10 text-blue-600 text-sm font-medium hover:bg-blue-500/20 transition-colors">
+              <button key={amount} onClick={() => addWater(amount)} className="h-12 rounded-lg bg-blue-500/10 text-blue-600 text-sm font-medium hover:bg-blue-500/20 transition-colors">
                 +{amount} мл
               </button>
             ))}

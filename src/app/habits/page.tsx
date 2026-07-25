@@ -28,17 +28,34 @@ function streak(logs: HabitLog[], freq: string): number {
   return s;
 }
 
-function MiniGrid({ habit }: { habit: Habit }) {
+function WeekDots({ habit }: { habit: Habit }) {
   const logDates = new Set(habit.logs.map(l => l.date));
-  const days: { date: string; done: boolean }[] = [];
-  for (let i = 29; i >= 0; i--) {
-    const d = new Date(); d.setDate(d.getDate() - i);
-    days.push({ date: dayKey(d), done: logDates.has(dayKey(d)) });
+  const now = new Date();
+  const dayOfWeek = now.getDay(); // 0=Sun
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - ((dayOfWeek + 6) % 7));
+
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const key = d.toISOString().split("T")[0];
+    days.push({ date: key, done: logDates.has(key), isToday: key === today() });
   }
+
   return (
-    <div className="flex gap-[3px] flex-wrap">
+    <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
       {days.map(day => (
-        <div key={day.date} title={day.date} className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: day.done ? habit.color : "var(--bg-alt)" }} />
+        <div key={day.date} style={{
+          width: 28, height: 28, borderRadius: "50%",
+          background: day.done ? "#22c55e" : "var(--bg-alt)",
+          border: day.isToday ? "2px solid var(--primary)" : "2px solid transparent",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 10, fontWeight: 600, color: day.done ? "white" : "var(--text-muted)",
+          transition: "all 0.15s ease",
+        }}>
+          {["Пн","Вт","Ср","Чт","Пт","Сб","Вс"][(new Date(day.date).getDay() + 6) % 7]}
+        </div>
       ))}
     </div>
   );
@@ -129,27 +146,28 @@ export default function HabitsPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    {s > 0 && (
-                      s > 7
-                        ? <span className="streak-badge"><Flame className="h-3 w-3" /> {s}</span>
-                        : <span className="flex items-center gap-1 text-xs font-semibold" style={{ color: "var(--orange)" }}><Flame className="h-3.5 w-3.5" /> {s}</span>
-                    )}
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 13, fontWeight: 600, color: s > 0 ? "#f97316" : "var(--text-muted)" }}>
+                      🔥 {s}
+                    </span>
                     <button onClick={() => handleDelete(habit.id)} className="btn-icon btn-icon-sm" style={{ color: "var(--text-muted)" }}><Trash2 className="h-3.5 w-3.5" /></button>
                   </div>
                 </div>
-                <MiniGrid habit={habit} />
+                <WeekDots habit={habit} />
                 <button
                   onClick={() => handleToggle(habit.id)}
-                  className="btn"
                   style={{
                     width: "100%", marginTop: 12, height: 40,
-                    background: done ? habit.color : "transparent",
-                    color: done ? "white" : habit.color,
-                    border: done ? "none" : `2px dashed ${habit.color}40`,
-                    borderRadius: "var(--radius-md)",
+                    background: done ? "#22c55e" : "#22c55e15",
+                    color: done ? "white" : "#22c55e",
+                    border: "none",
+                    borderRadius: 20,
+                    fontSize: 13, fontWeight: 600, cursor: "pointer",
+                    transition: "all 0.15s ease",
                   }}
+                  onMouseEnter={e => { if (!done) e.currentTarget.style.background = "#22c55e25"; }}
+                  onMouseLeave={e => { if (!done) e.currentTarget.style.background = "#22c55e15"; }}
                 >
-                  <Check className="h-4 w-4" /> {done ? "Выполнено" : "Отметить"}
+                  <Check className="h-4 w-4" style={{ display: "inline", marginRight: 6 }} /> {done ? "Выполнено" : "Отметить"}
                 </button>
               </div>
             );
@@ -160,7 +178,7 @@ export default function HabitsPage() {
       {/* Create form modal */}
       {formOpen && (
         <div style={{ position: "fixed", inset: 0, zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.4)" }} onClick={() => setFormOpen(false)} />
+          <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }} onClick={() => setFormOpen(false)} />
           <div className="card animate-scale" style={{ padding: 28, width: "100%", maxWidth: 420, position: "relative", zIndex: 1 }}>
             <div className="flex items-center justify-between" style={{ marginBottom: 20 }}>
               <p className="heading-md">Новая привычка</p>

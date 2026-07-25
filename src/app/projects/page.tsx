@@ -17,11 +17,26 @@ export default function ProjectsPage() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [inviteEmail, setInviteEmail] = useState("");
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [projectTasks, setProjectTasks] = useState<Record<string, {total: number; done: number}>>({});
 
   const fetchProjects = async () => {
     try { const res = await fetch("/api/projects"); const data = await res.json(); if (Array.isArray(data)) setProjects(data); } catch {} finally { setLoading(false); }
   };
   useEffect(() => { fetchProjects(); }, []);
+  useEffect(() => {
+    fetch("/api/tasks").then(r => r.json()).then(tasks => {
+      if (!Array.isArray(tasks)) return;
+      const counts: Record<string, {total: number; done: number}> = {};
+      tasks.forEach((t: any) => {
+        if (t.projectId) {
+          if (!counts[t.projectId]) counts[t.projectId] = {total: 0, done: 0};
+          counts[t.projectId].total++;
+          if (t.status === "done") counts[t.projectId].done++;
+        }
+      });
+      setProjectTasks(counts);
+    });
+  }, []);
 
   const handleCreate = async () => {
     if (!formName.trim()) return;
@@ -64,14 +79,14 @@ export default function ProjectsPage() {
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
         {projects.map(project => (
-          <div key={project.id} className="project-card" onClick={() => setSelectedProject(project)}>
+          <div key={project.id} className="project-card" onClick={() => setSelectedProject(project)} onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.borderLeft = "3px solid var(--primary)"; }} onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.borderLeft = "3px solid transparent"; }} style={{ borderLeft: "3px solid transparent", transition: "all 0.15s ease" }}>
             <div className="flex items-center gap-3" style={{ marginBottom: 12 }}>
               <div className="project-card-icon" style={{ background: project.color || "var(--primary)", color: "white" }}>
                 {project.name?.[0] || "?"}
               </div>
               <div>
                 <p className="heading-sm">{project.name}</p>
-                <p className="text-xs">{project.role === "owner" ? "Владелец" : "Участник"} · {new Date(project.createdAt).toLocaleDateString("ru-RU")}</p>
+                <p className="text-xs" style={{ color: "var(--text-muted)" }}>{project.role === "owner" ? "Владелец" : "Участник"} · Создан {(() => { const created = new Date(project.createdAt); const months = ["янв","фев","мар","апр","мая","июн","июл","авг","сен","окт","ноя","дек"]; return <>{created.getDate()} {months[created.getMonth()]}</>; })()}</p>
               </div>
             </div>
             {project.members && project.members.length > 0 && (
@@ -82,6 +97,17 @@ export default function ProjectsPage() {
                   </div>
                 ))}
                 {project.members.length > 4 && <span className="text-xs" style={{ alignSelf: "center" }}>+{project.members.length - 4}</span>}
+              </div>
+            )}
+            {projectTasks[project.id] && (
+              <div style={{ marginTop: 12 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                  <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{projectTasks[project.id].done}/{projectTasks[project.id].total}</span>
+                  <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{projectTasks[project.id].total > 0 ? Math.round(projectTasks[project.id].done / projectTasks[project.id].total * 100) : 0}%</span>
+                </div>
+                <div style={{ height: 4, borderRadius: 2, background: "var(--bg-alt)", overflow: "hidden" }}>
+                  <div style={{ height: "100%", borderRadius: 2, background: "var(--primary)", width: `${projectTasks[project.id].total > 0 ? (projectTasks[project.id].done / projectTasks[project.id].total * 100) : 0}%`, transition: "width 0.3s ease" }} />
+                </div>
               </div>
             )}
           </div>

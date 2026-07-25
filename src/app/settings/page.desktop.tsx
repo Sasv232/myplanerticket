@@ -15,6 +15,25 @@ const COLORS = ["#6366f1","#10b981","#3b82f6","#8b5cf6","#ec4899","#ef4444","#f9
 interface Settings { smtpConfigured: boolean; databaseConnected: boolean; }
 interface Profile { id: string; name: string; email: string | null; phone: string | null; avatar: string | null; role: string; createdAt: string; }
 
+function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <button
+      onClick={() => onChange(!checked)}
+      style={{
+        width: 44, height: 24, borderRadius: 12, border: "none", cursor: "pointer",
+        background: checked ? "var(--primary)" : "#3f3f46",
+        position: "relative", transition: "background 0.2s ease", flexShrink: 0,
+      }}
+    >
+      <div style={{
+        width: 18, height: 18, borderRadius: "50%", background: "white",
+        position: "absolute", top: 3, left: checked ? 23 : 3,
+        transition: "left 0.2s ease", boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
+      }} />
+    </button>
+  );
+}
+
 export function SettingsPageDesktop() {
   const { theme, schedule, setSchedule } = useTheme();
   const { t, lang, setLang } = useLang();
@@ -166,15 +185,15 @@ export function SettingsPageDesktop() {
         {/* Notifications */}
         <Section title="Уведомления" icon={Bell}>
           <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-            <label className="flex items-center justify-between cursor-pointer" style={{ padding: "12px 0", borderBottom: "1px solid var(--border)" }}>
-              <span className="text-caption">Push-уведомления</span>
-              <button type="button" onClick={handleTogglePush} className={`toggle ${pushEnabled ? "toggle-active" : ""}`} />
-            </label>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid var(--border)" }}>
+              <span style={{ fontSize: 14 }}>Push-уведомления</span>
+              <Toggle checked={pushEnabled} onChange={async (v) => { if (!v) { await unsubscribeFromPush(); setPushEnabled(false); } else { const ok = await subscribeToPush(); setPushEnabled(ok); } }} />
+            </div>
             {Object.entries({ messenger: "Мессенджер", deadlines: "Дедлайны", habits: "Привычки", serverErrors: "Ошибки сервера", maintenance: "Обслуживание" }).map(([k, v], i, arr) => (
-              <label key={k} className="flex items-center justify-between cursor-pointer" style={{ padding: "12px 0", borderBottom: i < arr.length - 1 ? "1px solid var(--border)" : "none" }}>
-                <span className="text-caption">{v}</span>
-                <button type="button" onClick={() => updateNotifPref(k, !(notifPrefs as any)[k])} className={`toggle ${(notifPrefs as any)[k] ? "toggle-active" : ""}`} />
-              </label>
+              <div key={k} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 0", borderBottom: i < arr.length - 1 ? "1px solid var(--border)" : "none" }}>
+                <span style={{ fontSize: 14 }}>{v}</span>
+                <Toggle checked={(notifPrefs as any)[k]} onChange={val => updateNotifPref(k, val)} />
+              </div>
             ))}
           </div>
         </Section>
